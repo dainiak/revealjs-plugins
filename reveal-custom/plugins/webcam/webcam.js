@@ -28,17 +28,20 @@ const RevealWebcam = {
         let currentlyFullscreen = false;
         let currentlyHidden = false;
 
-        let video = document.createElement('video');
-        video.classList.add('webcam');
-        video.classList.add('permanent');
-        video.style.left = '20px';
-        video.style.top = '20px';
-        video.style.height = '100px';
-        video.style.position = 'absolute';
-        video.style.zIndex = '100';
-        video.style.transition = '0.5s ease';
-        video.style.opacity = '0.3';
-        reveal.getViewportElement().appendChild(video);
+        let video = reveal.getViewportElement().querySelector('video.webcam.permanent');
+        if(!video) {
+            video = document.createElement('video');
+            video.classList.add('webcam');
+            video.classList.add('permanent');
+            video.style.left = '20px';
+            video.style.top = '20px';
+            video.style.height = '100px';
+            video.style.position = 'absolute';
+            video.style.zIndex = '100';
+            video.style.transition = '0.5s ease';
+            video.style.opacity = '0.3';
+            reveal.getViewportElement().appendChild(video);
+        }
 
         function shrinkWebcamVideo(videoElement) {
             if (!currentlyHidden && videoElement.hasAttribute('data-webcam-old-opacity'))

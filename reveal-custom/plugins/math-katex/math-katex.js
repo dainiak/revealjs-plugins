@@ -113,7 +113,7 @@ const RevealMath = {
 						});
 					}
 					catch (error){
-						console.log("KaTeX error while loading the preamble: " + error.toString().replace("ParseError: KaTeX parse error: ", ""));
+						console.warn("KaTeX error while loading the preamble: " + error.toString().replace("ParseError: KaTeX parse error: ", ""));
 					}
 				}
 

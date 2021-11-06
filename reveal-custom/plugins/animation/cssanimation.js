@@ -52,61 +52,48 @@
                 let to = s[1].trim();
                 if(to){
                     to = parseInt(to);
-                    for(let j = from; j <= to; ++j){
+                    for(let j = from; j <= to; ++j)
                         indices.push(j);
-                    }
                 }
-                else{
+                else
                     indices.push(-from);
-                }
             }
-            else{
+            else
                 indices.push(parseInt(token));
-            }
         }
 
         return indices;
     }
 
-    function isInList(s, list){
-        return list.indexOf(s) >= 0;
-    }
-
     function isKeyword(s){
-        const keywords = ['initially', 'during', 'delay', 'apply', 'reset', 'show', 'hide', 'execute', 'next', 'then', 'to', 'rewind', 'macro'];
-        return isInList(s, keywords);
+        return ['initially', 'during', 'delay', 'apply', 'reset', 'show', 'hide', 'execute', 'next', 'then', 'to', 'rewind', 'macro'].includes(s);
     }
 
     function detectKeywords(tokens){
         let preResult = [];
-        for(let token of tokens){
-            if(token.content || token.type === 'string'){
+        for(let token of tokens)
+            if(token.content || token.type === 'string')
                 preResult.push(token);
-            }
-        }
-        for( let i = 0; i < preResult.length; ++i){
+
+        for( let i = 0; i < preResult.length; ++i)
             if( preResult[i].type === 'word'
                 && isKeyword(preResult[i].content)
                 && (i === 0
-                    || (preResult[i-1].type !== 'keyword' || !isInList(preResult[i-1].content, ['apply','to','execute','show','hide', 'macro']) )
+                    || (preResult[i-1].type !== 'keyword' || !['apply','to','execute','show','hide', 'macro'].includes(preResult[i-1].content))
                     && preResult[i-1].content !== ','
                     && preResult[i-1].content !== '='
                     && (i === preResult.length-1 || preResult[i+1].content !== '=')) ){
                 preResult[i].type = 'keyword';
             }
-        }
-        for( let i = preResult.length-1; i >= 0; --i){
-            if( preResult[i].type !== 'string' && preResult[i].content === ';' && (i === preResult.length - 1 || preResult[i+1].type === 'keyword') ){
+
+        for( let i = preResult.length-1; i >= 0; --i)
+            if( preResult[i].type !== 'string' && preResult[i].content === ';' && (i === preResult.length - 1 || preResult[i+1].type === 'keyword') )
                 preResult[i].type = 'keyword';
-            }
-        }
 
         let result = [];
-        for( let i = 0; i < preResult.length; ++i){
-            if( !(preResult[i].content === ':' && i > 0 && preResult[i-1].type === 'keyword' && (preResult[i-1].content === 'initially' || preResult[i-1].content === 'next' || preResult[i-1].content === 'then') )){
+        for(let i = 0; i < preResult.length; ++i)
+            if( !(preResult[i].content === ':' && i > 0 && preResult[i-1].type === 'keyword' && ['initially', 'next', 'then'].includes(preResult[i-1].content)))
                 result.push(preResult[i]);
-            }
-        }
 
         return result;
     }
@@ -141,7 +128,7 @@
             }
             else if(s[0] === '[' && s.search(/^\[(\d+\s*(-\s*\d+)?\s*,)*(\d+\s*(-\s*\d*)?\s*)]/) === 0){
                 let posEnd = s.indexOf(']');
-                preResult.push({content: parseIndices(s.slice(1,posEnd).replace(/\s/g,'')), type: 'indices'});
+                preResult.push({content: parseIndices(s.slice(1, posEnd).replace(/\s/g,'')), type: 'indices'});
                 preResult.push({content: '', type: 'word'});
                 s = s.slice(posEnd+1);
             }
@@ -230,7 +217,7 @@
 
     function getTime(tokenList){
         let timeString = '';
-        while( tokenList.length > 0 && timeString.search(/^\d+([.,]\d+)?m?s/) === -1 && isInList(tokenList[0].type,['word','string'])){
+        while( tokenList.length > 0 && timeString.search(/^\d+([.,]\d+)?m?s/) === -1 && ['word','string'].includes(tokenList[0].type)){
             timeString += tokenList[0].content;
             tokenList = tokenList.slice(1);
         }
@@ -253,7 +240,7 @@
     function getCssQuery(tokenList){
         let query = '';
         let indices;
-        while(tokenList.length > 0 && isInList( tokenList[0].type, ['word', 'string'])){
+        while(tokenList.length > 0 && ['word', 'string'].includes( tokenList[0].type)){
             if(query){
                 query += ' ';
             }
@@ -276,7 +263,7 @@
     function getNextAnimationAtom(animationAtomScript){
         while( animationAtomScript.length > 0 &&
             (animationAtomScript[0].type !== 'keyword'
-            || !isInList(animationAtomScript[0].content, ['show','hide','execute','apply','reset']) )){
+            || !['show','hide','execute','apply','reset'].includes(animationAtomScript[0].content))){
             animationAtomScript = animationAtomScript.slice(1);
         }
         if (animationAtomScript.length === 0 ){
@@ -294,7 +281,7 @@
                 parsedAnimationAtom.objectQueryIndices = queryAndRest.indices;
             }
         }
-        else if( isInList(animationAtomScript[0].content, ['show', 'hide']) ){
+        else if( ['show', 'hide'].includes(animationAtomScript[0].content) ){
             let queryAndRest = getCssQuery(animationAtomScript.slice(1));
             animationAtomScript = queryAndRest.rest;
             parsedAnimationAtom.objectQueryString = queryAndRest.query;
@@ -317,7 +304,7 @@
         else if( animationAtomScript[0].content === 'apply' ){
             parsedAnimationAtom.animationType = 'apply';
             animationAtomScript = animationAtomScript.slice(1);
-            while( animationAtomScript.length > 0 && !isInList(animationAtomScript[0].type, ['keyword','indices']) ){
+            while( animationAtomScript.length > 0 && !['keyword','indices'].includes(animationAtomScript[0].type) ){
                 while(animationAtomScript.length > 0 && animationAtomScript[0].content === ','){
                     animationAtomScript = animationAtomScript.slice(1);
                 }
@@ -330,7 +317,7 @@
                         animationAtomScript = animationAtomScript.slice(1);
                     }
                     else {
-                        while( animationAtomScript.length > 0 && animationAtomScript[0].content !== ',' && isInList(animationAtomScript[0].type, ['string', 'word'])
+                        while( animationAtomScript.length > 0 && animationAtomScript[0].content !== ',' && ['string', 'word'].includes(animationAtomScript[0].type)
                             && (animationAtomScript.length === 1 || animationAtomScript[1].content !== '=') ){
                             if(value){
                                 value += ' ';
@@ -345,7 +332,7 @@
                     }
                     parsedAnimationAtom.propertiesToAssign.push([property,value]);
                 }
-                else if(animationAtomScript.length > 0 && isInList(animationAtomScript[0].type, ['string', 'word'])){
+                else if(animationAtomScript.length > 0 && ['string', 'word'].includes(animationAtomScript[0].type)){
                     if(animationAtomScript[0].content.startsWith('-')){
                         if(!parsedAnimationAtom.classesToRemove){
                             parsedAnimationAtom.classesToRemove = [];
@@ -409,7 +396,6 @@
     }
 
 
-
     /*
         Parses animation script that has to be performed on a single mouse click.
         Returns Array with single animation steps as elements. Steps are supposed to be performed
@@ -440,6 +426,19 @@
         return parsedAnimation;
     }
 
+    function getAnimationObjectsForAtom(animationAtom){
+        let animationObjectsUnfiltered = scope.querySelectorAll( animationAtom.objectQueryString );
+        let animationObjects = [];
+        for(let j = 0; j < animationObjectsUnfiltered.length; ++j){
+            if(!animationObjectsUnfiltered[j].classList.contains('custom-animation-carrier') && animationObjectsUnfiltered[j].tagName.toLowerCase() !== 'script'){
+                animationObjects.push(animationObjectsUnfiltered[j]);
+            }
+        }
+        if(animationObjects.length === 0 && animationAtom.objectQueryString === '*'){
+            animationObjects = [scope];
+        }
+        return animationObjects;
+    }
 
     /*
         Perform the animation.
@@ -477,16 +476,7 @@
                     continue;
                 }
 
-                let animationObjectsUnfiltered = scope.querySelectorAll( animationAtom.objectQueryString );
-                let animationObjects = [];
-                for(let j = 0; j < animationObjectsUnfiltered.length; ++j){
-                    if(!animationObjectsUnfiltered[j].classList.contains('custom-animation-carrier') && animationObjectsUnfiltered[j].tagName.toLowerCase() !== 'script'){
-                        animationObjects.push(animationObjectsUnfiltered[j]);
-                    }
-                }
-                if(animationObjects.length === 0 && animationAtom.objectQueryString === '*'){
-                    animationObjects = [scope];
-                }
+                let animationObjects = getAnimationObjectsForAtom(animationAtom);
 
                 for (let j = 0; j < animationObjects.length; ++j){
                     if( animationAtom.objectQueryIndices && animationAtom.objectQueryIndices.indexOf(j) < 0
@@ -651,23 +641,14 @@
 
                 let backupAttrPrefix = 'data-animation' + animationAtom.id.toString() + '-backup-';
 
-                let animationObjectsUnfiltered = scope.querySelectorAll( animationAtom.objectQueryString );
-                let animationObjects = [];
-                for(let j = 0; j < animationObjectsUnfiltered.length; ++j){
-                    if(!animationObjectsUnfiltered[j].classList.contains('custom-animation-carrier') && animationObjectsUnfiltered[j].tagName.toLowerCase() !== 'script'){
-                        animationObjects.push(animationObjectsUnfiltered[j]);
-                    }
-                }
-                if(animationObjects.length === 0 && animationAtom.objectQueryString === '*'){
-                    animationObjects = [scope];
-                }
+                let animationObjects = getAnimationObjectsForAtom(animationAtom);
 
                 for (let k = 0; k < animationObjects.length; ++k){
                     let node = animationObjects[k];
                     let oldTransitionDuration = node.style.transitionDuration;
                     node.style.transitionDuration = '0s';
 
-                    if(isInList(animationAtom.animationType, ['apply','show','hide'])){
+                    if(['apply','show','hide'].includes(animationAtom.animationType)){
                         let classes = [];
                         if(animationAtom.classesToAdd){
                             classes = classes.concat(animationAtom.classesToAdd);
@@ -779,8 +760,7 @@
         let animations = document.querySelectorAll('script[type="text/animation"]');
         let initialSettings = [];
 
-        for(let i = 0; i < animations.length; ++i){
-            let animScriptDomElement = animations[i];
+        for(let animScriptDomElement of animations){
             let slide = getParentSlide(animScriptDomElement);
             let fragment = getFragmentForScript(animScriptDomElement);
             let animScripts = splitTokenList(detectKeywords(tokenizeString(animScriptDomElement.textContent)), 'next');

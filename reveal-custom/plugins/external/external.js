@@ -1,7 +1,13 @@
 /*
   external.js
-  Jan Schoepke <janschoepke@me.com>
+  [Author: ] Alex Dainiak
+  Actual original authors:
+      Jan Schoepke <janschoepke@me.com>
+      Thomas Weinert (https://github.com/ThomasWeinert)
+      Cal Evans
+
   Released under the MIT license
+
   Load external files into a reveal.js presentation.
  
   This is a reveal.js plugin to load external html files. It replaces the
@@ -22,10 +28,6 @@
         style: true
     }
   }
- 
- * This started life as markdown.js. Thank you to whomever wrote it.
- * This version is based on external.js by Cal Evans. Thanks Cal!
- * Thanks to Thomas Weinert (https://github.com/ThomasWeinert) for massive improvements in version 1.3!
  */
 
 const RevealExternal = {
@@ -141,7 +143,7 @@ const RevealExternal = {
             try {
                 xhr.send();
             } catch (e) {
-                console.warn('RevealExternal: Failed to get the file ' + url + '\nException caught: ' + e);
+                console.warn('RevealExternal: Failed to get the file ' + url + '\nException: ' + e);
             }
         }
 
