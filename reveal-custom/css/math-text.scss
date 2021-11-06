@@ -1,0 +1,55 @@
+$listItemPadding: 1em;
+
+.theorem, .definition, .lemma, .proposition, .corollary {
+  width: 100%;
+
+  .title {
+    font-weight: bold;
+    text-decoration: underline dotted darkgray;
+    text-align: left;
+  }
+  .statement {
+    width: 100%;
+    font-weight: normal;
+    text-align: left;
+  }
+  li {
+    padding-bottom: $listItemPadding;
+  }
+}
+
+.proof-start {
+
+}
+
+.proof {
+  width: 100%;
+  text-align: left;
+  font-weight: normal;
+
+  .title {
+    font-weight: bold;
+    text-align: left;
+  }
+
+  li {
+    padding-bottom: $listItemPadding;
+  }
+}
+
+div.qed {
+  width: 100%;
+  display: inline-block;
+  text-align: right;
+  transform: translateY(-1.5em);
+  &:before {
+    display: block;
+    width: 100%;
+    content: '\220E';
+  }
+}
+
+span.term {
+  text-decoration: underline dashed teal;
+  //text-decoration-thickness: 2px;
+}

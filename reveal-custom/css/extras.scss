@@ -1,0 +1,41 @@
+@import "slide-layouts";
+@import "fragments";
+@import "lists";
+@import "math-text";
+
+
+.green {
+  color: lightgreen;
+}
+
+.red {
+  color: red;
+}
+
+.grey-bg {
+  background-color: dimgrey;
+}
+
+.reveal section img {
+  border: 0;
+}
+
+.reveal blockquote footer {
+  text-align: right;
+}
+
+.def {
+  text-align: left;
+}
+
+ul.blank {
+  list-style: none;
+  li {
+    content: none;
+  }
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}

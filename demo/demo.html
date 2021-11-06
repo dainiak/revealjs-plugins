@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="../reveal/dist/reset.css">
+    <link rel="stylesheet" href="../reveal/dist/reveal.css">
+    <link rel="stylesheet" href="../reveal/dist/theme/black.css" id="theme">
+
+    <link rel="stylesheet" href="../reveal/plugin/highlight/monokai.css" id="highlight-theme">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="../reveal-custom/css/extras.css">
+</head>
+
+
+<body>
+<div class="reveal"><div class="slides">
+    <section title="Титульный слайд" data-external="sect-title.html"></section>
+</div></div>
+
+
+<script src="../reveal/dist/reveal.js"></script>
+<script src="../reveal/plugin/notes/notes.js"></script>
+<script src="../reveal/plugin/highlight/highlight.js"></script>
+
+<script src="../reveal-custom/plugins/external/external.js"></script>
+
+<link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css">
+<link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css">
+<script src="../reveal-custom/plugins/menu/menu.js"></script>
+
+
+<script src="../reveal-custom/plugins/math-mod/math.js"></script>
+<!--<script src="../reveal-custom/plugins/math-katex/math-katex.js"></script>-->
+
+<script src="../reveal-custom/plugins/inking/inking.js"></script>
+<script src="../reveal-custom/plugins/zoom-js-mod/zoom.js"></script>
+<script src="../reveal-custom/plugins/webcam/webcam.js"></script>
+
+<script type="text/latex" id="mathjaxPreamble">
+    \DeclareMathOperator{\roots}{roots}
+    \DeclareMathOperator{\ord}{ord}
+    \DeclareMathOperator{\GCD}{GCD}
+    \newcommand{\bbA}{\mathbb{A}}
+    \newcommand{\bbB}{\mathbb{B}}
+    \newcommand{\bbF}{\mathbb{F}}
+    \newcommand{\bbN}{\mathbb{N}}
+    \newcommand{\bbP}{\mathbb{P}}
+    \newcommand{\bbQ}{\mathbb{Q}}
+    \newcommand{\bbR}{\mathbb{R}}
+    \newcommand{\bbZ}{\mathbb{Z}}
+    \newcommand{\calA}{\mathcal{A}}
+    \newcommand{\calB}{\mathcal{B}}
+    \newcommand{\calC}{\mathcal{C}}
+    \newcommand{\calD}{\mathcal{D}}
+    \newcommand{\calF}{\mathcal{F}}
+    \newcommand{\calG}{\mathcal{G}}
+    \newcommand{\calI}{\mathcal{I}}
+    \newcommand{\calM}{\mathcal{M}}
+    \newcommand{\calN}{\mathcal{N}}
+    \newcommand{\calO}{\mathcal{O}}
+    \newcommand{\calR}{\mathcal{R}}
+    \newcommand{\calS}{\mathcal{S}}
+    \newcommand{\bfA}{\mathbf{A}}
+    \newcommand{\bfa}{\mathbf{a}}
+    \newcommand{\bfb}{\mathbf{b}}
+    \newcommand{\bfc}{\mathbf{c}}
+    \newcommand{\bfe}{\mathbf{e}}
+    \newcommand{\bfw}{\mathbf{w}}
+    \newcommand{\bfx}{\mathbf{x}}
+    \newcommand{\bfy}{\mathbf{y}}
+    \newcommand{\bfz}{\mathbf{z}}
+    \renewcommand{\emptyset}{\varnothing}
+    \renewcommand{\epsilon}{\varepsilon}
+    \newcommand{\Fstar}{\mathbb{F}^*}
+    \newcommand{\euler}{\varphi}
+    \newcommand{\card}[1]{\lvert #1 \rvert}
+    \newcommand{\eqmod}[1]{\overset{#1}{=}}
+    \newcommand{\neqmod}[1]{\overset{\scriptsize{#1}}{\neq}}
+</script>
+
+
+<script>
+    Reveal.initialize({
+        plugins: [
+            RevealExternal,
+            RevealHighlight,
+            // RevealNotes,
+            RevealMenu,
+            RevealMath,
+            RevealInking,
+            RevealZoom,
+            RevealWebcam
+        ],
+        slideNumber: true,
+        width: 1200,
+        height: 1000,
+        margin: 0.05,
+        // minScale: 1.0,
+        // maxScale: 1.0,
+        history: true,
+        transition: 'slide',
+        controls: false,
+        external: {
+            mapAttributes: ['data-inking-canvas-src', 'src']
+        },
+        menu: {
+            openSlideNumber: true,
+            openButton: false,
+            themes: true,
+            themesPath: '../reveal/css/theme/',
+            transitions: true,
+            titleSelector: 'h1, h2, h3, h4, h5, h6, figcaption, div.theorem > div.title',
+            // autoOpen: true,
+            // sticky: true
+        },
+        math: {
+            svg: {
+                enabled: true,
+                mathScale: 0.0015,
+                fixedScale: false,
+                escapeClipping: false,
+                defaultAlignment: 'C'
+            },
+            fragments: true,
+            preamble: "#mathjaxPreamble",
+            macros: {
+                zoomable: ["\\class{zoomable}{#1}", 1],
+                floor: ["{\\left\\lfloor #1 \\right\\rfloor}", 1],
+                ceil: ["{\\left\\lceil #1 \\right\\rceil}", 1],
+                le: "\\leqslant",
+                ge: "\\geqslant",
+                hat: "\\widehat",
+                divides: "\\mathrel{\\,\\vert\\,}",
+                notdivides: "\\mathrel{\\,\u2224\\,}",
+                any: "\u25A3",
+                green: ["\\class{green}{#1}", 1],
+                red: ["\\class{red}{#1}", 1]
+            }
+        },
+        inking: {
+            controls: {
+                color: "#00ffff",
+                opacity: 1,
+                colorChoosersAlwaysVisible: false
+            },
+            math: {
+                shadow: true,
+                color: 'ink',
+                displayStyle: true,
+                preamble: '',
+            },
+            ink: {
+                color: ['green', 'red', 'blue', 'lightgrey']
+            }
+        },
+        highlighting: {
+            editorInPlace: true
+        },
+        zooming: {
+            explicitZoomables: false,
+        }
+    });
+</script>
+
+</body>
+</html>

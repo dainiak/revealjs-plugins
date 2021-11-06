@@ -1,0 +1,340 @@
+@charset "UTF-8";
+.reveal .slides section .layout-two-col {
+  margin-left: 2vw;
+  margin-right: 2vw;
+  grid-column-gap: 4vw;
+  display: grid;
+  height: 97vh;
+  width: 100vw;
+  overflow: hidden;
+  grid-template-rows: 100%;
+  grid-template-columns: 1fr 1fr;
+}
+.reveal .slides section .layout-two-col > div {
+  grid-row: 1;
+  text-align: left;
+  font-size: 5vmin;
+}
+.reveal .slides section .layout-two-col > div:last-child {
+  grid-column: 2;
+}
+.reveal .slides section .layout-two-col > div:first-child {
+  grid-column: 1;
+}
+.reveal .slides section .layout-two-col > figure:last-child {
+  grid-column: 2;
+}
+.reveal .slides section .layout-two-col > figure:first-child {
+  grid-column: 1;
+}
+.reveal .slides section .layout-two-col > figure {
+  grid-row: 1;
+  max-height: 90vh;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.reveal .slides section .layout-two-col > figure img, .reveal .slides section .layout-two-col > figure svg, .reveal .slides section .layout-two-col > figure pre code, .reveal .slides section .layout-two-col > figure video, .reveal .slides section .layout-two-col > figure iframe {
+  flex: 6;
+  order: 1;
+  object-fit: contain;
+  background: none;
+  box-shadow: none;
+  max-width: 45vw;
+  max-height: 80vh;
+  width: 100%;
+  height: auto;
+}
+.reveal .slides section .layout-two-col > figure figcaption {
+  flex: 1;
+  order: 2;
+  text-align: center;
+  font-size: 4vmin;
+}
+.reveal .slides section .layout-two-col-h {
+  margin-left: 2vw;
+  margin-right: 2vw;
+  grid-column-gap: 4vw;
+  display: grid;
+  height: 97vh;
+  width: 100vw;
+  overflow: hidden;
+  grid-template-rows: 20vh 77vh;
+  grid-template-columns: 1fr 1fr;
+}
+.reveal .slides section .layout-two-col-h > h2, .reveal .slides section .layout-two-col-h > h3, .reveal .slides section .layout-two-col-h > h4, .reveal .slides section .layout-two-col-h > h5 {
+  grid-row: 1;
+  grid-column: 1/-1;
+}
+.reveal .slides section .layout-two-col-h > div {
+  grid-row: 2;
+  text-align: left;
+  font-size: 5vmin;
+}
+.reveal .slides section .layout-two-col-h > div:last-child {
+  grid-column: 2;
+}
+.reveal .slides section .layout-two-col-h > div:not(last-child) {
+  grid-column: 1;
+}
+.reveal .slides section .layout-two-col-h > figure:last-child {
+  grid-column: 2;
+}
+.reveal .slides section .layout-two-col-h > figure:not(last-child) {
+  grid-column: 1;
+}
+.reveal .slides section .layout-two-col-h > figure {
+  grid-row: 2;
+  max-height: 72vh;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.reveal .slides section .layout-two-col-h > figure img, .reveal .slides section .layout-two-col-h > figure svg, .reveal .slides section .layout-two-col-h > figure pre code, .reveal .slides section .layout-two-col-h > figure video, .reveal .slides section .layout-two-col-h > figure iframe {
+  flex: 6;
+  order: 1;
+  object-fit: contain;
+  background: none;
+  box-shadow: none;
+  max-width: 45vw;
+  max-height: 60vh;
+  width: 100%;
+  height: auto;
+}
+.reveal .slides section .layout-two-col-h > figure.no-cap img, .reveal .slides section .layout-two-col-h > figure.no-cap svg, .reveal .slides section .layout-two-col-h > figure.no-cap pre code, .reveal .slides section .layout-two-col-h > figure.no-cap video, .reveal .slides section .layout-two-col-h > figure.no-cap iframe {
+  max-height: 72vh;
+}
+.reveal .slides section .layout-two-col-h > figure figcaption {
+  flex: 1;
+  order: 2;
+  text-align: center;
+  font-size: 4vmin;
+}
+.reveal .slides section .layout-fig-and-cap figure img, .reveal .slides section .layout-fig-and-cap figure svg, .reveal .slides section .layout-fig-and-cap figure pre code, .reveal .slides section .layout-fig-and-cap figure video, .reveal .slides section .layout-fig-and-cap figure iframe {
+  object-fit: contain;
+  background: none;
+  box-shadow: none;
+  max-width: 100%;
+  max-height: 80vh;
+  margin-bottom: 0;
+  width: 100%;
+  height: auto;
+}
+.reveal .slides section .layout-fig-and-cap figure iframe {
+  height: 80vh;
+}
+.reveal .slides section .layout-fig-and-cap figure figcaption {
+  text-align: center;
+  font-size: 4vmin;
+}
+
+.reveal .slides section {
+  /* Sliding underline animation by Josh Broton, see http://bradsknutson.com/blog/css-sliding-underline/   */
+  /* This one is from https://speckyboy.com/underline-text-effects-css/ */
+}
+.reveal .slides section .fragment.step, .reveal .slides section ul.steps li.fragment {
+  transition-duration: 0.5s;
+  opacity: 0;
+}
+.reveal .slides section .fragment.step.visible, .reveal .slides section ul.steps li.fragment.visible {
+  opacity: 0.5;
+}
+.reveal .slides section .fragment.step.current-fragment, .reveal .slides section ul.steps li.fragment.current-fragment {
+  opacity: 1;
+}
+.reveal .slides section .fragment.display-then-remove {
+  display: none;
+}
+.reveal .slides section .fragment.display-then-remove.visible {
+  display: none;
+}
+.reveal .slides section .fragment.display-then-remove.visible.current-fragment {
+  display: inline;
+}
+.reveal .slides section .fragment.sliding-underline {
+  display: inline-block;
+  visibility: visible;
+  opacity: 1;
+}
+.reveal .slides section .fragment.sliding-underline:after {
+  content: "";
+  display: block;
+  margin-top: -5px;
+  height: 3px;
+  width: 0;
+  background: transparent;
+  transition: width 0.5s cubic-bezier(1, 0.25, 0, 0.75), background-color 0.5s cubic-bezier(1, 0.25, 0, 0.75), opacity 0s;
+  visibility: visible;
+  opacity: 1;
+}
+.reveal .slides section .fragment.sliding-underline.visible:after {
+  width: 100%;
+  background-color: #068ee9;
+}
+.reveal .slides section .fragment.drop-underline {
+  display: inline-block;
+  visibility: visible;
+  opacity: 1;
+}
+.reveal .slides section .fragment.drop-underline:after {
+  content: "";
+  opacity: 0;
+  visibility: visible;
+  display: block;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #068ee9;
+  transform: translateY(-0.2em);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+}
+.reveal .slides section .fragment.drop-underline.visible:after {
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+}
+
+@font-face {
+  font-family: "FontAwesome";
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/FontAwesome.otf") format("otf");
+  font-weight: normal;
+  font-style: normal;
+}
+ul.frombooks {
+  list-style-type: none;
+}
+ul.frombooks > li:before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+
+ul.charging {
+  list-style-type: none;
+}
+ul.charging > li:nth-of-type(1):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.charging > li:before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.charging > li:nth-last-of-type(2):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.charging > li:nth-last-of-type(1):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+
+ul.discharging {
+  list-style-type: none;
+}
+ul.discharging > li:nth-of-type(1):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.discharging > li:nth-of-type(2):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.discharging > li:before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.discharging > li:nth-last-of-type(2):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+ul.discharging > li:nth-last-of-type(1):before {
+  content: " ";
+  font-family: "FontAwesome", sans-serif;
+}
+
+.theorem, .definition, .lemma, .proposition, .corollary {
+  width: 100%;
+}
+.theorem .title, .definition .title, .lemma .title, .proposition .title, .corollary .title {
+  font-weight: bold;
+  text-decoration: underline dotted darkgray;
+  text-align: left;
+}
+.theorem .statement, .definition .statement, .lemma .statement, .proposition .statement, .corollary .statement {
+  width: 100%;
+  font-weight: normal;
+  text-align: left;
+}
+.theorem li, .definition li, .lemma li, .proposition li, .corollary li {
+  padding-bottom: 1em;
+}
+
+.proof {
+  width: 100%;
+  text-align: left;
+  font-weight: normal;
+}
+.proof .title {
+  font-weight: bold;
+  text-align: left;
+}
+.proof li {
+  padding-bottom: 1em;
+}
+
+div.qed {
+  width: 100%;
+  display: inline-block;
+  text-align: right;
+  transform: translateY(-1.5em);
+}
+div.qed:before {
+  display: block;
+  width: 100%;
+  content: "∎";
+}
+
+span.term {
+  text-decoration: underline dashed teal;
+}
+
+.green {
+  color: lightgreen;
+}
+
+.red {
+  color: red;
+}
+
+.grey-bg {
+  background-color: dimgrey;
+}
+
+.reveal section img {
+  border: 0;
+}
+
+.reveal blockquote footer {
+  text-align: right;
+}
+
+.def {
+  text-align: left;
+}
+
+ul.blank {
+  list-style: none;
+}
+ul.blank li {
+  content: none;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/*# sourceMappingURL=extras.css.map */

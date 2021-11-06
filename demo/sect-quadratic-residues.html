@@ -1,0 +1,45 @@
+<section data-menu-title="Квадратичные вычеты">
+    <div class="definition">
+        <div class="statement">
+            <span class="term">Квадратичным вычетом</span> в поле \(\bbF\) элемент \(y \in \Fstar\),
+            такой, что \(y=x^2\) для какого-нибудь \(x\in\bbF\).
+        </div>
+    </div>
+    <hr>
+    <div class="definition fragment">
+        <div class="statement">
+            <span class="term">Символ Лежандра</span> \(\chi\) — это функция \(\bbF\to \{-1,\,0,\,1\}\), где
+            \[\chi(x)=\begin{cases}
+                \phantom{-}0,\,\text{если } x = 0, \\
+                -1,\, \text{если } x \text{ квадратичный невычет},\\
+                \phantom{-}1,\, \text{если } x \text{ квадратичный вычет}.
+            \end{cases}\]
+        </div>
+    </div>
+</section>
+
+<section data-menu-title="Количество квадратичных вычетов">
+    <div class="theorem fragment">
+        <div class="title">Количество квадратичных вычетов</div>
+        <div class="statement">
+            В любом поле \(\bbF\) при \(2\notdivides\card\bbF\)
+            ровно половина элементов \(\Fstar\) квадратичные вычеты.
+        </div>
+    </div>
+    <hr>
+    <div class="theorem fragment">
+        <div class="title">Мультипликативность символа Лежандра</div>
+        <div class="statement">
+            При \(2\notdivides\card\bbF\) для любых \(a,b\in\bbF\)
+            имеем \(\chi(ab)=\chi(a)\cdot \chi(b)\).
+        </div>
+    </div>
+    <hr>
+    <div class="proof fragment">
+        <p>
+            Вытекает из того, что если \(\alpha\in\bbF\) — примитивный элемент,
+            то <br>\(\alpha^0,\,\alpha^2,\,\dots\) — квадратичные вычеты,
+            <br>\(\alpha^1,\,\alpha^3,\,\dots\) — квадратичные невычеты.
+        </p>
+    </div>
+</section>

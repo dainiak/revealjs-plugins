@@ -1,0 +1,76 @@
+.reveal .slides section {
+  .fragment.step, ul.steps li.fragment {
+    transition-duration: 0.5s;
+    opacity: 0;
+    &.visible {
+      opacity: 0.5;
+    }
+    &.current-fragment {
+      opacity: 1;
+    }
+  }
+
+  .fragment.display-then-remove {
+    display: none;
+    &.visible {
+      display: none;
+    }
+    &.visible.current-fragment {
+      display: inline;
+    }
+  }
+
+  /* Sliding underline animation by Josh Broton, see http://bradsknutson.com/blog/css-sliding-underline/   */
+  $underlineColor: #068ee9;
+  $easing: cubic-bezier(1,.25,0,.75);
+
+  .fragment.sliding-underline {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
+    &:after {
+      content: '';
+      display: block;
+      margin-top: -5px;
+      height: 3px;
+      width: 0;
+      background: transparent;
+      transition: width .5s  $easing, background-color .5s $easing, opacity 0s;
+      visibility: visible;
+      opacity: 1;
+    }
+    &.visible:after {
+      width: 100%;
+      background-color: $underlineColor;
+    }
+  }
+
+  /* This one is from https://speckyboy.com/underline-text-effects-css/ */
+  $easeOutBack: cubic-bezier(0.175, 0.885, 0.320, 1.275);
+  $distance: .2em;
+  $duration: .2s;
+  .fragment.drop-underline {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
+
+    &:after  {
+      content: '';
+      opacity: 0;
+      visibility: visible;
+      display:  block;
+      bottom: 2px;
+      left: 0; right: 0;
+      height: 2px;
+      background-color: $underlineColor;
+      transform: translateY(-$distance);
+      transition: transform $duration $easeOutBack, opacity $duration;
+    }
+
+    &.visible:after {
+      opacity: 1;
+      transform: translateY(0);
+      transition: transform $duration $easeOutBack, opacity $duration;
+    }
+  }
+}

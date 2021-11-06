@@ -1,0 +1,28 @@
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/FontAwesome.otf') format('otf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+ul.frombooks {
+  list-style-type: none;
+  & > li:before { content: "\f02d "; font-family: 'FontAwesome', sans-serif; }
+}
+
+ul.charging {
+  list-style-type: none;
+  & > li:nth-of-type(1):before { content: "\f243 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:before { content: "\f242 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:nth-last-of-type(2):before { content: "\f241 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:nth-last-of-type(1):before { content: "\f240 "; font-family: 'FontAwesome', sans-serif; }
+}
+
+ul.discharging {
+  list-style-type: none;
+  & > li:nth-of-type(1):before { content: "\f240 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:nth-of-type(2):before { content: "\f241 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:before { content: "\f242 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:nth-last-of-type(2):before { content: "\f243 "; font-family: 'FontAwesome', sans-serif; }
+  & > li:nth-last-of-type(1):before { content: "\f244 "; font-family: 'FontAwesome', sans-serif; }
+}
