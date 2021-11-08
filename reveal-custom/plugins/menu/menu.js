@@ -185,7 +185,7 @@ const RevealMenu = {
 			);
 		}
 		function onDocumentKeyDown(event) {
-			if(config.keyboardCondition == 'focused' && !reveal.isFocused())
+			if(config.keyboardCondition === 'focused' && !reveal.isFocused())
 				return true;
 			let currItem = null;
 			let item = null;
