@@ -18,7 +18,8 @@
 
 <body>
 <div class="reveal"><div class="slides">
-    <section title="Титульный слайд" data-external="sect-title.html"></section>
+    <section title="Title" data-inner-html="sect-title.html"></section>
+    <section title="External.js plugin" data-outer-html="sect-external.html"></section>
 </div></div>
 
 
@@ -93,7 +94,7 @@
             RevealMath,
             RevealInking,
             RevealZoom,
-            RevealWebcam
+            // RevealWebcam
         ],
         slideNumber: true,
         width: 1200,
@@ -105,7 +106,13 @@
         transition: 'slide',
         controls: false,
         external: {
-            mapAttributes: ['data-inking-canvas-src', 'src']
+            mapAttributes: ['data-inking-canvas-src', 'src'],
+            actions: [
+                {
+                    selector: '.slides .auto-fragmentize',
+                    init: e => e.childNodes.forEach(c => c.classList && c.classList.add('fragment'))
+                }
+            ]
         },
         menu: {
             openSlideNumber: true,

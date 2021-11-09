@@ -287,22 +287,20 @@ const RevealMath = {
             for(let fragment of document.querySelectorAll( 'mjx-assistive-mml .fragment' ))
                 fragment.classList.remove('fragment')
 
-            if(options.fragments.enabled){
-                for(let node of document.querySelectorAll('.slides .auto-fragmentize')){
-                    for(let child of node.children) {
+            if(options.fragments.enabled)
+                for(let node of document.querySelectorAll('.slides .auto-fragmentize'))
+                    for(let child of node.children)
                         child.classList.add('fragment');
-                    }
-                }
-            }
+
 
             if(options.fragments.enabled && (options.fragments.resetIndicesAfterTypeset || options.fragments.cssIndices)) {
-                let cssQuery = '';
+                let cssSelector = '';
                 for(let i = 1; i < options.fragments.maxFragments; ++i){
-                    cssQuery += (cssQuery ? ',.' : '.') + options.fragments.indexClassPrefix + i.toString();
+                    cssSelector += (cssSelector ? ',.' : '.') + options.fragments.indexClassPrefix + i.toString();
                 }
 
                 for(let slide of reveal.getSlides()){
-                    let numFragmentsWithCssIndex = slide.querySelectorAll(cssQuery).length;
+                    let numFragmentsWithCssIndex = slide.querySelectorAll(cssSelector).length;
                     if(numFragmentsWithCssIndex > 0 && options.fragments.cssIndices || options.fragments.resetIndicesAfterTypeset){
                         for(let fragment of slide.querySelectorAll('.fragment[data-fragment-index]')) {
                             fragment.removeAttribute('data-fragment-index');

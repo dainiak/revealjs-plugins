@@ -4,3 +4,4 @@
 - anything — https://github.com/rajgoel/reveal.js-plugins/tree/master/anything
 - reveald3 — https://github.com/gcalmettes/reveal.js-d3/
 - verticator — https://github.com/Martinomagnifico/reveal.js-verticator
+- Plugin collection by Asvin Goel — https://github.com/rajgoel/reveal.js-plugins

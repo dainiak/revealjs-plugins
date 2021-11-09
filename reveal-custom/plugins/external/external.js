@@ -1,19 +1,22 @@
 /*
   external.js
   [Author: ] Alex Dainiak
-  Actual original authors:
-      Jan Schoepke <janschoepke@me.com>
+  Based on external.js and anything.js
+  External.js authors:
+      Jan Schoepke (https://github.com/janschoepke/reveal_external)
       Thomas Weinert (https://github.com/ThomasWeinert)
-      Cal Evans
+      Cal Evans (https://github.com/calevans/external)
+  Anything.js author:
+        Asvin Goel (https://github.com/rajgoel/reveal.js-plugins/)
 
   Released under the MIT license
 
   Load external files into a reveal.js presentation.
  
   This is a reveal.js plugin to load external html files. It replaces the
-  content of any element with a data-external='file.ext#selector' with the contents
+  content of any element with a data-inner-html='file.ext#selector' with the contents
   part of file.ext specified by the selector. If you use
-  data-external-replace='file.ext#selector' the container element itself will get
+  data-outer-html='file.ext#selector' the container element itself will get
   replaced.
  
   Relative paths in 'src' attributes in the loaded fragments will get prefixed
@@ -45,8 +48,48 @@ const RevealExternal = {
                 attributes: true,
                 classList: true,
                 style: true
-            }
+            },
+            actions: options.actions || []
         };
+
+
+        function updateRecursively(obj1, obj2) {
+            for(let p in obj2)
+                if(typeof obj1[p] === 'object' && typeof obj2[p] === 'object')
+                    updateRecursively(obj1[p], obj2[p]);
+                else if(obj1[p] === undefined)
+                    obj1[p] = obj2[p];
+        }
+
+        function parseAction(str) {
+            str = str.trim();
+            let hasDetectedAction = false;
+            let m = str.match(/^<!--(.*)-->$/s);
+            if(m) {
+                str = m[1].trim();
+                hasDetectedAction = true;
+            }
+            m = str.match(/^\s*<script[^>]*>(.*)<\/script>\s*$/s);
+            if(m) {
+                str = m[1].trim();
+                m = str.match(/^\s*\/\*(.*)\*\/\s*$/s);
+                if(m) {
+                    str = m[1].trim();
+                    hasDetectedAction = true;
+                }
+            }
+
+            if(!hasDetectedAction)
+                return null;
+
+            try {
+                return new Function('return ' + str)();
+            } catch (e) {
+                console.warn('RevealExternal: Was unable to parse action: "' + str + '". Error: ' + e);
+                return null;
+            }
+        }
+
 
         function prependPath(src, path) {
             return (path && src.startsWith('.') ? path + '/' : '') + src;
@@ -72,17 +115,26 @@ const RevealExternal = {
         }
 
         function loadExternalNode(targetNode, path) {
-            let url = targetNode.getAttribute('data-external') || targetNode.getAttribute('data-external-replace');
-            if (!url)
-                return console.warn('RevealExternal: no valid url found while processing data-external or data-external-replace on an element');
+            let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text');
+            let isText = targetNode.hasAttribute('data-inner-text');
+            let isReplace = targetNode.hasAttribute('data-outer-html');
 
-            let regexp = url.match(/^([^#]+)(?:#(.+))?$/);
-            url = (path ? path + '/' : '') + (regexp[1] || '');
-            let cssQuery = regexp[2] || '';
-            let isReplace = targetNode.hasAttribute('data-external-replace');
+            if (typeof url !== 'string')
+                return console.warn('RevealExternal: no valid url found while processing data-inner-html/data-outer-html/data-inner-text on an element');
+
+
+            url = url.trim();
+            let selector = '';
+            if(!isText) {
+                let regexp = url.match(/^([^#]+)(?:#(.+))?$/);
+                url = regexp[1];
+                selector = regexp[2] || '';
+            }
+            url = (path ? path + '/' : '') + url;
+
             
             let xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function (xhr, targetNode, url, cssQuery, isReplace) {
+            xhr.onreadystatechange = function (xhr, targetNode, url, selector, isReplace, isText) {
                 return function () {
                     if (xhr.readyState !== 4)
                         return;
@@ -93,26 +145,32 @@ const RevealExternal = {
                             ' failed with HTTP status ' + xhr.status + '.'
                         );
 
+                    if(isText) {
+                        targetNode.innerHTML = '';
+                        targetNode.appendChild(document.createTextNode(xhr.responseText))
+                        return;
+                    }
+
                     let path = url.substr(0, url.lastIndexOf('/'));
                     let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
                     if(!html)
                         return console.warn('RevealExternal: Could not parse HTML ' + url);
 
-                    let loadedNodes = cssQuery ? html.querySelectorAll(cssQuery) : html.querySelector('body').childNodes;
+                    let loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
                     targetNode.innerHTML = '';
 
                     for(let node of loadedNodes) {
                         convertUrls(node, path);
                         // Usage example:
-                        // <svg class='fragment' data-external-replace='myfile.svg#svg'></svg>
-                        if(loadedNodes.length === 1 && isReplace) {
+                        // <svg class='fragment' data-outer-html='myfile.svg#svg'></svg>
+                        if(loadedNodes.length === 1 && isReplace && (node instanceof Element)) {
                             if(options.inherit.classList && targetNode.classList)
                                 for(let cssClass of targetNode.classList)
                                     node.classList.add(cssClass);
 
                             if(options.inherit.dataset && targetNode.dataset)
                                 for(let key in targetNode.dataset)
-                                    if(!(['external', 'externalReplace'].includes(key)))
+                                    if(!(['innerHtml', 'outerHtml', 'innerText'].includes(key)))
                                         node.dataset[key] = targetNode.dataset[key];
 
                             if(options.inherit.style && targetNode.style)
@@ -137,7 +195,7 @@ const RevealExternal = {
                     if (isReplace)
                         targetNode.parentNode.removeChild(targetNode);
                 };
-            }(xhr, targetNode, url, cssQuery, isReplace);
+            }(xhr, targetNode, url, selector, isReplace, isText);
 
             xhr.open('GET', url, options.async);
             try {
@@ -149,13 +207,22 @@ const RevealExternal = {
 
         function loadExternalElementsInside(container, path) {
             path = path || '';
-            if (container instanceof Element && (container.getAttribute('data-external') || container.getAttribute('data-external-replace')))
+            if (container instanceof Element && (container.getAttribute('data-inner-html') || container.getAttribute('data-outer-html') || container.getAttribute('data-inner-text')))
                 loadExternalNode(container, path);
             else
-                for(let node of container.querySelectorAll('[data-external],[data-external-replace]'))
+                for(let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
                     loadExternalNode(node, path);
         }
 
         loadExternalElementsInside(reveal.getViewportElement());
+
+        for(let action of options.actions)
+            for(let element of document.querySelectorAll(action.selector)){
+                let elementActionParams = parseAction(element.innerHTML) || {};
+                if(elementActionParams)
+                    updateRecursively(elementActionParams, action);
+                if(typeof elementActionParams.init === 'function')
+                    elementActionParams.init(element, elementActionParams);
+            }
     }
 };
