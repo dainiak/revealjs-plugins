@@ -162,25 +162,38 @@ const RevealExternal = {
                 if(targetNode.hasAttribute('data-' + replacementType))
                     break;
 
+            if(url === null || url === ''){
+                let loadedNodes;
+
+                try {
+                    let data = parseAction(targetNode.innerHTML);
+                    if (typeof data === 'function')
+                        data = data(targetNode);
+
+                    if (data instanceof Array)
+                        loadedNodes = data;
+                    else if (data instanceof Element)
+                        loadedNodes = [data];
+                    else if (typeof data === 'string' && (replacementType === 'outer-html' || replacementType === 'inner-html'))
+                        loadedNodes = (new DOMParser).parseFromString(
+                            data, 'text/html'
+                        ).querySelector('body').childNodes;
+                    else
+                        loadedNodes = [document.createTextNode(data.toString())];
+                } catch (e) {
+                    console.warn('RevealExternal error: found neither a valid url nor parseable action, error while action parsing: ' + e);
+                }
+                attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
+                return;
+            }
+
+
             url = url.trim();
             let selector = '';
             if(replacementType === 'inner-html' || replacementType === 'outer-html') {
                 let regexp = url.match(/^([^#]+)(?:#(.+))?$/);
                 url = regexp[1];
                 selector = regexp[2] || '';
-            }
-
-            if(url === '' && selector === ''){
-                let data = parseAction(targetNode.innerHTML);
-                let loadedNodes;
-                if(typeof data === 'function')
-                    data = data(targetNode);
-
-                if(Array.isArray(action))
-                    loadedNodes = data;
-                else if(data instanceof Element || data instanceof Text){
-                    loadedNodes = [data];
-                }
             }
 
             url = (path ? path + '/' : '') + url;
@@ -226,7 +239,7 @@ const RevealExternal = {
 
         function loadExternalElementsInside(container, path) {
             path = path || '';
-            if (container instanceof Element && (container.hasAttribute('data-inner-html') || container.hasAttribute('data-outer-html') || container.hasAttribute('data-inner-text')))
+            if (container instanceof Element && (container.hasAttribute('data-inner-html') || container.hasAttribute('data-outer-html') || container.hasAttribute('data-inner-text') || container.hasAttribute('data-outer-text')))
                 loadExternalNode(container, path);
             else
                 for(let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
@@ -240,9 +253,7 @@ const RevealExternal = {
             for(let element of document.querySelectorAll(action.selector)){
                 let elementActionParams = parseAction(element.innerHTML) || {};
                 if(typeof elementActionParams === 'function')
-                    elementActionParams = {
-                        init:  elementActionParams
-                    }
+                    elementActionParams = {init:  elementActionParams}
 
                 if(elementActionParams)
                     updateRecursively(elementActionParams, action);
