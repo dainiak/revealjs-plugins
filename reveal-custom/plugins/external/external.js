@@ -114,27 +114,79 @@ const RevealExternal = {
             }
         }
 
+        function attachLoadedNodes(targetNode, loadedNodes, path, replacementType){
+            targetNode.innerHTML = '';
+
+            for(let node of loadedNodes) {
+                convertUrls(node, path);
+                // Usage example:
+                // <svg class='fragment' data-outer-html='myfile.svg#svg'></svg>
+                if(loadedNodes.length === 1 && replacementType === 'outer-html' && (node instanceof Element)) {
+                    if(options.inherit.classList && targetNode.classList)
+                        for(let cssClass of targetNode.classList)
+                            node.classList.add(cssClass);
+
+                    if(options.inherit.dataset && targetNode.dataset)
+                        for(let key in targetNode.dataset)
+                            if(!(['innerHtml', 'outerHtml', 'innerText', 'outerText'].includes(key)))
+                                node.dataset[key] = targetNode.dataset[key];
+
+                    if(options.inherit.style && targetNode.style)
+                        node.style = targetNode.style;
+                }
+
+                node = document.importNode(node, true);
+                if(replacementType === 'outer-html' || replacementType === 'outer-text')
+                    targetNode.parentNode.insertBefore(node, targetNode)
+                else
+                    targetNode.appendChild(node);
+
+                if (options.async) {
+                    reveal.sync();
+                    reveal.setState(reveal.getState());
+                }
+
+                if (node instanceof Element)
+                    loadExternalElementsInside(node, path);
+            }
+
+            if (replacementType === 'outer-html' || replacementType === 'outer-text')
+                targetNode.parentNode.removeChild(targetNode);
+        }
+
+
         function loadExternalNode(targetNode, path) {
             let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text');
-            let isText = targetNode.hasAttribute('data-inner-text');
-            let isReplace = targetNode.hasAttribute('data-outer-html');
-
-            if (typeof url !== 'string')
-                return console.warn('RevealExternal: no valid url found while processing data-inner-html/data-outer-html/data-inner-text on an element');
-
+            let replacementType = null;
+            for(replacementType of ['inner-html', 'inner-text', 'outer-html', 'outer-text'])
+                if(targetNode.hasAttribute('data-' + replacementType))
+                    break;
 
             url = url.trim();
             let selector = '';
-            if(!isText) {
+            if(replacementType === 'inner-html' || replacementType === 'outer-html') {
                 let regexp = url.match(/^([^#]+)(?:#(.+))?$/);
                 url = regexp[1];
                 selector = regexp[2] || '';
             }
-            url = (path ? path + '/' : '') + url;
 
+            if(url === '' && selector === ''){
+                let data = parseAction(targetNode.innerHTML);
+                let loadedNodes;
+                if(typeof data === 'function')
+                    data = data(targetNode);
+
+                if(Array.isArray(action))
+                    loadedNodes = data;
+                else if(data instanceof Element || data instanceof Text){
+                    loadedNodes = [data];
+                }
+            }
+
+            url = (path ? path + '/' : '') + url;
             
             let xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function (xhr, targetNode, url, selector, isReplace, isText) {
+            xhr.onreadystatechange = function (xhr, targetNode, url, selector, replacementType) {
                 return function () {
                     if (xhr.readyState !== 4)
                         return;
@@ -145,57 +197,24 @@ const RevealExternal = {
                             ' failed with HTTP status ' + xhr.status + '.'
                         );
 
-                    if(isText) {
-                        targetNode.innerHTML = '';
-                        targetNode.appendChild(document.createTextNode(xhr.responseText))
-                        return;
-                    }
 
                     let path = url.substr(0, url.lastIndexOf('/'));
-                    let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
-                    if(!html)
-                        return console.warn('RevealExternal: Could not parse HTML ' + url);
+                    let loadedNodes;
 
-                    let loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
-                    targetNode.innerHTML = '';
+                    if(replacementType === 'inner-text' || replacementType === 'outer-text') {
+                        loadedNodes = [document.createTextNode(xhr.responseText)];
+                    }
+                    else {
+                        let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
+                        if (!html)
+                            return console.warn('RevealExternal: Could not parse HTML ' + url);
 
-                    for(let node of loadedNodes) {
-                        convertUrls(node, path);
-                        // Usage example:
-                        // <svg class='fragment' data-outer-html='myfile.svg#svg'></svg>
-                        if(loadedNodes.length === 1 && isReplace && (node instanceof Element)) {
-                            if(options.inherit.classList && targetNode.classList)
-                                for(let cssClass of targetNode.classList)
-                                    node.classList.add(cssClass);
-
-                            if(options.inherit.dataset && targetNode.dataset)
-                                for(let key in targetNode.dataset)
-                                    if(!(['innerHtml', 'outerHtml', 'innerText'].includes(key)))
-                                        node.dataset[key] = targetNode.dataset[key];
-
-                            if(options.inherit.style && targetNode.style)
-                                node.style = targetNode.style;
-                        }
-
-                        node = document.importNode(node, true);
-                        if(isReplace)
-                            targetNode.parentNode.insertBefore(node, targetNode)
-                        else
-                            targetNode.appendChild(node);
-
-                        if (options.async) {
-                            reveal.sync();
-                            reveal.setState(reveal.getState());
-                        }
-
-                        if (node instanceof Element)
-                            loadExternalElementsInside(node, path);
+                        loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
                     }
 
-                    if (isReplace)
-                        targetNode.parentNode.removeChild(targetNode);
+                    attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
                 };
-            }(xhr, targetNode, url, selector, isReplace, isText);
+            }(xhr, targetNode, url, selector, replacementType);
 
             xhr.open('GET', url, options.async);
             try {
@@ -207,18 +226,24 @@ const RevealExternal = {
 
         function loadExternalElementsInside(container, path) {
             path = path || '';
-            if (container instanceof Element && (container.getAttribute('data-inner-html') || container.getAttribute('data-outer-html') || container.getAttribute('data-inner-text')))
+            if (container instanceof Element && (container.hasAttribute('data-inner-html') || container.hasAttribute('data-outer-html') || container.hasAttribute('data-inner-text')))
                 loadExternalNode(container, path);
             else
                 for(let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
                     loadExternalNode(node, path);
         }
 
+
         loadExternalElementsInside(reveal.getViewportElement());
 
         for(let action of options.actions)
             for(let element of document.querySelectorAll(action.selector)){
                 let elementActionParams = parseAction(element.innerHTML) || {};
+                if(typeof elementActionParams === 'function')
+                    elementActionParams = {
+                        init:  elementActionParams
+                    }
+
                 if(elementActionParams)
                     updateRecursively(elementActionParams, action);
                 if(typeof elementActionParams.init === 'function')
