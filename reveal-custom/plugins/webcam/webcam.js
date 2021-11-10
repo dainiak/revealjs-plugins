@@ -185,5 +185,3 @@ const RevealWebcam = {
         });
     }
 };
-
-// export default () => RevealWebcam;

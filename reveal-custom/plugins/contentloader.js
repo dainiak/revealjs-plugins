@@ -14,23 +14,13 @@
   Load external files into a reveal.js presentation.
  
   This is a reveal.js plugin to load external html files. It replaces the
-  content of any element with a data-inner-html='file.ext#selector' with the contents
+  content of any element with a data-inner-html='file.ext#cssselector' with the contents
   part of file.ext specified by the selector. If you use
   data-outer-html='file.ext#selector' the container element itself will get
   replaced.
  
   Relative paths in 'src' attributes in the loaded fragments will get prefixed
   with the path.
- 
-  external: {
-    async: false,
-    mapAttributes: ['src'],
-    inherit: {
-        attributes: true,
-        classes: true,
-        style: true
-    }
-  }
  */
 
 const RevealContentLoader = {
@@ -39,10 +29,6 @@ const RevealContentLoader = {
         let options = reveal.getConfig().contentloader || {};
         options = {
             async: !!options.async,
-            /*
-              This will prefix the attributes (by default 'src') in the loaded
-              HTML with the path if they are relative paths (start with a dot).
-             */
             mapAttributes: (options.mapAttributes instanceof Array) ? options.mapAttributes : ['src', 'data-background-image', 'data-background-iframe', 'data-src'],
             inherit: {
                 attributes: true,

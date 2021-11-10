@@ -5,7 +5,7 @@
     Email: dainiak@gmail.com
  */
 
-var RevealFragKey = (function() {
+let RevealFragKey = (function() {
 	/*
 		Copy of Reveal dispatchEvent code:
 	 */
@@ -65,4 +65,5 @@ var RevealFragKey = (function() {
 			waitForNavigation = false;
 		}
 	}, false);
+	return true;
 })();
