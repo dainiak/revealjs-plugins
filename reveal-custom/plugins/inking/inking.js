@@ -42,10 +42,10 @@ const RevealInking = {
         };
         let currentInkColor = Array.isArray(options.ink.colors) ? options.ink.colors[0] : options.ink.colors;
 
-        let MATH_ENABLED = options.math !== false;
+        let mathEnabled = options.math !== false;
         options.math = options.math || {};
         options.math = {
-            enabled: MATH_ENABLED,
+            enabled: mathEnabled,
             color: options.math.color || 'rgb(250,250,250)',
             shadow: options.math.shadow || false,
             scaleToSlideText: options.math.scaleToSlideText !== false,
@@ -54,10 +54,10 @@ const RevealInking = {
             preamble: (options.math && options.math.preamble) ? ('{' + options.math.preamble + '}') : ''
         };
 
-        let SPOTLIGHT_ENABLED = options.spotlight !== false;
+        let spotlightEnabled = options.spotlight !== false;
         options.spotlight = options.spotlight || {};
         options.spotlight = {
-            enabled: SPOTLIGHT_ENABLED,
+            enabled: spotlightEnabled,
             backgroundOpacity: options.spotlight.backgroundOpacity || 0.5,
             radius: options.spotlight.radius || 100
         };
@@ -68,6 +68,7 @@ const RevealInking = {
 
         let canvasElement = null;
         let canvas = null;
+        let currentCanvasSlide = null;
 
         let canvasVisibleBeforeRevealOverview = null;
 
@@ -794,33 +795,38 @@ const RevealInking = {
                 }
             });
 
+
             reveal.addEventListener('slidechanged', function(event){
                 destroySpotlight();
-                let objects = canvas.getObjects();
-
-                if(objects.length > 0) {
-                    event.previousSlide.dataset.inkingCanvasContent = getMathEnrichedCanvasJSON();
-                }
-                else {
-                    event.previousSlide.dataset.inkingCanvasContent = null;
-                }
-
-                let slide = event.currentSlide;
-                canvas.clear();
-                if(slide.dataset.inkingCanvasContent){
-                    setTimeout(function(){
-                        loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
-                        if(slide.inkingObjectsPreload){
-                            for(let obj of slide.inkingObjectsPreload){
-                                canvas.add(obj);
-                            }
-                            slide.inkingObjectsPreload = null;
-                        }
-                    }, parseInt(window.getComputedStyle(slide).transitionDuration) || 800);
-                }
                 leaveDeletionMode();
+
+                let slide = event.previousSlide;
+
+                if(currentCanvasSlide === slide || !currentCanvasSlide && !slide.dataset.inkingCanvasContent)
+                    slide.dataset.inkingCanvasContent = canvas.getObjects().length > 0 ? getMathEnrichedCanvasJSON() : null;
+
+                canvas.clear();
+            });
+
+            reveal.addEventListener('slidetransitionend', function(event){
+                let slide = event.currentSlide;
+
+                if(slide.dataset.inkingCanvasContent){
+                    loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
+                    slide.dataset.inkingCanvasContent = null;
+
+                    if(slide.inkingObjectsPreload){
+                        for(let obj of slide.inkingObjectsPreload){
+                            canvas.add(obj);
+                        }
+                        slide.inkingObjectsPreload = null;
+                    }
+
+                    currentCanvasSlide = slide;
+                }
             });
         }
+
 
         function serializeCanvasToFile(){
             function download(filename, text) {

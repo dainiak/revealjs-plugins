@@ -27,7 +27,7 @@
 <script src="../reveal/plugin/notes/notes.js"></script>
 <script src="../reveal/plugin/highlight/highlight.js"></script>
 
-<script src="../reveal-custom/plugins/external/external.js"></script>
+<script src="../reveal-custom/plugins/external/contentloader.js"></script>
 
 <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css">
 <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css">
@@ -87,7 +87,7 @@
 <script>
     Reveal.initialize({
         plugins: [
-            RevealExternal,
+            RevealContentLoader,
             RevealHighlight,
             // RevealNotes,
             RevealMenu,
@@ -105,15 +105,20 @@
         history: true,
         transition: 'slide',
         controls: false,
+
         external: {
             mapAttributes: ['data-inking-canvas-src', 'src'],
             actions: [
                 {
                     selector: '.slides .auto-fragmentize',
                     init: e => e.childNodes.forEach(c => c.classList && c.classList.add('fragment'))
+                },
+                {
+                    selector: '.random'
                 }
             ]
         },
+
         menu: {
             openSlideNumber: true,
             openButton: false,

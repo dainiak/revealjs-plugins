@@ -1,7 +1,7 @@
 /*
-  external.js
+  ContentLoader
   [Author: ] Alex Dainiak
-  Based on external.js and anything.js
+  Heavily based on contentloader.js and anything.js
   External.js authors:
       Jan Schoepke (https://github.com/janschoepke/reveal_external)
       Thomas Weinert (https://github.com/ThomasWeinert)
@@ -33,10 +33,10 @@
   }
  */
 
-const RevealExternal = {
-    id: 'external',
+const RevealContentLoader = {
+    id: 'contentloader',
     init: (reveal) => {
-        let options = reveal.getConfig().external || {};
+        let options = reveal.getConfig().contentloader || {};
         options = {
             async: !!options.async,
             /*
@@ -53,12 +53,12 @@ const RevealExternal = {
         };
 
 
-        function updateRecursively(obj1, obj2) {
-            for(let p in obj2)
-                if(typeof obj1[p] === 'object' && typeof obj2[p] === 'object')
-                    updateRecursively(obj1[p], obj2[p]);
-                else if(obj1[p] === undefined)
-                    obj1[p] = obj2[p];
+        function updateRecursively(objTo, objFrom) {
+            for(let p in objFrom)
+                if(typeof objTo[p] === 'object' && typeof objFrom[p] === 'object')
+                    updateRecursively(objTo[p], objFrom[p]);
+                else if(objTo[p] === undefined)
+                    objTo[p] = objFrom[p];
         }
 
         function parseAction(str) {
@@ -85,42 +85,32 @@ const RevealExternal = {
             try {
                 return new Function('return ' + str)();
             } catch (e) {
-                console.warn('RevealExternal: Was unable to parse action: "' + str + '". Error: ' + e);
+                console.warn('RevealContentLoader: Was unable to parse action: "' + str + '". Error: ' + e);
                 return null;
             }
         }
 
 
-        function prependPath(src, path) {
-            return (path && src.startsWith('.') ? path + '/' : '') + src;
-        }
-
-        function convertUrls(container, path) {
-            if (!(container instanceof Element))
-                return;
-
-            for (let attributeName of options.mapAttributes) {
-                if(container.getAttribute(attributeName))
-                    container.setAttribute(
-                        attributeName,
-                        prependPath(container.getAttribute(attributeName), path)
-                    );
-
-                for(let node of container.querySelectorAll('[' + attributeName + ']'))
-                    node.setAttribute(
-                        attributeName,
-                        prependPath(node.getAttribute(attributeName), path)
-                    );
-            }
-        }
-
         function attachLoadedNodes(targetNode, loadedNodes, path, replacementType){
             targetNode.innerHTML = '';
+            let prependPath = (src, path) => path && src && src.startsWith('.') ? (path + '/' + src) : src;
 
             for(let node of loadedNodes) {
-                convertUrls(node, path);
-                // Usage example:
-                // <svg class='fragment' data-outer-html='myfile.svg#svg'></svg>
+                if (node instanceof Element)
+                    for (let attributeName of options.mapAttributes) {
+                        if(node.getAttribute(attributeName))
+                            node.setAttribute(
+                                attributeName,
+                                prependPath(node.getAttribute(attributeName), path)
+                            );
+
+                        for(let descendant of node.querySelectorAll('[' + attributeName + ']'))
+                            descendant.setAttribute(
+                                attributeName,
+                                prependPath(descendant.getAttribute(attributeName), path)
+                            );
+                    }
+
                 if(loadedNodes.length === 1 && replacementType === 'outer-html' && (node instanceof Element)) {
                     if(options.inherit.classList && targetNode.classList)
                         for(let cssClass of targetNode.classList)
@@ -181,7 +171,7 @@ const RevealExternal = {
                     else
                         loadedNodes = [document.createTextNode(data.toString())];
                 } catch (e) {
-                    console.warn('RevealExternal error: found neither a valid url nor parseable action, error while action parsing: ' + e);
+                    console.warn('RevealContentLoader error: found neither a valid url nor parseable action, error while action parsing: ' + e);
                 }
                 attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
                 return;
@@ -206,7 +196,7 @@ const RevealExternal = {
 
                     if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 0 && xhr.responseText !== ''))
                         return console.warn(
-                            'RevealExternal: The attempt to fetch ' + url +
+                            'RevealContentLoader: The attempt to fetch ' + url +
                             ' failed with HTTP status ' + xhr.status + '.'
                         );
 
@@ -220,7 +210,7 @@ const RevealExternal = {
                     else {
                         let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
                         if (!html)
-                            return console.warn('RevealExternal: Could not parse HTML ' + url);
+                            return console.warn('RevealContentLoader: Could not parse HTML ' + url);
 
                         loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
                     }
@@ -233,7 +223,7 @@ const RevealExternal = {
             try {
                 xhr.send();
             } catch (e) {
-                console.warn('RevealExternal: Failed to get the file ' + url + '\nException: ' + e);
+                console.warn('RevealContentLoader: Failed to get the file ' + url + '\nException: ' + e);
             }
         }
 
