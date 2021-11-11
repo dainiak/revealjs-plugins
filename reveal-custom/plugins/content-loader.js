@@ -1,7 +1,7 @@
 /*
   ContentLoader
   [Author: ] Alex Dainiak
-  Heavily based on contentloader.js and anything.js
+  Heavily based on content-loader.js and anything.js
   External.js authors:
       Jan Schoepke (https://github.com/janschoepke/reveal_external)
       Thomas Weinert (https://github.com/ThomasWeinert)

@@ -586,20 +586,19 @@ const RevealInking = {
         }
 
         function loadCanvasFromMathEnrichedObject(serializedCanvas){
-            canvas.loadFromJSON(serializedCanvas);
-
-            let objects = canvas.getObjects();
-            if(objects.length) {
-                objects.forEach(function (obj) {
-                    if (isMathImage(obj) && options.math.enabled) {
-                        setMathImageDefaults(obj);
-                        addMathImageEventListeners(obj);
-                    }
-                    else{
-                        setCanvasObjectDefaults(obj);
-                    }
-                });
-            }
+            canvas.loadFromJSON(serializedCanvas, function() {
+                let objects = canvas.getObjects();
+                if (objects.length) {
+                    objects.forEach(function (obj) {
+                        if (isMathImage(obj) && options.math.enabled) {
+                            setMathImageDefaults(obj);
+                            addMathImageEventListeners(obj);
+                        } else {
+                            setCanvasObjectDefaults(obj);
+                        }
+                    });
+                }
+            });
         }
         function loadCanvasFromMathEnrichedJSON(s){
             loadCanvasFromMathEnrichedObject(JSON.parse(s));
@@ -802,28 +801,28 @@ const RevealInking = {
 
                 let slide = event.previousSlide;
 
-                if(currentCanvasSlide === slide || !currentCanvasSlide && !slide.dataset.inkingCanvasContent)
+                if(currentCanvasSlide === slide || !currentCanvasSlide && !slide.dataset.inkingCanvasContent) {
                     slide.dataset.inkingCanvasContent = canvas.getObjects().length > 0 ? getMathEnrichedCanvasJSON() : null;
-
-                canvas.clear();
+                    canvas.clear();
+                }
             });
 
             reveal.addEventListener('slidetransitionend', function(event){
                 let slide = event.currentSlide;
+                if(slide !== reveal.getCurrentSlide() || !slide.dataset.inkingCanvasContent)
+                    return;
 
-                if(slide.dataset.inkingCanvasContent){
-                    loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
-                    slide.dataset.inkingCanvasContent = null;
+                loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
+                slide.dataset.inkingCanvasContent = null;
 
-                    if(slide.inkingObjectsPreload){
-                        for(let obj of slide.inkingObjectsPreload){
-                            canvas.add(obj);
-                        }
-                        slide.inkingObjectsPreload = null;
+                if(slide.inkingObjectsPreload){
+                    for(let obj of slide.inkingObjectsPreload){
+                        canvas.add(obj);
                     }
-
-                    currentCanvasSlide = slide;
+                    slide.inkingObjectsPreload = null;
                 }
+
+                currentCanvasSlide = slide;
             });
         }
 

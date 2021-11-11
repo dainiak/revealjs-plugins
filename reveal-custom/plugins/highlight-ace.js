@@ -20,63 +20,54 @@ const RevealHighlightAce = {
 			mouseclickModifierKey: options.mouseclickModifierKey,
 			editorDefaultFontSize: options.editorDefaultFontSize,
 			selector: options.selector || 'pre code',
+			fontSize: '20px',
 		};
 
+		let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
+		let aceStaticStyle = null;
+
+		function doStaticHighlight(element, aceTheme, aceMode) {
+			highlight(element, {
+				mode: aceMode,
+				theme: aceTheme,
+				startLineNumber: 1,
+				showGutter: true,
+				showPrintMargin: false,
+				maxLines: Infinity,
+				trim: element.hasAttribute( 'data-trim' )
+			}, function () {
+				if(!aceStaticStyle) {
+					aceStaticStyle = document.querySelector('style#ace_highlight');
+					aceStaticStyle.innerHTML = aceStaticStyle.innerHTML.replace(/\bfont-size:[^;]+;/, '');
+				}
+			});
+		}
+
+		function destroyEditor(editor) {
+			editor.container.style.transition = '0.4s ease';
+			editor.container.style.opacity = '0';
+			setTimeout(function () {
+				if(editor.container.parentNode){
+					editor.container.parentNode.removeChild(editor.container);
+				}
+				editor.destroy();
+			}, 400);
+		}
+
+		function destroyEditorSavingChanges(editor) {
+			editor.originalCodeElement.textContent = editor.getValue();
+			editor.originalCodeElement.setAttribute('data-raw-code', editor.getValue());
+			doStaticHighlight(editor.originalCodeElement);
+			reveal.layout();
+			destroyEditor(editor);
+		}
 
 		function attachAce(codeElement) {
 			let aceTheme = 'ace/theme/' + (codeElement.hasAttribute('data-theme') ? codeElement.getAttribute('data-theme') : options.theme);
 			let aceMode = 'ace/mode/' + (codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language);
-			let highlight = ace.require('ace/ext/static_highlight');
-			let aceStaticStyle = null;
-
-			function doStaticHighlight(element) {
-				highlight(element, {
-					mode: aceMode,
-					theme: aceTheme,
-					startLineNumber: 1,
-					showGutter: true,
-					showPrintMargin: false,
-					maxLines: Infinity,
-					trim: element.hasAttribute( 'data-trim' )
-				}, function () {
-					if(!aceStaticStyle) {
-						aceStaticStyle = document.querySelector('style#ace_highlight');
-						aceStaticStyle.innerHTML = aceStaticStyle.innerHTML.replace(/\bfont-size:[^;]+;/, '');
-					}
-				});
-			}
-
-			function destroyEditor(editor) {
-				editor.container.style.transition = '0.4s ease';
-				editor.container.style.opacity = '0';
-				setTimeout(function () {
-					if(editor.container.parentNode){
-						editor.container.parentNode.removeChild(editor.container);
-					}
-					editor.destroy();
-				}, 400);
-			}
-			function destroyEditorSavingChanges(editor) {
-				editor.originalCodeElement.textContent = editor.getValue();
-				editor.originalCodeElement.setAttribute('data-raw-code', editor.getValue());
-				doStaticHighlight(editor.originalCodeElement);
-				reveal.layout();
-				destroyEditor(editor);
-			}
-
-			ace.require('ace/commands/default_commands').commands.push({
-				name: 'Return to slideshow discarding changes',
-				bindKey: 'Esc',
-				exec: destroyEditor
-			});
-			ace.require('ace/commands/default_commands').commands.push({
-				name: 'Return to slideshow saving changes',
-				bindKey: 'Ctrl+Enter',
-				exec: destroyEditorSavingChanges
-			});
 
 			codeElement.setAttribute('data-raw-code', codeElement.textContent);
-			doStaticHighlight(codeElement);
+			doStaticHighlight(codeElement, aceTheme, aceMode);
 
 			if(codeElement.contentEditable && codeElement.contentEditable !== 'inherit') {
 				codeElement.contentEditable = 'false';
@@ -90,32 +81,30 @@ const RevealHighlightAce = {
 					editorDiv.style.position = 'fixed';
 					editorDiv.style.opacity = '0';
 
-					if(codeElement.hasAttribute('data-editor-inplace') || options.editorInPlace) {
-						let rect = codeElement.getBoundingClientRect();
-						editorDiv.style.height = rect.height + 'px';
-						editorDiv.style.width = rect.width + 'px';
-						editorDiv.style.top = rect.top + 'px';
-						editorDiv.style.left = rect.left + 'px';
-					}
-					else {
-						editorDiv.style.width = '100%';
-						editorDiv.style.height = '100%';
-						editorDiv.style.left = '0px';
-						editorDiv.style.top = '0px';
-					}
+					let isFullscreen = codeElement.hasAttribute('data-editor-fullscreen') ||
+						(!codeElement.hasAttribute('data-editor-in-place') && !options.editorInPlace);
 
+					let codeElementStyle = window.getComputedStyle(codeElement);
+					let rect = codeElement.getBoundingClientRect();
+					let padding = {};
+					for(let s of ['left', 'right', 'top', 'bottom'])
+						padding[s] = parseInt(codeElementStyle.getPropertyValue('padding-'+s).replace('px', ''))
+
+					editorDiv.style.height = isFullscreen ? '100%' : (rect.height - padding.top - padding.bottom) + 'px';
+					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) + 'px';
+					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) + 'px';
+					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) + 'px';
 					editorDiv.style.zIndex = window.getComputedStyle(document.querySelector('.controls')).zIndex;
 					document.body.appendChild(editorDiv);
 
 					editor = ace.edit(editorDiv);
 					editor.commands.removeCommands(["gotoline", "find"]);
 
-					editor.isInPlace = codeElement.hasAttribute('data-editor-inplace') || options.editorInPlace;
 					editor.$blockScrolling = Infinity; // To disable annoying ACE warning
 					let value = codeElement.hasAttribute('data-raw-code') ? codeElement.getAttribute('data-raw-code') : codeElement.textContent;
-					if (codeElement.hasAttribute( 'data-trim' )) {
+					if(codeElement.hasAttribute( 'data-trim' ))
 						value = value.trim();
-					}
+
 					editor.setValue(value);
 					editor.setOptions({
 						theme: aceTheme,
@@ -124,7 +113,8 @@ const RevealHighlightAce = {
 						showGutter: true,
 						fadeFoldWidgets: false,
 						showPrintMargin: false,
-						highlightActiveLine: true
+						highlightActiveLine: true,
+						fontSize: window.getComputedStyle(codeElement).fontSize || options.fontSize
 					});
 					let fontSize = codeElement['data-ace-font-size'] || options.editorDefaultFontSize;
 					if(fontSize)
@@ -161,6 +151,19 @@ const RevealHighlightAce = {
 
 		loadScript(options.aceMainUrl, function(){ loadScript(options.aceStaticHighlighterUrl, function(){
 			ace.config.set('basePath', options.aceBasePath);
+			highlight = highlight || window.ace && window.ace.require('ace/ext/static_highlight');
+
+			ace.require('ace/commands/default_commands').commands.push({
+				name: 'Return to slideshow discarding changes',
+				bindKey: 'Esc',
+				exec: destroyEditor
+			});
+
+			ace.require('ace/commands/default_commands').commands.push({
+				name: 'Return to slideshow saving changes',
+				bindKey: 'Ctrl+Enter',
+				exec: destroyEditorSavingChanges
+			});
 
 			for(let node of document.querySelectorAll(options.selector))
 				attachAce(node);
