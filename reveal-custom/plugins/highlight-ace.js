@@ -26,7 +26,9 @@ const RevealHighlightAce = {
 		let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
 		let aceStaticStyle = null;
 
-		function doStaticHighlight(element, aceTheme, aceMode) {
+		function doStaticHighlight(element) {
+			let aceTheme = 'ace/theme/' + (element.hasAttribute('data-theme') ? element.getAttribute('data-theme') : options.theme);
+			let aceMode = 'ace/mode/' + (element.hasAttribute('data-language') ? element.getAttribute('data-language') : options.language);
 			highlight(element, {
 				mode: aceMode,
 				theme: aceTheme,
@@ -67,7 +69,7 @@ const RevealHighlightAce = {
 			let aceMode = 'ace/mode/' + (codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language);
 
 			codeElement.setAttribute('data-raw-code', codeElement.textContent);
-			doStaticHighlight(codeElement, aceTheme, aceMode);
+			doStaticHighlight(codeElement);
 
 			if(codeElement.contentEditable && codeElement.contentEditable !== 'inherit') {
 				codeElement.contentEditable = 'false';
@@ -88,24 +90,25 @@ const RevealHighlightAce = {
 					let rect = codeElement.getBoundingClientRect();
 					let padding = {};
 					for(let s of ['left', 'right', 'top', 'bottom'])
-						padding[s] = parseInt(codeElementStyle.getPropertyValue('padding-'+s).replace('px', ''))
+						padding[s] = parseFloat(codeElementStyle.getPropertyValue('padding-'+s))
 
-					editorDiv.style.height = isFullscreen ? '100%' : (rect.height - padding.top - padding.bottom) + 'px';
-					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) + 'px';
-					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) + 'px';
-					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) + 'px';
+					let scale = reveal.getScale();
+					editorDiv.style.height = isFullscreen ? '100%' : (rect.height - padding.top - padding.bottom) * scale + 'px';
+					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) * scale + 'px';
+					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) * scale + 'px';
+					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) * scale + 'px';
 					editorDiv.style.zIndex = window.getComputedStyle(document.querySelector('.controls')).zIndex;
 					document.body.appendChild(editorDiv);
 
-					editor = ace.edit(editorDiv);
+					editor = window.ace.edit(editorDiv);
 					editor.commands.removeCommands(["gotoline", "find"]);
 
-					editor.$blockScrolling = Infinity; // To disable annoying ACE warning
-					let value = codeElement.hasAttribute('data-raw-code') ? codeElement.getAttribute('data-raw-code') : codeElement.textContent;
+					let sourceCode = codeElement.hasAttribute('data-raw-code') ? codeElement.getAttribute('data-raw-code') : codeElement.textContent;
 					if(codeElement.hasAttribute( 'data-trim' ))
-						value = value.trim();
+						sourceCode = sourceCode.trim();
 
-					editor.setValue(value);
+					editor.setValue(sourceCode);
+
 					editor.setOptions({
 						theme: aceTheme,
 						mode: aceMode,
@@ -114,7 +117,7 @@ const RevealHighlightAce = {
 						fadeFoldWidgets: false,
 						showPrintMargin: false,
 						highlightActiveLine: true,
-						fontSize: window.getComputedStyle(codeElement).fontSize || options.fontSize
+						fontSize: parseFloat(window.getComputedStyle(codeElement).fontSize) * scale || options.fontSize
 					});
 					let fontSize = codeElement['data-ace-font-size'] || options.editorDefaultFontSize;
 					if(fontSize)
@@ -150,16 +153,16 @@ const RevealHighlightAce = {
 		}
 
 		loadScript(options.aceMainUrl, function(){ loadScript(options.aceStaticHighlighterUrl, function(){
-			ace.config.set('basePath', options.aceBasePath);
+			window.ace.config.set('basePath', options.aceBasePath);
 			highlight = highlight || window.ace && window.ace.require('ace/ext/static_highlight');
 
-			ace.require('ace/commands/default_commands').commands.push({
+			window.ace.require('ace/commands/default_commands').commands.push({
 				name: 'Return to slideshow discarding changes',
 				bindKey: 'Esc',
 				exec: destroyEditor
 			});
 
-			ace.require('ace/commands/default_commands').commands.push({
+			window.ace.require('ace/commands/default_commands').commands.push({
 				name: 'Return to slideshow saving changes',
 				bindKey: 'Ctrl+Enter',
 				exec: destroyEditorSavingChanges

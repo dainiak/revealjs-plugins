@@ -104,7 +104,7 @@ const RevealMath = {
 					}
 
 					try {
-						katex.renderToString(preamble, {
+						window.katex.renderToString(preamble, {
 							macros: macros,
 							throwOnError: true,
 							globalGroup: true,

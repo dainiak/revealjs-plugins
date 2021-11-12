@@ -56,7 +56,7 @@ const RevealMath = {
             startup: {
                 typeset: false,
                 ready: () => {
-                    MathJax.startup.defaultReady();
+                    window.MathJax.startup.defaultReady();
                     reveal.typesetMath();
                 }
             },
@@ -76,9 +76,9 @@ const RevealMath = {
             options.ignore.classesRegExp = options.ignore.classesRegExp ? ('(' + options.ignore.classesRegExp + ')|' + regexp) : regexp;
         }
         if(options.ignore.classesRegExp)
-            window.mathjax.options.ignoreHtmlClass = options.ignore.classesRegExp;
+            window.MathJax.options.ignoreHtmlClass = options.ignore.classesRegExp;
         if(options.process.classesRegExp)
-            window.mathjax.options.processHtmlClass = options.process.classesRegExp;
+            window.MathJax.options.processHtmlClass = options.process.classesRegExp;
 
         Object.assign(window.MathJax.tex.macros, options.macros);
 
@@ -176,9 +176,9 @@ const RevealMath = {
                 let hAlignment = (math[1].match(/[LCR]/i) || options.svg.defaultAlignment || 'L')[0].toUpperCase();
                 let vAlignment = (math[1].match(/[BMT]/i) || options.svg.defaultVerticalAlignment || 'B')[0].toUpperCase();
                 let mathMarkup = math[2];
-                let svgMath = MathJax.tex2svg(
+                let svgMath = window.MathJax.tex2svg(
                     mathMarkup,
-                    MathJax.getMetricsFor(textNode, isDisplay)
+                    window.MathJax.getMetricsFor(textNode, isDisplay)
                 );
 
                 if(!svgMath){
@@ -276,10 +276,10 @@ const RevealMath = {
                 let script = document.querySelector(scriptSelector);
                 let preamble = script ? script.innerText : options.preamble;
                 preamble = preamble.replace(/(?!\\)%.*$/mg, '');
-                MathJax.tex2svg(preamble);
+                window.MathJax.tex2svg(preamble);
             }
 
-            MathJax.typeset();
+            window.MathJax.typeset();
             if(options.svg.enabled) {
                 typesetMathInSVG();
             }
@@ -325,10 +325,10 @@ const RevealMath = {
 
         reveal.typesetMath = typesetMath;
 
-        let mathJaxScript = document.createElement('script');
-        mathJaxScript.src = options.mathjaxUrl;
-        mathJaxScript.async = true;
-        document.head.appendChild(mathJaxScript);
+        let mathjaxScript = document.createElement('script');
+        mathjaxScript.src = options.mathjaxUrl;
+        mathjaxScript.async = true;
+        document.head.appendChild(mathjaxScript);
 
         return true;
     }
