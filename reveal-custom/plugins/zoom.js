@@ -26,24 +26,18 @@ let zoom = (function(){
 		if(scale === 1)
 			document.body.style.transform = '';
 		else {
-			let origin = scrollOffset.x +'px '+ scrollOffset.y +'px',
-				transform = 'translate('+ -rect.x +'px,'+ -rect.y +'px) scale('+ scale +')';
-
-			document.body.style.transformOrigin = origin;
-			document.body.style.transform = transform;
+			document.body.style.transformOrigin = scrollOffset.x +'px '+ scrollOffset.y +'px';
+			document.body.style.transform = 'translate('+ -rect.x +'px,'+ -rect.y +'px) scale('+ scale +')';
 		}
 
 
 		zoomedCurrently = true;
 
-		if( document.documentElement.classList ) {
-			if( zoomedCurrently !== 1 ) {
+		if( document.documentElement.classList )
+			if( zoomedCurrently !== 1 )
 				document.documentElement.classList.add( 'zoomed' );
-			}
-			else {
+			else
 				document.documentElement.classList.remove( 'zoomed' );
-			}
-		}
 	}
 
 
@@ -123,9 +117,8 @@ const RevealZoom = {
 		});
 
 		reveal.getViewportElement().addEventListener( 'mousedown', function( event ) {
-			if( !((event[ zoomKey ] || event[ fullscreenKey ]) && isEnabled) ) {
+			if( !((event[ zoomKey ] || event[ fullscreenKey ]) && isEnabled) )
 				return;
-			}
 
 			let zoomPadding = 20;
 			let revealScale = reveal.getScale();
@@ -137,25 +130,22 @@ const RevealZoom = {
 					target = event.target;
 					break;
 				}
-				if(target.classList && target.classList.contains('MathJax')){
+				if(target.classList && target.classList.contains('MathJax'))
 					break;
-				}
-				if(target.classList && (target.classList.contains('smallest-zoomable') || target.classList.contains('zoomable')) || target.hasAttribute && target.hasAttribute('data-smallest-zoomable')){
+
+				if(target.classList && (target.classList.contains('smallest-zoomable') || target.classList.contains('zoomable')) || target.hasAttribute && target.hasAttribute('data-smallest-zoomable'))
 					break;
-				}
 
 				target = target.parentNode;
 			}
 
-			if(!target || explicitZoomables && !target.classList.contains('smallest-zoomable') && !target.hasAttribute('data-smallest-zoomable') && !target.classList.contains('zoomable') && !target.hasAttribute('data-zoomable')){
+			if(!target || explicitZoomables && !target.classList.contains('smallest-zoomable') && !target.hasAttribute('data-smallest-zoomable') && !target.classList.contains('zoomable') && !target.hasAttribute('data-zoomable'))
 				return;
-			}
 
 			if(event[fullscreenKey] && document.fullscreenEnabled) {
 				target.addEventListener('mousedown', function(evt){
-					if(evt.target.fullscreenElement !== false && evt[zoomKey] && evt[fullscreenKey]){
+					if(evt.target.fullscreenElement !== false && evt[zoomKey] && evt[fullscreenKey])
 						document.exitFullscreen();
-					}
 				});
 				target.requestFullscreen();
 				return;
@@ -177,11 +167,8 @@ const RevealZoom = {
 		reveal.addEventListener('overviewshown', function() { isEnabled = false; });
 		reveal.addEventListener('overviewhidden', function() { isEnabled = true; });
 		reveal.addEventListener('ready', function () {
-			for(let e of document.querySelectorAll(
-				'img,video,span,div,section'
-			)){
+			for(let e of document.querySelectorAll('img,video,span,div,section'))
 				e.removeAttribute('title')
-			}
 		})
 	}
 };
