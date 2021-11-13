@@ -1,12 +1,14 @@
 const RevealPDFJS = {
 		id: 'pdfjs',
 		init: (reveal) => {
+			let options = reveal.getConfig().pdfjs || {};
+
 			options = {
-				pdfjsUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js',
-				pdfjsWorkerUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js'
+				pdfjsUrl: options.pdfjsUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js',
+				pdfjsWorkerUrl: options.pdfjsWorkerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js'
 			};
 
-			function loadScript( url, callback ) {
+			function loadScript(url, callback) {
 				let head = document.querySelector( 'head' );
 				let script = document.createElement( 'script' );
 				script.type = 'text/javascript';
@@ -25,25 +27,25 @@ const RevealPDFJS = {
 
 				reveal.addEventListener('slidechanged', function (event) {
 					let canvases = event.currentSlide.querySelectorAll("canvas[data-pdf]:not([data-pdf-rendered])");
-					for (let i = 0; i < canvases.length; i++) {
-						let canvas = canvases[i];
+					for (let canvas of canvases) {
 						let url = canvas.getAttribute('data-pdf');
+						let pageNumber = parseInt(canvas.getAttribute('data-page') || '1');
 
 						window.pdfjsLib.getDocument(url).promise.then(function (pdf) {
-							pdf.getPage(1).then(function (page) {
-								let scale = 1;
-								let viewport = page.getViewport({ scale: scale });
-								let outputScale = window.devicePixelRatio || 1;
-								canvas.width = Math.floor(viewport.width * outputScale);
-								canvas.height = Math.floor(viewport.height * outputScale);
-								// canvas.style.width = Math.floor(viewport.width) + "px";
-								// canvas.style.height =  Math.floor(viewport.height) + "px";
-								let transform = outputScale !== 1
-									? [outputScale, 0, 0, outputScale, 0, 0]
-									: null;
+							pdf.getPage(pageNumber).then(function (page) {
+								let viewport = page.getViewport({scale: 1});
+								console.log(viewport);
+								canvas.width = Math.floor(viewport.width);
+								canvas.height = Math.floor(viewport.height);
+								let canvasStyle = window.getComputedStyle(canvas);
+								let canvasWidth = parseFloat(canvasStyle.width);
+								let canvasHeight = parseFloat(canvasStyle.height);
+								let scaling = Math.min( canvasWidth / canvas.width, canvasHeight / canvas.height);
+								canvas.style.width = canvas.width * scaling + 'px';
+								canvas.style.height = canvas.height * scaling + 'px';
+
 								let renderContext = {
 									canvasContext: canvas.getContext('2d'),
-									transform: transform,
 									viewport: viewport
 								};
 								page.render(renderContext);

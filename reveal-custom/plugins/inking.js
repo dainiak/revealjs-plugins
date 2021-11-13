@@ -993,8 +993,7 @@ const RevealInking = {
                     slide.dataset.inkingCanvasContent = getMathEnrichedCanvasJSON();
                 }
                 else if(inkingCanvasSrc.toLowerCase().endsWith('.json')) {
-                    let url = inkingCanvasSrc;
-                    sendAjaxRequest(url, slide, function (response, slide){
+                    sendAjaxRequest(inkingCanvasSrc, slide, function (response, slide){
                         slide.dataset.inkingCanvasContent = xhr.responseText;
                     });
                 }
@@ -1015,7 +1014,7 @@ const RevealInking = {
             if( params.type === undefined )
                 params.type = (params.url && params.url.match(/\.css[^.]*$/)) ? 'text/css' : 'text/javascript';
 
-            let script = null;
+            let script;
 
             if( params.type === 'text/css' ){
                 if( params.content ){
@@ -1082,7 +1081,7 @@ const RevealInking = {
         }
 
         loadScripts(scriptsToLoad, function () {
-            window.addEventListener('load', function(event) {
+            window.addEventListener('load', function() {
                 // This is important for MathJax equations to serialize well into fabric.js
                 window.fabric.Object.NUM_FRACTION_DIGITS = 5;
 
@@ -1103,7 +1102,7 @@ const RevealInking = {
                 addRevealEventListeners();
                 addInkingControlsEventListeners();
 
-                window.addEventListener('resize', function (event) {
+                window.addEventListener('resize', function () {
                     let isVisible = isCanvasVisible();
                     destroySpotlight();
                     leaveDeletionMode();

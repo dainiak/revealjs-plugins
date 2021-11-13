@@ -97,7 +97,7 @@ const RevealMath = {
 					preamble = preamble.replace(/(?!\\)%.*$/mg, '');
 
 					if(options.mathjaxCompatibility) {
-						preamble = preamble.replace(/\\DeclareMathOperator\{(\\[^}]+)}\{([^\n+]+)}/g, "\\newcommand{$1}{\\operatorname{$2}}");
+						preamble = preamble.replace(/\\DeclareMathOperator{(\\[^}]+)}{([^\n+]+)}/g, "\\newcommand{$1}{\\operatorname{$2}}");
 						preamble += '\n\\newcommand{\\class}[2]{\\htmlClass{#1}{#2}}';
 						preamble += '\n\\newcommand{\\style}[2]{\\htmlStyle{#1}{#2}}';
 						preamble += '\n\\newcommand{\\cssId}[2]{\\htmlId{#1}{#2}}';
@@ -173,7 +173,7 @@ const RevealMath = {
 				params.type = (params.url && params.url.match(/\.css[^.]*$/)) ? 'text/css' : 'text/javascript';
 			}
 
-			let script = null;
+			let script;
 
 			if( params.type === 'text/css' ){
 				if( params.content ){
