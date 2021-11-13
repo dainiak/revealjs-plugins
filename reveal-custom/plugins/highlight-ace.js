@@ -12,9 +12,9 @@ const RevealHighlightAce = {
 		options = {
 			theme: options.theme || 'twilight',
 			language: options.language || 'python',
-			aceMainUrl: options.aceMainUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
-			aceBasePath: options.aceBasePath || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/',
-			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-static_highlight.min.js',
+			aceMainUrl: options.aceMainUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.min.js',
+			aceBasePath: options.aceBasePath || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/',
+			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-static_highlight.min.js',
 			editorInPlace: options.editorInPlace !== false,
 			closeEditorOnBlur: options.closeEditorOnBlur,
 			mouseclickModifierKey: options.mouseclickModifierKey,
@@ -34,6 +34,9 @@ const RevealHighlightAce = {
 				theme: aceTheme,
 				startLineNumber: 1,
 				showGutter: true,
+				fadeFoldWidgets: false,
+				showFoldWidgets: false,
+				wrap: true,
 				showPrintMargin: false,
 				maxLines: Infinity,
 				trim: element.hasAttribute( 'data-trim' )
@@ -115,6 +118,7 @@ const RevealHighlightAce = {
 						wrap: true,
 						showGutter: true,
 						fadeFoldWidgets: false,
+						showFoldWidgets: false,
 						showPrintMargin: false,
 						highlightActiveLine: true,
 						fontSize: parseFloat(window.getComputedStyle(codeElement).fontSize) * scale || options.fontSize

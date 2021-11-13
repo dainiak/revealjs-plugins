@@ -823,7 +823,6 @@ const RevealInking = {
 
             destroySpotlight();
 
-            let text, filename;
             if(confirm("Save current slide to SVG? (Press Cancel to save current or all slides to JSON.)"))
                 return download('canvas.svg', canvas.toSVG());
 
