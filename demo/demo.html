@@ -21,9 +21,8 @@
     <section title="Title" data-inner-html="sect-title.html"></section>
     <section title="External.js plugin" data-outer-html="sect-external.html"></section>
     <section title="PDF images"><canvas style="height: 400px; width: 600px;" data-pdf="img/one-liners.pdf" width=600 height=400></canvas></section>
-    <section title="PDF images"><div style="width:650px;height:300px;overflow-y:scroll;">
-        <canvas style="height: 1000px; width: 600px;" data-pdf="img/one-liners.pdf" data-page="20" width=600 height=400></canvas>
-    </div>
+    <section title="PDF images">
+        <canvas class="r-stretch" style="height: 1000px; width: 600px;" data-pdf="img/one-liners.pdf" data-pages="18-20" width=600 height=400></canvas>
     </section>
 </div></div>
 
@@ -47,8 +46,6 @@
 <script src="../reveal-custom/plugins/inking.js"></script>
 <script src="../reveal-custom/plugins/zoom.js"></script>
 <script src="../reveal-custom/plugins/webcam.js"></script>
-
-<script src="../reveal-custom/plugins/pdfimgs.js"></script>
 
 <script type="text/latex" id="mathjaxPreamble">
     \DeclareMathOperator{\roots}{roots}
@@ -106,7 +103,6 @@
             RevealZoom,
             RevealHighlightAce,
             // RevealWebcam
-            RevealPDFJS
         ],
         slideNumber: true,
         width: 1280,
@@ -118,8 +114,9 @@
         transition: 'slide',
         controls: false,
 
-        external: {
+        contentLoader: {
             mapAttributes: ['data-inking-canvas-src', 'src'],
+            pdf: true,
             actions: [
                 {
                     selector: '.slides .auto-fragmentize',
@@ -167,7 +164,6 @@
         },
         inking: {
             controls: {
-                color: "#00ffff",
                 opacity: 1,
                 colorChoosersAlwaysVisible: false
             },

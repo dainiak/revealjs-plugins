@@ -26,7 +26,7 @@
 const RevealContentLoader = {
     id: 'contentloader',
     init: (reveal) => {
-        let options = reveal.getConfig().contentloader || {};
+        let options = reveal.getConfig().contentLoader || {};
         options = {
             async: !!options.async,
             mapAttributes: (options.mapAttributes instanceof Array) ? options.mapAttributes : ['src', 'data-background-image', 'data-background-iframe', 'data-src'],
@@ -35,15 +35,20 @@ const RevealContentLoader = {
                 classList: true,
                 style: true
             },
+            pdf: {
+                enabled: options.pdf === true || options.pdf && options.pdf.enabled === true,
+                pdfjsUrl: options.pdf && options.pdf.pdfjsUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js',
+                pdfjsWorkerUrl: options.pdf && options.pdf.pdfjsWorkerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js'
+            },
             actions: options.actions || []
         };
 
 
         function updateRecursively(objTo, objFrom) {
-            for(let p in objFrom)
-                if(typeof objTo[p] === 'object' && typeof objFrom[p] === 'object')
+            for (let p in objFrom)
+                if (typeof objTo[p] === 'object' && typeof objFrom[p] === 'object')
                     updateRecursively(objTo[p], objFrom[p]);
-                else if(objTo[p] === undefined)
+                else if (objTo[p] === undefined)
                     objTo[p] = objFrom[p];
         }
 
@@ -51,21 +56,21 @@ const RevealContentLoader = {
             str = str.trim();
             let hasDetectedAction = false;
             let m = str.match(/^<!--(.*)-->$/s);
-            if(m) {
+            if (m) {
                 str = m[1].trim();
                 hasDetectedAction = true;
             }
             m = str.match(/^\s*<script[^>]*>(.*)<\/script>\s*$/s);
-            if(m) {
+            if (m) {
                 str = m[1].trim();
                 m = str.match(/^\s*\/\*(.*)\*\/\s*$/s);
-                if(m) {
+                if (m) {
                     str = m[1].trim();
                     hasDetectedAction = true;
                 }
             }
 
-            if(!hasDetectedAction)
+            if (!hasDetectedAction)
                 return null;
 
             try {
@@ -77,42 +82,42 @@ const RevealContentLoader = {
         }
 
 
-        function attachLoadedNodes(targetNode, loadedNodes, path, replacementType){
+        function attachLoadedNodes(targetNode, loadedNodes, path, replacementType) {
             targetNode.innerHTML = '';
             let prependPath = (src, path) => path && src && src.startsWith('.') ? (path + '/' + src) : src;
 
-            for(let node of loadedNodes) {
+            for (let node of loadedNodes) {
                 if (node instanceof Element)
                     for (let attributeName of options.mapAttributes) {
-                        if(node.getAttribute(attributeName))
+                        if (node.getAttribute(attributeName))
                             node.setAttribute(
                                 attributeName,
                                 prependPath(node.getAttribute(attributeName), path)
                             );
 
-                        for(let descendant of node.querySelectorAll('[' + attributeName + ']'))
+                        for (let descendant of node.querySelectorAll('[' + attributeName + ']'))
                             descendant.setAttribute(
                                 attributeName,
                                 prependPath(descendant.getAttribute(attributeName), path)
                             );
                     }
 
-                if(loadedNodes.length === 1 && replacementType === 'outer-html' && (node instanceof Element)) {
-                    if(options.inherit.classList && targetNode.classList)
-                        for(let cssClass of targetNode.classList)
+                if (loadedNodes.length === 1 && replacementType === 'outer-html' && (node instanceof Element)) {
+                    if (options.inherit.classList && targetNode.classList)
+                        for (let cssClass of targetNode.classList)
                             node.classList.add(cssClass);
 
-                    if(options.inherit.dataset && targetNode.dataset)
-                        for(let key in targetNode.dataset)
-                            if(!(['innerHtml', 'outerHtml', 'innerText', 'outerText'].includes(key)))
+                    if (options.inherit.dataset && targetNode.dataset)
+                        for (let key in targetNode.dataset)
+                            if (!(['innerHtml', 'outerHtml', 'innerText', 'outerText'].includes(key)))
                                 node.dataset[key] = targetNode.dataset[key];
 
-                    if(options.inherit.style && targetNode.style)
+                    if (options.inherit.style && targetNode.style)
                         node.style = targetNode.style;
                 }
 
                 node = document.importNode(node, true);
-                if(replacementType === 'outer-html' || replacementType === 'outer-text')
+                if (replacementType === 'outer-html' || replacementType === 'outer-text')
                     targetNode.parentNode.insertBefore(node, targetNode)
                 else
                     targetNode.appendChild(node);
@@ -134,11 +139,11 @@ const RevealContentLoader = {
         function loadExternalNode(targetNode, path) {
             let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text');
             let replacementType = null;
-            for(replacementType of ['inner-html', 'inner-text', 'outer-html', 'outer-text'])
-                if(targetNode.hasAttribute('data-' + replacementType))
+            for (replacementType of ['inner-html', 'inner-text', 'outer-html', 'outer-text'])
+                if (targetNode.hasAttribute('data-' + replacementType))
                     break;
 
-            if(url === null || url === ''){
+            if (url === null || url === '') {
                 let loadedNodes;
 
                 try {
@@ -166,14 +171,14 @@ const RevealContentLoader = {
 
             url = url.trim();
             let selector = '';
-            if(replacementType === 'inner-html' || replacementType === 'outer-html') {
+            if (replacementType === 'inner-html' || replacementType === 'outer-html') {
                 let regexp = url.match(/^([^#]+)(?:#(.+))?$/);
                 url = regexp[1];
                 selector = regexp[2] || '';
             }
 
             url = (path ? path + '/' : '') + url;
-            
+
             let xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function (xhr, targetNode, url, selector, replacementType) {
                 return function () {
@@ -190,10 +195,9 @@ const RevealContentLoader = {
                     let path = url.substr(0, url.lastIndexOf('/'));
                     let loadedNodes;
 
-                    if(replacementType === 'inner-text' || replacementType === 'outer-text') {
+                    if (replacementType === 'inner-text' || replacementType === 'outer-text') {
                         loadedNodes = [document.createTextNode(xhr.responseText)];
-                    }
-                    else {
+                    } else {
                         let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
                         if (!html)
                             return console.warn('RevealContentLoader: Could not parse HTML ' + url);
@@ -218,23 +222,137 @@ const RevealContentLoader = {
             if (container instanceof Element && (container.hasAttribute('data-inner-html') || container.hasAttribute('data-outer-html') || container.hasAttribute('data-inner-text') || container.hasAttribute('data-outer-text')))
                 loadExternalNode(container, path);
             else
-                for(let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
+                for (let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
                     loadExternalNode(node, path);
         }
 
 
+        /*              */
+        /* Main actions */
+        /*              */
+
         loadExternalElementsInside(reveal.getViewportElement());
 
-        for(let action of options.actions)
-            for(let element of document.querySelectorAll(action.selector)){
+        for (let action of options.actions)
+            for (let element of document.querySelectorAll(action.selector)) {
                 let elementActionParams = parseAction(element.innerHTML) || {};
-                if(typeof elementActionParams === 'function')
-                    elementActionParams = {init:  elementActionParams}
+                if (typeof elementActionParams === 'function')
+                    elementActionParams = {init: elementActionParams}
 
-                if(elementActionParams)
+                if (elementActionParams)
                     updateRecursively(elementActionParams, action);
-                if(typeof elementActionParams.init === 'function')
+                if (typeof elementActionParams.init === 'function')
                     elementActionParams.init(element, elementActionParams);
             }
+
+        if (!options.pdf.enabled || !document.querySelectorAll('canvas[data-pdf]'))
+            return;
+
+
+        function parsePageNumbers(s, totalPages) {
+            let pages = [];
+
+            if (!s)
+                return [];
+
+            for (let range of s.split(',')) {
+                let numPair = range.split('-');
+                if (numPair.length === 1)
+                    pages.push(parseInt(numPair[0]));
+                else {
+                    let startPage = numPair[0] === '' ? 1 : parseInt(numPair[0]);
+                    let endPage = numPair[1] === '' ? totalPages : Math.min(totalPages, parseInt(numPair[1]));
+                    for (let i = startPage; i <= endPage; i++)
+                        pages.push(i);
+                }
+            }
+
+            return pages;
+        }
+
+        function loadScript(url, callback) {
+            let head = document.querySelector('head');
+            let script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+
+            script.onload = function () {
+                callback.call();
+                callback = null;
+            };
+
+            head.appendChild(script);
+        }
+
+        loadScript(options.pdf.pdfjsUrl, function () {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = options.pdf.pdfjsWorkerUrl;
+
+            let canvases = reveal.getViewportElement().querySelectorAll('canvas[data-pdf]:not([data-pdf-rendered])');
+            for (let canvas of canvases) {
+                let url = canvas.getAttribute('data-pdf');
+
+                window.pdfjsLib.getDocument(url).promise.then(function (pdfDocument) {
+                    let pageNumbers =
+                        canvas.hasAttribute('data-page')
+                            ?
+                            [parseInt(canvas.getAttribute('data-page') || '0')]
+                            :
+                            parsePageNumbers(
+                                canvas.getAttribute('data-pages') || '1',
+                                pdfDocument.numPages
+                            );
+
+                    if (pageNumbers.length === 1) {
+                        pdfDocument.getPage(pageNumbers[0]).then(function (pdfPage) {
+                            let viewport = pdfPage.getViewport({scale: 3});
+                            canvas.width = Math.floor(viewport.width);
+                            canvas.height = Math.floor(viewport.height);
+                            let canvasStyle = window.getComputedStyle(canvas);
+                            let canvasWidth = parseFloat(canvasStyle.width);
+                            let canvasHeight = parseFloat(canvasStyle.height);
+                            let scaling = Math.min(canvasWidth / canvas.width, canvasHeight / canvas.height);
+                            canvas.style.width = canvas.width * scaling + 'px';
+                            canvas.style.height = canvas.height * scaling + 'px';
+
+                            let renderContext = {
+                                canvasContext: canvas.getContext('2d'),
+                                viewport: viewport
+                            };
+                            pdfPage.render(renderContext);
+                            canvas.dataset.pdfRendered = 'true';
+                        });
+                    } else {
+                        let div = document.createElement('div');
+                        for (let key in canvas.dataset)
+                            div.dataset[key] = canvas.dataset[key];
+
+                        div.style.width = canvas.style.width;
+                        div.style.height = canvas.style.height;
+                        div.style.overflowY = 'scroll';
+                        div.classList = canvas.classList;
+                        canvas.parentNode.insertBefore(div, canvas);
+                        canvas.parentNode.removeChild(canvas);
+                        canvas = null;
+
+                        for (let pageNumber of pageNumbers)
+                            pdfDocument.getPage(pageNumber).then(function (pdfPage) {
+                                let viewport = pdfPage.getViewport({scale: 3});
+                                let canvas = document.createElement('canvas');
+                                canvas.width = Math.floor(viewport.width);
+                                canvas.height = Math.floor(viewport.height);
+                                canvas.style.width = '100%';
+                                div.appendChild(canvas);
+
+                                let renderContext = {
+                                    canvasContext: canvas.getContext('2d'),
+                                    viewport: viewport
+                                };
+                                pdfPage.render(renderContext);
+                                canvas.dataset.pdfRendered = 'true';
+                            });
+                    }
+                });
+            }
+        });
     }
 };

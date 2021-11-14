@@ -23,8 +23,8 @@ const RevealInking = {
         options.controls = options.controls || {};
         options.controls = {
             visible: controlsVisible,
-            color: options.controls.color || '#000000',
-            activeColor: options.controls.activeColor || '#444444',
+            color: options.controls.color || '#444444',
+            activeColor: options.controls.activeColor || '#00ffff',
             shadow: options.controls.shadow || '0 0 5px black',
             opacity: options.controls.opacity || 1,
             colorChoosersAlwaysVisible: options.controls.colorChoosersAlwaysVisible !== false
@@ -92,6 +92,15 @@ const RevealInking = {
         let spotlight = null;
         let spotlightBackground = null;
 
+        let inkControlButtons = {
+            pencil: null,
+            erase: null,
+            formula: null,
+            clear: null,
+            hideCanvas: null,
+            serializeCanvas: null
+        };
+
         let scriptsToLoad = [
             {
                 content: '.ink-controls {position: fixed;bottom: 10px;right: 200px;cursor: default;'
@@ -147,42 +156,7 @@ const RevealInking = {
                     inlineMath: [["\\(", "\\)"]],
                     displayMath: [["\\[", "\\]"]],
                     macros: {
-                        bbA: "{\\mathbb{A}}",
-                        bbB: "{\\mathbb{B}}",
-                        bbF: "{\\mathbb{F}}",
-                        bbN: "{\\mathbb{N}}",
-                        bbP: "{\\mathbb{P}}",
-                        bbQ: "{\\mathbb{Q}}",
-                        bbR: "{\\mathbb{R}}",
-                        bbZ: "{\\mathbb{Z}}",
-                        calA: "{\\mathcal{A}}",
-                        calB: "{\\mathcal{B}}",
-                        calC: "{\\mathcal{C}}",
-                        calD: "{\\mathcal{D}}",
-                        calF: "{\\mathcal{F}}",
-                        calG: "{\\mathcal{G}}",
-                        calI: "{\\mathcal{I}}",
-                        calM: "{\\mathcal{M}}",
-                        calN: "{\\mathcal{N}}",
-                        calO: "{\\mathcal{O}}",
-                        calR: "{\\mathcal{R}}",
-                        calS: "{\\mathcal{S}}",
-                        bfA: "{\\mathbf{A}}",
-                        bfa: "{\\mathbf{a}}",
-                        bfb: "{\\mathbf{b}}",
-                        bfc: "{\\mathbf{c}}",
-                        bfe: "{\\mathbf{e}}",
-                        bfw: "{\\mathbf{w}}",
-                        bfx: "{\\mathbf{x}}",
-                        bfy: "{\\mathbf{y}}",
-                        bfz: "{\\mathbf{z}}",
-                        floor: ["{\\left\\lfloor #1 \\right\\rfloor}", 1],
-                        ceil: ["{\\left\\lceil #1 \\right\\rceil}", 1],
-                        le: "\\leqslant",
-                        ge: "\\geqslant",
-                        hat: "\\widehat",
-                        emptyset: "\\varnothing",
-                        epsilon: "\\varepsilon"
+
                     }
                 }
             };
@@ -215,7 +189,26 @@ const RevealInking = {
                 + '<div class="ink-clear ink-control-button"></div>'
                 + '<div class="ink-hidecanvas ink-control-button"></div>'
                 + '<div class="ink-serializecanvas ink-control-button"></div>';
-            document.body.appendChild( controls );
+
+            document.body.appendChild(controls);
+
+            inkControlButtons.pencil = controls.querySelector('.ink-pencil');
+            inkControlButtons.erase = controls.querySelector('.ink-erase');
+            inkControlButtons.formula = controls.querySelector('.ink-formula');
+            inkControlButtons.clear = controls.querySelector('.ink-clear');
+            inkControlButtons.hideCanvas = controls.querySelector('.ink-hidecanvas');
+            inkControlButtons.serializeCanvas = controls.querySelector('.ink-serializecanvas');
+        }
+
+        function toggleControlButton(controlButton, on) {
+            if(on){
+                controlButton.style.textShadow = options.controls.shadow;
+                controlButton.style.color = options.controls.activeColor;
+            }
+            else {
+                controlButton.style.textShadow = '';
+                controlButton.style.color = options.controls.color;
+            }
         }
 
         function toggleColorChoosers(b) {
@@ -387,13 +380,13 @@ const RevealInking = {
                 on = !isCanvasVisible();
 
             if (on){
-                document.querySelector('.ink-hidecanvas').style.textShadow = '';
+                toggleControlButton(inkControlButtons.hideCanvas, false);
                 cContainer.style.display = 'block';
             }
             else {
                 destroySpotlight();
                 cContainer.style.display = 'none';
-                document.querySelector('.ink-hidecanvas').style.textShadow = options.controls.shadow;
+                toggleControlButton(inkControlButtons.hideCanvas, true);
             }
         }
 
@@ -408,12 +401,13 @@ const RevealInking = {
         function enterDrawingMode(){
             canvas.freeDrawingBrush.color = currentInkColor;
             canvas.isDrawingMode = true;
-            document.querySelector('.ink-pencil').style.textShadow = '0 0 10px ' + currentInkColor;
+            toggleControlButton(inkControlButtons.pencil, true);
+            inkControlButtons.pencil.style.color = currentInkColor;
             toggleColorChoosers(true);
         }
         function leaveDrawingMode() {
             canvas.isDrawingMode = false;
-            document.querySelector('.ink-pencil').style.textShadow = '';
+            toggleControlButton(inkControlButtons.pencil, false);
             toggleColorChoosers(false);
         }
 
@@ -424,7 +418,7 @@ const RevealInking = {
                 canvas.isDrawingMode = false;
                 isInEraseMode = true;
                 canvas.selection = false;
-                document.querySelector('.ink-erase').style.textShadow = options.controls.shadow;
+                toggleControlButton(inkControlButtons.erase, true);
             }
         }
 
@@ -432,7 +426,7 @@ const RevealInking = {
             if (isInEraseMode) {
                 isInEraseMode = false;
                 canvas.selection = true;
-                document.querySelector('.ink-erase').style.textShadow = '';
+                toggleControlButton(inkControlButtons.erase, false);
             }
         }
 
@@ -442,7 +436,8 @@ const RevealInking = {
                 if(canvas.getActiveObject() === img) {
                     currentMathImage = img;
                     if(mathColor) {
-                        document.querySelector('.ink-formula').style.textShadow = '0 0 10px ' + mathColor;
+                        toggleControlButton(inkControlButtons.formula, true);
+                        inkControlButtons.formula.style.textShadow = '0 0 10px ' + mathColor;
                     }
                 }
             });
@@ -473,7 +468,8 @@ const RevealInking = {
             }
 
             let mathColor = (currentFormula && currentMathColor) || (options.math.color === 'ink' ? currentInkColor : options.math.color);
-            document.querySelector('.ink-formula').style.textShadow = '0 0 10px ' + mathColor;
+            toggleControlButton(inkControlButtons.formula, true);
+            inkControlButtons.formula.style.textShadow = '0 0 10px ' + mathColor;
 
             if(!mathRenderingDiv) {
                 mathRenderingDiv = document.createElement('div');
@@ -564,7 +560,7 @@ const RevealInking = {
                 );
             }
             else {
-                document.querySelector('.ink-formula').style.textShadow = '';
+                toggleControlButton(inkControlButtons.formula, false);
             }
         }
 
@@ -606,11 +602,11 @@ const RevealInking = {
                     enterDeletionMode();
             });
 
-            document.querySelector('.ink-clear').addEventListener('mousedown', function (event) {
+            inkControlButtons.clear.addEventListener('mousedown', function (event) {
                 let btn = event.target;
-                btn.style.textShadow = options.controls.shadow;
+                toggleControlButton(inkControlButtons.clear, true);
                 setTimeout(function () {
-                    btn.style.textShadow = '';
+                    toggleControlButton(inkControlButtons.clear, false);
                 }, 200);
                 canvas.clear();
             });
@@ -621,7 +617,8 @@ const RevealInking = {
                     currentInkColor = btn.style.color;
                     canvas.freeDrawingBrush.color = currentInkColor;
                     if(canvas.isDrawingMode) {
-                        document.querySelector('.ink-pencil').style.textShadow = '0 0 10px ' + currentInkColor;
+                        toggleControlButton(inkControlButtons.pencil, true);
+                        inkControlButtons.pencil.style.color = currentInkColor;
                     }
                     btn.style.textShadow = '0 0 20px ' + btn.style.color;
                     setTimeout( function(){btn.style.textShadow = '';}, 200 );
@@ -687,7 +684,7 @@ const RevealInking = {
             canvas.on('selection:cleared', function () {
                 if (currentMathImage) {
                     currentMathImage = null;
-                    document.querySelector('.ink-formula').style.textShadow = '';
+                    toggleControlButton(inkControlButtons.formula, false);
                 }
             });
 
