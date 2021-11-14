@@ -23,7 +23,8 @@ const RevealInking = {
         options.controls = options.controls || {};
         options.controls = {
             visible: controlsVisible,
-            color: options.controls.color || 'rgb(0,0,0)',
+            color: options.controls.color || '#000000',
+            activeColor: options.controls.activeColor || '#444444',
             shadow: options.controls.shadow || '0 0 5px black',
             opacity: options.controls.opacity || 1,
             colorChoosersAlwaysVisible: options.controls.colorChoosersAlwaysVisible !== false
