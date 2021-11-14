@@ -37,6 +37,7 @@ const RevealContentLoader = {
             },
             pdf: {
                 enabled: options.pdf === true || options.pdf && options.pdf.enabled === true,
+                preload: options.pdf && options.pdf.preload,
                 pdfjsUrl: options.pdf && options.pdf.pdfjsUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js',
                 pdfjsWorkerUrl: options.pdf && options.pdf.pdfjsWorkerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js'
             },
@@ -270,24 +271,7 @@ const RevealContentLoader = {
             return pages;
         }
 
-        function loadScript(url, callback) {
-            let head = document.querySelector('head');
-            let script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = url;
-
-            script.onload = function () {
-                callback.call();
-                callback = null;
-            };
-
-            head.appendChild(script);
-        }
-
-        loadScript(options.pdf.pdfjsUrl, function () {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = options.pdf.pdfjsWorkerUrl;
-
-            let canvases = reveal.getViewportElement().querySelectorAll('canvas[data-pdf]:not([data-pdf-rendered])');
+        function renderPdfCanvases(canvases) {
             for (let canvas of canvases) {
                 let url = canvas.getAttribute('data-pdf');
 
@@ -352,6 +336,34 @@ const RevealContentLoader = {
                             });
                     }
                 });
+            }
+        }
+
+        function loadScript(url, callback) {
+            let head = document.querySelector('head');
+            let script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+
+            script.onload = function () {
+                callback.call();
+                callback = null;
+            };
+
+            head.appendChild(script);
+        }
+
+        loadScript(options.pdf.pdfjsUrl, function () {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = options.pdf.pdfjsWorkerUrl;
+            let selector = 'canvas[data-pdf]:not([data-pdf-rendered])';
+
+            if(options.pdf.preload)
+                renderPdfCanvases(
+                    reveal.getViewportElement().querySelectorAll(selector)
+                )
+            else {
+                reveal.addEventListener('slidechanged', event => renderPdfCanvases(event.currentSlide.querySelectorAll(selector)));
+                renderPdfCanvases(reveal.getCurrentSlide().querySelectorAll(selector));
             }
         });
     }

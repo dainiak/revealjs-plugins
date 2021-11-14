@@ -116,7 +116,10 @@
 
         contentLoader: {
             mapAttributes: ['data-inking-canvas-src', 'src'],
-            pdf: true,
+            pdf: {
+                enabled: true,
+                preload: true
+            },
             actions: [
                 {
                     selector: '.slides .auto-fragmentize',
