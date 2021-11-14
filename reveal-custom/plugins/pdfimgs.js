@@ -30,10 +30,14 @@ const RevealPDFJS = {
 					for (let canvas of canvases) {
 						let url = canvas.getAttribute('data-pdf');
 						let pageNumber = parseInt(canvas.getAttribute('data-page') || '1');
+						let pageNumbers = [4,5,6,7];
 
-						window.pdfjsLib.getDocument(url).promise.then(function (pdf) {
-							pdf.getPage(pageNumber).then(function (page) {
-								let viewport = page.getViewport({scale: 1});
+						window.pdfjsLib.getDocument(url).promise.then(function (pdfDocument) {
+
+
+
+							pdfDocument.getPage(pageNumber).then(function (pdfPage) {
+								let viewport = pdfPage.getViewport({scale: 3});
 								console.log(viewport);
 								canvas.width = Math.floor(viewport.width);
 								canvas.height = Math.floor(viewport.height);
@@ -48,7 +52,7 @@ const RevealPDFJS = {
 									canvasContext: canvas.getContext('2d'),
 									viewport: viewport
 								};
-								page.render(renderContext);
+								pdfPage.render(renderContext);
 								canvas.dataset.pdfRendered = 'true';
 							});
 						});
