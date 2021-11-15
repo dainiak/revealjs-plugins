@@ -118,7 +118,7 @@ const RevealContentLoader = {
                 }
 
                 node = document.importNode(node, true);
-                if (replacementType === 'outer-html' || replacementType === 'outer-text')
+                if (replacementType.startsWith('outer'))
                     targetNode.parentNode.insertBefore(node, targetNode)
                 else
                     targetNode.appendChild(node);
@@ -132,7 +132,7 @@ const RevealContentLoader = {
                     loadExternalElementsInside(node, path);
             }
 
-            if (replacementType === 'outer-html' || replacementType === 'outer-text')
+            if (replacementType.startsWith('outer'))
                 targetNode.parentNode.removeChild(targetNode);
         }
 
@@ -156,7 +156,7 @@ const RevealContentLoader = {
                         loadedNodes = data;
                     else if (data instanceof Element)
                         loadedNodes = [data];
-                    else if (typeof data === 'string' && (replacementType === 'outer-html' || replacementType === 'inner-html'))
+                    else if (typeof data === 'string' && replacementType.endsWith('html'))
                         loadedNodes = (new DOMParser).parseFromString(
                             data, 'text/html'
                         ).querySelector('body').childNodes;
@@ -240,11 +240,16 @@ const RevealContentLoader = {
                 if (typeof elementActionParams === 'function')
                     elementActionParams = {init: elementActionParams}
 
+                if(elementActionParams.init && action.init)
+                    elementActionParams.defaultInit = action.init
+
                 if (elementActionParams)
                     updateRecursively(elementActionParams, action);
+
                 if (typeof elementActionParams.init === 'function')
                     elementActionParams.init(element, elementActionParams);
             }
+
 
         if (!options.pdf.enabled || !document.querySelectorAll('canvas[data-pdf]'))
             return;
