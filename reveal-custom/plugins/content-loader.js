@@ -139,7 +139,7 @@ const RevealContentLoader = {
 
         function loadExternalNode(targetNode, path) {
             let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text');
-            let replacementType = null;
+            let replacementType;
             for (replacementType of ['inner-html', 'inner-text', 'outer-html', 'outer-text'])
                 if (targetNode.hasAttribute('data-' + replacementType))
                     break;
@@ -172,7 +172,7 @@ const RevealContentLoader = {
 
             url = url.trim();
             let selector = '';
-            if (replacementType === 'inner-html' || replacementType === 'outer-html') {
+            if (replacementType.endsWith('html')) {
                 let regexp = url.match(/^([^#]+)(?:#(.+))?$/);
                 url = regexp[1];
                 selector = regexp[2] || '';
@@ -196,9 +196,9 @@ const RevealContentLoader = {
                     let path = url.substr(0, url.lastIndexOf('/'));
                     let loadedNodes;
 
-                    if (replacementType === 'inner-text' || replacementType === 'outer-text') {
+                    if (replacementType.endsWith('text'))
                         loadedNodes = [document.createTextNode(xhr.responseText)];
-                    } else {
+                    else {
                         let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
                         if (!html)
                             return console.warn('RevealContentLoader: Could not parse HTML ' + url);
@@ -226,33 +226,6 @@ const RevealContentLoader = {
                 for (let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
                     loadExternalNode(node, path);
         }
-
-
-        /*              */
-        /* Main actions */
-        /*              */
-
-        loadExternalElementsInside(reveal.getViewportElement());
-
-        for (let action of options.actions)
-            for (let element of document.querySelectorAll(action.selector)) {
-                let elementActionParams = parseAction(element.innerHTML) || {};
-                if (typeof elementActionParams === 'function')
-                    elementActionParams = {init: elementActionParams}
-
-                if(elementActionParams.init && action.init)
-                    elementActionParams.defaultInit = action.init
-
-                if (elementActionParams)
-                    updateRecursively(elementActionParams, action);
-
-                if (typeof elementActionParams.init === 'function')
-                    elementActionParams.init(element, elementActionParams);
-            }
-
-
-        if (!options.pdf.enabled || !document.querySelectorAll('canvas[data-pdf]'))
-            return;
 
 
         function parsePageNumbers(s, totalPages) {
@@ -358,18 +331,42 @@ const RevealContentLoader = {
             head.appendChild(script);
         }
 
-        loadScript(options.pdf.pdfjsUrl, function () {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = options.pdf.pdfjsWorkerUrl;
-            let selector = 'canvas[data-pdf]:not([data-pdf-rendered])';
 
-            if(options.pdf.preload)
-                renderPdfCanvases(
-                    reveal.getViewportElement().querySelectorAll(selector)
-                )
-            else {
-                reveal.addEventListener('slidechanged', event => renderPdfCanvases(event.currentSlide.querySelectorAll(selector)));
-                renderPdfCanvases(reveal.getCurrentSlide().querySelectorAll(selector));
+        /*                      */
+        /* Main actions and PDF */
+        /*                      */
+
+        loadExternalElementsInside(reveal.getViewportElement());
+
+        for (let action of options.actions)
+            for (let element of document.querySelectorAll(action.selector)) {
+                let elementActionParams = parseAction(element.innerHTML) || {};
+                if (typeof elementActionParams === 'function')
+                    elementActionParams = {init: elementActionParams}
+
+                if(elementActionParams.init && action.init)
+                    elementActionParams.defaultInit = action.init
+
+                if (elementActionParams)
+                    updateRecursively(elementActionParams, action);
+
+                if (typeof elementActionParams.init === 'function')
+                    elementActionParams.init(element, elementActionParams);
             }
-        });
+
+        if (options.pdf.enabled && document.querySelectorAll('canvas[data-pdf]'))
+            loadScript(options.pdf.pdfjsUrl, function () {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = options.pdf.pdfjsWorkerUrl;
+                let selector = 'canvas[data-pdf]:not([data-pdf-rendered])';
+
+                if(options.pdf.preload)
+                    renderPdfCanvases(
+                        reveal.getViewportElement().querySelectorAll(selector)
+                    )
+                else {
+                    reveal.addEventListener('slidechanged', event => renderPdfCanvases(event.currentSlide.querySelectorAll(selector)));
+                    renderPdfCanvases(reveal.getCurrentSlide().querySelectorAll(selector));
+                }
+            });
     }
 };
