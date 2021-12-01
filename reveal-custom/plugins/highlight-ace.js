@@ -96,10 +96,11 @@ const RevealHighlightAce = {
 						padding[s] = parseFloat(codeElementStyle.getPropertyValue('padding-'+s))
 
 					let scale = reveal.getScale();
-					editorDiv.style.height = isFullscreen ? '100%' : (rect.height - padding.top - padding.bottom) * scale + 'px';
-					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) * scale + 'px';
-					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) * scale + 'px';
-					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) * scale + 'px';
+
+					editorDiv.style.height = isFullscreen ? '100%' : (rect.height - padding.top - padding.bottom) + 'px';
+					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) + 'px';
+					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) + 'px';
+					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) + 'px';
 					editorDiv.style.zIndex = window.getComputedStyle(document.querySelector('.controls')).zIndex;
 					document.body.appendChild(editorDiv);
 
