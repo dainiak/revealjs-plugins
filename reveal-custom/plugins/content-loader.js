@@ -7,7 +7,7 @@
       Thomas Weinert (https://github.com/ThomasWeinert)
       Cal Evans (https://github.com/calevans/external)
   Anything.js author:
-        Asvin Goel (https://github.com/rajgoel/reveal.js-plugins/)
+      Asvin Goel (https://github.com/rajgoel/reveal.js-plugins/)
 
   Released under the MIT license
 
@@ -26,6 +26,7 @@
 const RevealContentLoader = {
     id: 'contentloader',
     init: (reveal) => {
+        let pdfjsVersion = '2.13.216';
         let options = reveal.getConfig().contentLoader || {};
         options = {
             async: !!options.async,
@@ -38,8 +39,8 @@ const RevealContentLoader = {
             pdf: {
                 enabled: options.pdf === true || options.pdf && options.pdf.enabled === true,
                 preload: options.pdf && options.pdf.preload,
-                pdfjsUrl: options.pdf && options.pdf.pdfjsUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js',
-                pdfjsWorkerUrl: options.pdf && options.pdf.pdfjsWorkerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js'
+                pdfjsUrl: options.pdf && options.pdf.pdfjsUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + pdfjsVersion + '/pdf.min.js',
+                pdfjsWorkerUrl: options.pdf && options.pdf.pdfjsWorkerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + pdfjsVersion + '/pdf.worker.min.js'
             },
             actions: options.actions || []
         };
@@ -234,7 +235,7 @@ const RevealContentLoader = {
             if (!s)
                 return [];
 
-            for (let range of s.split(',')) {
+            for (let range of s.split(/[,;]+/)) {
                 let numPair = range.split('-');
                 if (numPair.length === 1)
                     pages.push(parseInt(numPair[0]));

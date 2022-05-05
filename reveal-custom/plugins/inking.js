@@ -118,7 +118,7 @@ const RevealInking = {
                     + '.ink-serializecanvas:before {content: "\u2B07"} ',
                 type: 'text/css'
             }, {
-                url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/460/fabric.min.js',
+                url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/521/fabric.min.js',
                 condition: !window.fabric
             },
             {
@@ -602,8 +602,7 @@ const RevealInking = {
                     enterDeletionMode();
             });
 
-            inkControlButtons.clear.addEventListener('mousedown', function (event) {
-                let btn = event.target;
+            inkControlButtons.clear.addEventListener('mousedown', function () {
                 toggleControlButton(inkControlButtons.clear, true);
                 setTimeout(function () {
                     toggleControlButton(inkControlButtons.clear, false);

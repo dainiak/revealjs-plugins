@@ -8,13 +8,14 @@
 const RevealHighlightAce = {
 	id: 'highlight-ace',
 	init: (reveal) => {
+		let aceVersion = '1.4.14';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
 			theme: options.theme || 'twilight',
 			language: options.language || 'python',
-			aceMainUrl: options.aceMainUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.min.js',
-			aceBasePath: options.aceBasePath || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/',
-			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-static_highlight.min.js',
+			aceMainUrl: options.aceMainUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/' + aceVersion + '/ace.min.js',
+			aceBasePath: options.aceBasePath || 'https://cdnjs.cloudflare.com/ajax/libs/ace/' + aceVersion + '/',
+			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/' + aceVersion + '/ext-static_highlight.min.js',
 			editorInPlace: options.editorInPlace !== false,
 			closeEditorOnBlur: options.closeEditorOnBlur,
 			mouseclickModifierKey: options.mouseclickModifierKey,
