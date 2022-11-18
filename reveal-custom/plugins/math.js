@@ -21,7 +21,7 @@ const RevealMath = {
                 maxFragments: options.fragments && options.fragments.maxFragments || 20,
                 indexClassPrefix: (options.fragments && options.fragments.indexClassPrefix) || 'fragidx-'
             },
-            mathjaxUrl: options.mathjaxUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-svg-full.min.js',
+            mathjaxUrl: options.mathjaxUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js',
             macros: options.macros || {},
             delimiters: {
                 inline: options.delimiters && options.delimiters.inline || [["\\(", "\\)"]],

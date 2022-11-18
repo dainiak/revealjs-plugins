@@ -26,7 +26,7 @@
 const RevealContentLoader = {
     id: 'contentloader',
     init: (reveal) => {
-        let pdfjsVersion = '2.13.216';
+        let pdfjsVersion = '3.0.279';
         let options = reveal.getConfig().contentLoader || {};
         options = {
             async: !!options.async,
@@ -62,24 +62,42 @@ const RevealContentLoader = {
                 str = m[1].trim();
                 hasDetectedAction = true;
             }
-            m = str.match(/^\s*<script[^>]*>(.*)<\/script>\s*$/s);
+            m = str.match(/^<script[^>]*>(.*)<\/script>$/s);
             if (m) {
                 str = m[1].trim();
-                m = str.match(/^\s*\/\*(.*)\*\/\s*$/s);
+                m = str.match(/^\/\*(.*)\*\/$/s);
                 if (m) {
                     str = m[1].trim();
                     hasDetectedAction = true;
                 }
             }
 
+            if(str.startsWith('function ')){
+                hasDetectedAction = true;
+            }
+
             if (!hasDetectedAction)
                 return null;
+
+            function unEscape(htmlStr) {
+                htmlStr = htmlStr.replace(/&lt;/g , "<");
+                htmlStr = htmlStr.replace(/&gt;/g , ">");
+                htmlStr = htmlStr.replace(/&quot;/g , "\"");
+                htmlStr = htmlStr.replace(/&#39;/g , "\'");
+                htmlStr = htmlStr.replace(/&amp;/g , "&");
+                return htmlStr;
+            }
 
             try {
                 return new Function('return ' + str)();
             } catch (e) {
-                console.warn('RevealContentLoader: Was unable to parse action: "' + str + '". Error: ' + e);
-                return null;
+                try {
+                    return new Function('return ' + unEscape(str))();
+                }
+                catch(e) {
+                    console.warn('RevealContentLoader: Was unable to parse action: "' + str + '". Error: ' + e);
+                    return null;
+                }
             }
         }
 
@@ -151,7 +169,7 @@ const RevealContentLoader = {
                 try {
                     let data = parseAction(targetNode.innerHTML);
                     if (typeof data === 'function')
-                        data = data(targetNode);
+                        data = data(targetNode, reveal);
 
                     if (data instanceof Array)
                         loadedNodes = data;
@@ -193,8 +211,7 @@ const RevealContentLoader = {
                             ' failed with HTTP status ' + xhr.status + '.'
                         );
 
-
-                    let path = url.substr(0, url.lastIndexOf('/'));
+                    let path = url.substring(0, url.lastIndexOf('/'));
                     let loadedNodes;
 
                     if (replacementType.endsWith('text'))
@@ -352,7 +369,7 @@ const RevealContentLoader = {
                     updateRecursively(elementActionParams, action);
 
                 if (typeof elementActionParams.init === 'function')
-                    elementActionParams.init(element, elementActionParams);
+                    elementActionParams.init(element, elementActionParams, reveal);
             }
 
         if (options.pdf.enabled && document.querySelectorAll('canvas[data-pdf]'))

@@ -1,7 +1,7 @@
 const RevealMath = {
 	id: 'math',
 	init: (reveal) => {
-		let katexVersion = '0.15.3';
+		let katexVersion = '0.16.3';
 		let options = reveal.getConfig().math || {};
 		options = {
 			urls: {

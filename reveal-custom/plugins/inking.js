@@ -118,11 +118,11 @@ const RevealInking = {
                     + '.ink-serializecanvas:before {content: "\u2B07"} ',
                 type: 'text/css'
             }, {
-                url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/521/fabric.min.js',
+                url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js',
                 condition: !window.fabric
             },
             {
-                url: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-svg-full.min.js',
+                url: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js',
                 condition: options.math.enabled && !reveal.getConfig().math && (!window.MathJax || !window.MathJax.version)
             }
         ];
@@ -692,6 +692,9 @@ const RevealInking = {
 
         function addDocumentEventListeners(){
             document.addEventListener( 'keydown', function(event){
+                if(reveal.aceEditorActive)
+                    return;
+
                 if(options.spotlight.enabled && event.key === options.hotkeys.spotlight){
                     if(spotlight)
                         destroySpotlight();

@@ -8,16 +8,26 @@
 
     <link rel="stylesheet" href="../reveal/dist/reset.css">
     <link rel="stylesheet" href="../reveal/dist/reveal.css">
-    <link rel="stylesheet" href="../reveal/dist/theme/black.css" id="theme">
+<!--    <link rel="stylesheet" href="../reveal/dist/theme/black.css" id="theme">-->
+    <link rel="stylesheet" href="../reveal/dist/theme/beige.css" id="theme">
 
     <link rel="stylesheet" href="../reveal/plugin/highlight/monokai.css" id="highlight-theme">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="../reveal-custom/css/extras.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.6.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
 </head>
 
 
 <body>
 <div class="reveal"><div class="slides">
+    <section title="Embedding vega-lite charts" data-inner-html="sect-altair.html"></section>
+    <section title="Python code" data-inner-html="sect-python.html"></section>
     <section title="Title" data-inner-html="sect-title.html"></section>
     <section title="External.js plugin" data-outer-html="sect-external.html"></section>
     <section title="PDF images"><canvas style="height: 400px; width: 600px;" data-pdf="img/one-liners.pdf" width=600 height=400></canvas></section>
@@ -46,6 +56,8 @@
 <script src="../reveal-custom/plugins/inking.js"></script>
 <script src="../reveal-custom/plugins/zoom.js"></script>
 <script src="../reveal-custom/plugins/webcam.js"></script>
+
+<script src="../reveal-custom/plugins/pyodide.js"></script>
 
 <script type="text/latex" id="mathjaxPreamble">
     \DeclareMathOperator{\roots}{roots}
@@ -102,11 +114,12 @@
             RevealInking,
             RevealZoom,
             RevealHighlightAce,
-            // RevealWebcam
+            // RevealWebcam,
+            RevealPyodide
         ],
         slideNumber: true,
-        width: 1280,
-        height: 720,
+        // width: 1280,
+        // height: 720,
         margin: 0.05,
         // minScale: 1.0,
         // maxScale: 1.0,
@@ -127,7 +140,24 @@
                 },
                 {
                     selector: '.random',
-                    init: e => (e.innerText = Math.random())
+                    init: e => (e.textContent = Math.random())
+                },
+                {
+                    selector: '.echart'
+                },
+                {
+                    selector: '.vegachart',
+                    init: function(element){
+                        window.vegaEmbed(element, element.dataset['vegaJson'], {
+                            mode: 'vega-lite',
+                            renderer: 'svg',
+                            theme: 'dark',
+                            actions: false,
+                            tooltip: {
+                                theme: 'dark'
+                            }
+                        });
+                    }
                 }
             ]
         },
@@ -182,11 +212,14 @@
             }
         },
         highlighting: {
-            editorInPlace: false
+            editorInPlace: true
         },
         zooming: {
             explicitZoomables: false,
-        }
+        },
+        pyodide: {
+            preloadPackages: ['pandas']
+        },
     });
 </script>
 

@@ -3,12 +3,13 @@
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com
+    Available modes and themes for ACE editor can be tested here: https://ace.c9.io/build/kitchen-sink.html
  */
 
 const RevealHighlightAce = {
 	id: 'highlight-ace',
 	init: (reveal) => {
-		let aceVersion = '1.4.14';
+		let aceVersion = '1.13.1';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
 			theme: options.theme || 'twilight',
@@ -22,25 +23,43 @@ const RevealHighlightAce = {
 			editorDefaultFontSize: options.editorDefaultFontSize,
 			selector: options.selector || 'pre code',
 			fontSize: '20px',
+			showGutter: options.showGutter !== false,
+			trim: options.trim !== false
 		};
+		reveal.getConfig().highlighting = options;
 
-		let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
 		let aceStaticStyle = null;
 
-		function doStaticHighlight(element) {
-			let aceTheme = 'ace/theme/' + (element.hasAttribute('data-theme') ? element.getAttribute('data-theme') : options.theme);
-			let aceMode = 'ace/mode/' + (element.hasAttribute('data-language') ? element.getAttribute('data-language') : options.language);
+		function doStaticHighlight(element, customOptions) {
+			customOptions ||= {};
+			let options = reveal.getConfig().highlighting;
+			let aceTheme = customOptions.theme || (element.hasAttribute('data-theme') ? element.getAttribute('data-theme') : options.theme);
+			let aceMode = customOptions.language || (element.hasAttribute('data-language') ? element.getAttribute('data-language') : options.language);
+			let trim = customOptions.trim !== undefined ? customOptions.trim : (
+				element.hasAttribute( 'data-trim' ) || options.trim
+			);
+			if(element.dataset.reserveLines){
+				trim = false;
+				let reservedLines = parseInt(element.dataset.reserveLines);
+				let additionalText = '';
+				for(let existingLines = element.textContent.split('\n').length; existingLines < reservedLines; ++existingLines)
+					additionalText += '\n';
+				element.textContent += additionalText;
+			}
+			let showGutter = customOptions.showGutter !== undefined ? customOptions.showGutter : options.showGutter;
+
+			let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
 			highlight(element, {
-				mode: aceMode,
-				theme: aceTheme,
+				mode: 'ace/mode/' + aceMode,
+				theme: 'ace/theme/' + aceTheme,
 				startLineNumber: 1,
-				showGutter: true,
+				showGutter: showGutter,
 				fadeFoldWidgets: false,
 				showFoldWidgets: false,
 				wrap: true,
 				showPrintMargin: false,
 				maxLines: Infinity,
-				trim: element.hasAttribute( 'data-trim' )
+				trim: trim
 			}, function () {
 				if(!aceStaticStyle) {
 					aceStaticStyle = document.querySelector('style#ace_highlight');
@@ -49,7 +68,7 @@ const RevealHighlightAce = {
 			});
 		}
 
-		function destroyEditor(editor) {
+		function destroyEditor(editor, changesSaved) {
 			editor.container.style.transition = '0.4s ease';
 			editor.container.style.opacity = '0';
 			setTimeout(function () {
@@ -57,23 +76,27 @@ const RevealHighlightAce = {
 					editor.container.parentNode.removeChild(editor.container);
 				}
 				editor.destroy();
+				reveal.aceEditorActive = false;
+				if(changesSaved)
+					editor.originalCodeElement.dispatchEvent(new Event('codeupdated'));
 			}, 400);
 		}
 
 		function destroyEditorSavingChanges(editor) {
-			editor.originalCodeElement.textContent = editor.getValue();
-			editor.originalCodeElement.setAttribute('data-raw-code', editor.getValue());
-			doStaticHighlight(editor.originalCodeElement);
+			let codeElement = editor.originalCodeElement;
+			codeElement.textContent = editor.getValue();
+			codeElement.setAttribute('data-raw-code', editor.getValue());
+			doStaticHighlight(codeElement);
 			reveal.layout();
-			destroyEditor(editor);
+			destroyEditor(editor, true);
 		}
 
-		function attachAce(codeElement) {
+		function attachAce(codeElement, customOptions) {
 			let aceTheme = 'ace/theme/' + (codeElement.hasAttribute('data-theme') ? codeElement.getAttribute('data-theme') : options.theme);
 			let aceMode = 'ace/mode/' + (codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language);
 
 			codeElement.setAttribute('data-raw-code', codeElement.textContent);
-			doStaticHighlight(codeElement);
+			doStaticHighlight(codeElement, customOptions);
 
 			if(codeElement.contentEditable && codeElement.contentEditable !== 'inherit') {
 				codeElement.contentEditable = 'false';
@@ -91,6 +114,7 @@ const RevealHighlightAce = {
 						(!codeElement.hasAttribute('data-editor-in-place') && !options.editorInPlace);
 
 					let codeElementStyle = window.getComputedStyle(codeElement);
+
 					let rect = codeElement.getBoundingClientRect();
 					let padding = {};
 					for(let s of ['left', 'right', 'top', 'bottom'])
@@ -107,6 +131,7 @@ const RevealHighlightAce = {
 
 					editor = window.ace.edit(editorDiv);
 					editor.commands.removeCommands(["gotoline", "find"]);
+					reveal.aceEditorActive = true;
 
 					let sourceCode = codeElement.hasAttribute('data-raw-code') ? codeElement.getAttribute('data-raw-code') : codeElement.textContent;
 					if(codeElement.hasAttribute( 'data-trim' ))
@@ -144,6 +169,8 @@ const RevealHighlightAce = {
 			}
 		}
 
+		reveal.highlightBlockWithAce = attachAce;
+
 		function loadScript( url, callback ) {
 			let head = document.querySelector( 'head' );
 			let script = document.createElement( 'script' );
@@ -160,7 +187,6 @@ const RevealHighlightAce = {
 
 		loadScript(options.aceMainUrl, function(){ loadScript(options.aceStaticHighlighterUrl, function(){
 			window.ace.config.set('basePath', options.aceBasePath);
-			highlight = highlight || window.ace && window.ace.require('ace/ext/static_highlight');
 
 			window.ace.require('ace/commands/default_commands').commands.push({
 				name: 'Return to slideshow discarding changes',
