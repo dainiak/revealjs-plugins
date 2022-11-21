@@ -103,23 +103,47 @@ const RevealMath = {
                     fontSize: 20,
                     style: {}
                 };
-                for(let coord of ['x', 'y']) {
-                    let t = node;
-                    properties[coord] = 0;
-                    while (!t.hasAttribute(coord)) {
-                        if (t.hasAttribute('d'+coord))
-                            properties.x += +t.getAttribute('d'+coord);
-                        t = t.parentNode;
+
+                function fixPx(value){
+                    if(value === null || value === undefined)
+                        return null;
+                    if(typeof(value) === 'number')
+                        return value;
+                    if(typeof(value) === 'string'){
+                        value = value.replace('px', '');
+                        return parseFloat(value);
                     }
-                    properties[coord] += +t.getAttribute(coord);
+                    return null;
                 }
 
                 let t = node;
+                properties.x = fixPx(node.getAttribute('x')) || node.getBBox().x;
+                properties.y = fixPx(node.getAttribute('y')) || node.getBBox().y;
+                while(t.tagName !== 'svg') {
+                    let transform = t.getAttribute('transform')
+                    let match;
+                    if(transform) {
+                        match = transform.match(/translate\(\s*(-?[\d.]*)\s*[,]?\s*(-?[\d.]*)\s*/);
+                    }
+
+                    if(match && match.length >= 2) {
+                        properties.x += parseFloat(match[1]);
+                        properties.y += parseFloat(match[2]);
+                    }
+
+                    if (t.hasAttribute('dx'))
+                        properties.x += +fixPx(t.getAttribute('dx'));
+                    if (t.hasAttribute('dy'))
+                        properties.y += +fixPx(t.getAttribute('dy'));
+                    t = t.parentNode;
+                }
+
+                t = node;
                 while (!t.style.fontSize && ['text', 'tspan'].includes((t.parentNode || {}).tagName)) {
                     t = t.parentNode;
                 }
                 let fontSize = t.style.fontSize;
-                properties.fontSize = fontSize ? +(fontSize.replace('px', '')) : 20
+                properties.fontSize = fontSize ? +(fixPx(fontSize)) : 20
 
                 let defaultStyle = {
                     'fill': '#000000',
@@ -174,7 +198,7 @@ const RevealMath = {
                 }
 
                 let hAlignment = (math[1].match(/[LCR]/i) || options.svg.defaultAlignment || 'L')[0].toUpperCase();
-                let vAlignment = (math[1].match(/[BMT]/i) || options.svg.defaultVerticalAlignment || 'B')[0].toUpperCase();
+                let vAlignment = (math[1].match(/[BMT]/i) || options.svg.defaultVerticalAlignment || 'T')[0].toUpperCase();
                 let mathMarkup = math[2];
                 let svgMath = window.MathJax.tex2svg(
                     mathMarkup,
@@ -206,13 +230,14 @@ const RevealMath = {
 
                 let x0 = targetProperties.x;
                 let y0 = targetProperties.y;
+
                 let x1 = (svgMath.hAlignment === 'L' ? 0 : -svgMath.width) * (svgMath.hAlignment === 'C' ? 0.5 : 1.0);
-                let y1 = (svgMath.vAlignment === 'B' ? 0 : -svgMath.height) * (svgMath.vAlignment === 'M' ? 0.5 : 1.0);
+                let y1 = (svgMath.vAlignment === 'B' ? 0 : svgMath.height) * (svgMath.vAlignment === 'M' ? 0.5 : 1.0);
 
                 let gNode = svgMath.gNode;
                 gNode.setAttribute(
                     'transform',
-                    'translate('+x0+' '+y0+')' + ' scale('+scale+') translate('+x1+' '+y1+')' + ' matrix(1 0 0 -1 0 0)'
+                    'translate('+x0+' '+y0+')' + ' scale('+scale+') translate('+x1+' '+y1+') matrix(1 0 0 -1 0 0)'
                 );
 
                 for(let property in targetProperties.style){
@@ -250,6 +275,12 @@ const RevealMath = {
                     textNode.parentNode.insertBefore(gNode, textNode);
                     nodesForRemoval.push(tspanNode);
                 }
+
+                for(let node of nodesForRemoval)
+                    if(node && node.parentNode && node.parentNode.removeChild)
+                        node.parentNode.removeChild(node);
+
+                nodesForRemoval = [];
 
                 let gNode = createSvgMathNode(textNode);
                 if(gNode) {

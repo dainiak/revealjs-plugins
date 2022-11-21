@@ -65,9 +65,7 @@ function f(targetNode, params, revealInstance){
         if(targetNode.hasAttribute('echartInitialized'))
             return;
         window.echarts.init(
-            targetNode
-            // null,
-            // {renderer: 'svg'}
+            targetNode// null, {renderer: 'svg'}
         ).setOption(echartOptions);
         revealInstance.layout();
         targetNode.setAttribute('echartInitialized', true);

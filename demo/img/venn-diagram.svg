@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2" viewBox="0 0 245 150">
+  <path d="M1 1h240v147H1z" style="fill:#6e6850;fill-opacity:.34"/>
+    <path d="M116 112c-8 7-19 12-31 12a48 48 0 1 1 31-85 48 48 0 0 0 0 73Z" style="fill:#84d3b5"/>
+    <path d="M116 39a48 48 0 1 1 0 74 48 48 0 0 0 0-74Z" style="fill:#ffd000"/>
+    <path d="M116 112a48 48 0 0 1 0-73 48 48 0 0 1 0 73Z" style="fill:#b39e48"/>
+    <text x="49" y="33" style="font-size:17px">\(\next{A}\)</text>
+    <text x="178" y="35" style="font-size:17px">\(\next{B}\)</text>
+    <text x="228" y="136" style="font-size:17px">\(\next{U}\)</text>
+</svg>

@@ -45,13 +45,21 @@ const RevealContentLoader = {
             actions: options.actions || []
         };
 
-
         function updateRecursively(objTo, objFrom) {
             for (let p in objFrom)
                 if (typeof objTo[p] === 'object' && typeof objFrom[p] === 'object')
                     updateRecursively(objTo[p], objFrom[p]);
                 else if (objTo[p] === undefined)
                     objTo[p] = objFrom[p];
+        }
+
+        function unEscape(htmlStr) {
+            htmlStr = htmlStr.replace(/&lt;/g , "<");
+            htmlStr = htmlStr.replace(/&gt;/g , ">");
+            htmlStr = htmlStr.replace(/&quot;/g , "\"");
+            htmlStr = htmlStr.replace(/&#39;/g , "\'");
+            htmlStr = htmlStr.replace(/&amp;/g , "&");
+            return htmlStr;
         }
 
         function parseAction(str) {
@@ -78,15 +86,6 @@ const RevealContentLoader = {
 
             if (!hasDetectedAction)
                 return null;
-
-            function unEscape(htmlStr) {
-                htmlStr = htmlStr.replace(/&lt;/g , "<");
-                htmlStr = htmlStr.replace(/&gt;/g , ">");
-                htmlStr = htmlStr.replace(/&quot;/g , "\"");
-                htmlStr = htmlStr.replace(/&#39;/g , "\'");
-                htmlStr = htmlStr.replace(/&amp;/g , "&");
-                return htmlStr;
-            }
 
             try {
                 return new Function('return ' + str)();

@@ -50,8 +50,11 @@ const RevealPyodide = {
 
 
             function runPythonCodeInElement(element) {
-                if(!element.classList.contains('language-python'))
+                if(!element.hasAttribute('data-language') || element.getAttribute('data-language') !== 'python')
                     return;
+
+                element.removeAttribute('data-run-with-deck');
+                element.removeAttribute('data-run-with-slide');
 
                 let out = element.pythonOutputElement;
                 if(!out && element.dataset.stdout) {
@@ -59,22 +62,23 @@ const RevealPyodide = {
                 }
                 if(!out) {
                     let p = element;
-                    while (['pre', 'code'].indexOf(p.parentNode.tagName.toLowerCase()) != -1) {
+                    while (['pre', 'code'].indexOf(p.parentNode.tagName.toLowerCase()) !== -1) {
                         p = p.parentNode;
                     }
 
                     out = document.createElement('pre');
-                    if (element.classList.contains('output-as-fragment'))
+                    if (element.hasAttribute('data-output-as-fragment'))
                         out.classList.add('fragment');
 
                     p.insertAdjacentElement('afterend', out);
+                    let codeElement = document.createElement('code');
+                    out.appendChild(codeElement);
+                    out = codeElement;
                     element.pythonOutputElement = out;
                 }
 
-                element.classList.remove('run-with-deck');
-                element.classList.remove('run-with-slide');
                 stdoutBuffer = '';
-                let executionResult = null;
+                let executionResult;
                 try {
                     executionResult = pyodide.runPython(element.textContent, {stdout: stdout}) || '';
                 } catch (e) {
@@ -88,6 +92,7 @@ const RevealPyodide = {
                 stdoutBuffer = null;
 
                 out.textContent = textContent;
+
                 if (Reveal.getPlugin('highlight-ace') && reveal.highlightBlockWithAce) {
                     reveal.highlightBlockWithAce(out, {theme: element.dataset['theme'], language: 'text', showGutter: false})
                     element.setAttribute('data-raw-code', element.textContent);
@@ -97,21 +102,19 @@ const RevealPyodide = {
             reveal.runPythonCodeInElement = runPythonCodeInElement;
 
             reveal.on('slidetransitionend', function(event) {
-                event.currentSlide.querySelectorAll('.language-python.run-with-slide').forEach(runPythonCodeInElement);
+                event.currentSlide.querySelectorAll('[data-language="python"][data-run-with-slide]').forEach(runPythonCodeInElement);
             });
 
-            if(reveal.isReady()){
-                reveal.getViewportElement().querySelectorAll('.language-python.run-with-deck').forEach(runPythonCodeInElement);
+            function runWithDeck(){
+                reveal.getViewportElement().querySelectorAll('[data-language="python"][data-run-with-deck]').forEach(runPythonCodeInElement);
                 reveal.layout();
             }
-            else {
-                reveal.on('ready', function () {
-                    reveal.getViewportElement().querySelectorAll('.language-python.run-with-deck').forEach(runPythonCodeInElement);
-                    reveal.layout();
-                });
-            }
+            if(reveal.isReady())
+                runWithDeck();
+            else
+                reveal.on('ready', runWithDeck);
 
-            reveal.getViewportElement().querySelectorAll('.language-python.run-on-edit').forEach((element)=>{
+            reveal.getViewportElement().querySelectorAll('[data-language="python"][data-run-on-edit]').forEach((element)=>{
                 element.addEventListener('codeupdated', () => {runPythonCodeInElement(element)});
             });
         });
