@@ -1,3 +1,7 @@
+/*
+	A slight modification of the stock Reveal.js zooming plugin.
+ */
+
 let zoom = (function(){
 	let zoomedCurrently = false;
 	document.body.style.transition = 'transform 0.8s ease';

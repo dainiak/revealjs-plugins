@@ -263,7 +263,7 @@ const RevealMath = {
                 return gNode;
             }
 
-            for(let textNode of document.querySelectorAll('svg text')) {
+            for(let textNode of reveal.getViewportElement().querySelectorAll('svg text')) {
                 let hadMathInside = false;
                 let nodesForRemoval = [];
                 for(let tspanNode of textNode.getElementsByTagName('tspan')) {
@@ -315,11 +315,11 @@ const RevealMath = {
                 typesetMathInSVG();
             }
 
-            for(let fragment of document.querySelectorAll( 'mjx-assistive-mml .fragment' ))
+            for(let fragment of reveal.getViewportElement().querySelectorAll( 'mjx-assistive-mml .fragment' ))
                 fragment.classList.remove('fragment')
 
             if(options.fragments.enabled)
-                for(let node of document.querySelectorAll('.slides .auto-fragmentize'))
+                for(let node of reveal.getViewportElement().querySelectorAll('.slides .auto-fragmentize'))
                     for(let child of node.children)
                         child.classList.add('fragment');
 

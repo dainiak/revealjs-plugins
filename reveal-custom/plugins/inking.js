@@ -86,7 +86,7 @@ const RevealInking = {
         };
 
         let currentMathImage = null;
-        let isInEraseMode = false;
+        let isInDeletionMode = false;
         let isMouseLeftButtonDown = false;
         let mathRenderingDiv = null;
         let spotlight = null;
@@ -190,7 +190,7 @@ const RevealInking = {
                 + '<div class="ink-hidecanvas ink-control-button"></div>'
                 + '<div class="ink-serializecanvas ink-control-button"></div>';
 
-            document.body.appendChild(controls);
+            reveal.getViewportElement().appendChild(controls);
 
             inkControlButtons.pencil = controls.querySelector('.ink-pencil');
             inkControlButtons.erase = controls.querySelector('.ink-erase');
@@ -201,23 +201,16 @@ const RevealInking = {
         }
 
         function toggleControlButton(controlButton, on) {
-            if(on){
-                controlButton.style.textShadow = options.controls.shadow;
-                controlButton.style.color = options.controls.activeColor;
-            }
-            else {
-                controlButton.style.textShadow = '';
-                controlButton.style.color = options.controls.color;
-            }
+            controlButton.style.textShadow = on ? options.controls.shadow : '';
+            controlButton.style.color = on ? options.controls.activeColor : options.controls.color;
         }
 
         function toggleColorChoosers(b) {
-            if(options.controls.colorChoosersAlwaysVisible && !b) {
+            if(options.controls.colorChoosersAlwaysVisible && !b)
                 return;
-            }
-            for(let element of document.querySelectorAll('.ink-color')) {
+
+            for(let element of reveal.getViewportElement().querySelectorAll('.ink-color'))
                 element.style.visibility = (b ? 'visible' : 'hidden');
-            }
         }
 
         function setCanvasObjectDefaults(fabricObject){
@@ -233,19 +226,13 @@ const RevealInking = {
                 // cornerStrokeColor: '#000000',
             });
 
-            fabricObject.setControlsVisibility({
-                mtr: false,
-                mt: false,
-                mb: false,
-                ml: false,
-                mr: false
-            });
+            fabricObject.setControlsVisibility({mtr: false, mt: false, mb: false, ml: false, mr: false});
         }
 
         function setMathImageDefaults(fabricObject) {
             setCanvasObjectDefaults(fabricObject);
 
-            if (options.math.shadow) {
+            if(options.math.shadow)
                 fabricObject.set({
                     'shadow': new window.fabric.Shadow({
                         blur: 10,
@@ -254,29 +241,23 @@ const RevealInking = {
                         color: options.math.shadow === true ? 'rgba(0,0,0,1)' : options.math.shadow
                     })
                 });
-            }
 
             fabricObject.set({
                 lockScalingFlip: true,
                 hasBorders: true,
                 centeredScaling: true
             });
-            fabricObject.setControlsVisibility({
-                mtr: false,
-                mt: false,
-                mb: false,
-                ml: false,
-                mr: false
-            });
+            fabricObject.setControlsVisibility({mtr: false, mt: false, mb: false, ml: false, mr: false});
         }
 
         function resetMainCanvasDomNode() {
             let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
             let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
             let bottomPadding = 0;
-            if (options.canvasAboveControls){
-                bottomPadding = parseInt(window.getComputedStyle(document.querySelector('.controls')).height) + parseInt(window.getComputedStyle(document.querySelector('.controls')).bottom);
-            }
+            if (options.canvasAboveControls)
+                bottomPadding =
+                    parseInt(window.getComputedStyle(document.querySelector('.controls')).height)
+                    + parseInt(window.getComputedStyle(document.querySelector('.controls')).bottom);
 
             if(canvas)
                 canvas.dispose();
@@ -284,7 +265,7 @@ const RevealInking = {
             canvasElement = document.querySelector('#revealjs_inking_canvas');
             if (!canvasElement) {
                 canvasElement = document.createElement('canvas');
-                document.body.appendChild(canvasElement);
+                reveal.getViewportElement().appendChild(canvasElement);
             }
             canvasElement.id = 'revealjs_inking_canvas';
             canvasElement.style.position = 'fixed';
@@ -358,14 +339,14 @@ const RevealInking = {
         }
 
         function destroySpotlight(){
-            if(options.spotlight.enabled && spotlight) {
-                canvas.remove(spotlight);
-                canvas.remove(spotlightBackground);
-                spotlight = null;
-                spotlightBackground = null;
-                canvas.selection = true;
-                canvas.defaultCursor = null;
-            }
+            if(!(options.spotlight.enabled && spotlight))
+                return;
+            canvas.remove(spotlight);
+            canvas.remove(spotlightBackground);
+            spotlight = null;
+            spotlightBackground = null;
+            canvas.selection = true;
+            canvas.defaultCursor = null;
         }
 
         function isCanvasVisible(){
@@ -379,7 +360,7 @@ const RevealInking = {
             if(on !== true && on !== false)
                 on = !isCanvasVisible();
 
-            if (on){
+            if(on){
                 toggleControlButton(inkControlButtons.hideCanvas, false);
                 cContainer.style.display = 'block';
             }
@@ -391,7 +372,7 @@ const RevealInking = {
         }
 
         function toggleDrawingMode() {
-            if (canvas.isDrawingMode)
+            if(canvas.isDrawingMode)
                 leaveDrawingMode();
             else {
                 leaveDeletionMode();
@@ -405,7 +386,7 @@ const RevealInking = {
             inkControlButtons.pencil.style.color = currentInkColor;
             toggleColorChoosers(true);
         }
-        function leaveDrawingMode() {
+        function leaveDrawingMode(){
             canvas.isDrawingMode = false;
             toggleControlButton(inkControlButtons.pencil, false);
             toggleColorChoosers(false);
@@ -413,32 +394,32 @@ const RevealInking = {
 
         function enterDeletionMode(){
             leaveDrawingMode();
+            if(isInDeletionMode)
+                return;
+            isInDeletionMode = true;
 
-            if(!isInEraseMode) {
-                canvas.isDrawingMode = false;
-                isInEraseMode = true;
-                canvas.selection = false;
-                toggleControlButton(inkControlButtons.erase, true);
-            }
+            canvas.isDrawingMode = false;
+            canvas.selection = false;
+            toggleControlButton(inkControlButtons.erase, true);
         }
 
         function leaveDeletionMode(){
-            if (isInEraseMode) {
-                isInEraseMode = false;
-                canvas.selection = true;
-                toggleControlButton(inkControlButtons.erase, false);
-            }
+            if(!isInDeletionMode)
+                return;
+            isInDeletionMode = false;
+            canvas.selection = true;
+            toggleControlButton(inkControlButtons.erase, false);
         }
 
         function addMathImageEventListeners(img){
             let mathColor = img.mathMetadata.color;
             img.on('selected', function () {
-                if(canvas.getActiveObject() === img) {
-                    currentMathImage = img;
-                    if(mathColor) {
-                        toggleControlButton(inkControlButtons.formula, true);
-                        inkControlButtons.formula.style.textShadow = '0 0 10px ' + mathColor;
-                    }
+                if(canvas.getActiveObject() !== img)
+                    return;
+                currentMathImage = img;
+                if(mathColor) {
+                    toggleControlButton(inkControlButtons.formula, true);
+                    inkControlButtons.formula.style.textShadow = '0 0 10px ' + mathColor;
                 }
             });
 
@@ -491,82 +472,79 @@ const RevealInking = {
 
             let formula = (prompt('Enter a formula', currentFormula || '') || '').trim();
 
-            if(formula) {
-                if (currentMathImage) {
-                    canvas.remove(currentMathImage);
-                    currentMathImage = null;
-                }
-
-                mathRenderingDiv.innerHTML = '';
-                if(!window.MathJax) {
-                    console.warn('MathJax not loaded. Cannot create math formula on inking canvas.');
-                    return;
-                }
-                let mjMetrics = window.MathJax.getMetricsFor(mathRenderingDiv, options.math.displayStyle);
-
-                let svg = window.MathJax.tex2svg(
-                    options.math.preamble + formula,
-                    mjMetrics
-                );
-
-                if(!svg)
-                    return;
-
-                mathRenderingDiv.appendChild(svg);
-                svg = mathRenderingDiv.querySelector('svg');
-                let svgHeight = svg.height.baseVal.value;
-                let svgString = svg.outerHTML;
-                mathRenderingDiv.innerHTML = '';
-
-                window.fabric.loadSVGFromString(
-                    svgString,
-                    function(objects, extraInfo) {
-                        for(let obj of objects)
-                            obj.set({
-                                fill: mathColor
-                            });
-
-                        let img = window.fabric.util.groupSVGElements(objects, extraInfo).setCoords();
-
-                        img.scaleToHeight(svgHeight * options.math.scaling);
-
-                        img.set({
-                            mathMetadata: {
-                                'texSrc': formula,
-                                'color': mathColor,
-                                'originalScaleX': img.scaleX,
-                                'originalScaleY': img.scaleY
-                            }
-                        });
-
-                        if(targetScaleX)
-                            img.set({
-                                scaleX: img.scaleX * targetScaleX,
-                                scaleY: img.scaleY * targetScaleY,
-                            });
-
-                        if(targetAngle)
-                            img.set({
-                                angle: targetAngle
-                            });
-
-                        img.set({
-                            left: targetLeft,
-                            top: targetTop
-                        });
-
-                        setMathImageDefaults(img);
-                        addMathImageEventListeners(img);
-
-                        canvas.add(img);
-                        canvas.setActiveObject(img);
-                    }
-                );
-            }
-            else {
+            if(!formula) {
                 toggleControlButton(inkControlButtons.formula, false);
+                return;
             }
-        }
+
+            if (currentMathImage) {
+                canvas.remove(currentMathImage);
+                currentMathImage = null;
+            }
+
+            mathRenderingDiv.innerHTML = '';
+            if(!window.MathJax) {
+                console.warn('MathJax not loaded. Cannot create math formula on inking canvas.');
+                return;
+            }
+            let mjMetrics = window.MathJax.getMetricsFor(mathRenderingDiv, options.math.displayStyle);
+
+            let svg = window.MathJax.tex2svg(
+                options.math.preamble + formula,
+                mjMetrics
+            );
+
+            if(!svg)
+                return;
+
+            mathRenderingDiv.appendChild(svg);
+            svg = mathRenderingDiv.querySelector('svg');
+            let svgHeight = svg.height.baseVal.value;
+            let svgString = svg.outerHTML;
+            mathRenderingDiv.innerHTML = '';
+
+            window.fabric.loadSVGFromString(svgString, function(objects, extraInfo) {
+                for(let obj of objects)
+                    obj.set({
+                        fill: mathColor
+                    });
+
+                let img = window.fabric.util.groupSVGElements(objects, extraInfo).setCoords();
+
+                img.scaleToHeight(svgHeight * options.math.scaling);
+
+                img.set({
+                    mathMetadata: {
+                        'texSrc': formula,
+                        'color': mathColor,
+                        'originalScaleX': img.scaleX,
+                        'originalScaleY': img.scaleY
+                    }
+                });
+
+                if(targetScaleX)
+                    img.set({
+                        scaleX: img.scaleX * targetScaleX,
+                        scaleY: img.scaleY * targetScaleY,
+                    });
+
+                if(targetAngle)
+                    img.set({
+                        angle: targetAngle
+                    });
+
+                img.set({
+                    left: targetLeft,
+                    top: targetTop
+                });
+
+                setMathImageDefaults(img);
+                addMathImageEventListeners(img);
+
+                canvas.add(img);
+                canvas.setActiveObject(img);
+            });
+        }///createFormulaWithQuery
 
         function getMathEnrichedCanvasObject(){
             return canvas.toObject(['mathMetadata']);
@@ -578,18 +556,19 @@ const RevealInking = {
         function loadCanvasFromMathEnrichedObject(serializedCanvas){
             canvas.loadFromJSON(serializedCanvas, function() {
                 let objects = canvas.getObjects();
-                if (objects.length) {
-                    objects.forEach(function (obj) {
-                        if (isMathImage(obj) && options.math.enabled) {
-                            setMathImageDefaults(obj);
-                            addMathImageEventListeners(obj);
-                        }
-                        else
-                            setCanvasObjectDefaults(obj);
-                    });
-                }
+                if (!objects.length)
+                    return;
+                objects.forEach(function (obj) {
+                    if(isMathImage(obj) && options.math.enabled) {
+                        setMathImageDefaults(obj);
+                        addMathImageEventListeners(obj);
+                    }
+                    else
+                        setCanvasObjectDefaults(obj);
+                });
             });
         }
+
         function loadCanvasFromMathEnrichedJSON(s){
             loadCanvasFromMathEnrichedObject(JSON.parse(s));
         }
@@ -600,10 +579,7 @@ const RevealInking = {
             );
 
             document.querySelector('.ink-erase').addEventListener('click',function(){
-                if (isInEraseMode)
-                    leaveDeletionMode();
-                else
-                    enterDeletionMode();
+                isInDeletionMode ? leaveDeletionMode() : enterDeletionMode();
             });
 
             inkControlButtons.clear.addEventListener('mousedown', function () {
@@ -614,7 +590,7 @@ const RevealInking = {
                 canvas.clear();
             });
 
-            for(let element of document.querySelectorAll('.ink-color')){
+            for(let element of document.querySelectorAll('.ink-color'))
                 element.addEventListener('mousedown', function(event){
                     let btn = event.target;
                     currentInkColor = btn.style.color;
@@ -626,7 +602,6 @@ const RevealInking = {
                     btn.style.textShadow = '0 0 20px ' + btn.style.color;
                     setTimeout( function(){btn.style.textShadow = '';}, 200 );
                 });
-            }
 
             document.querySelector('.ink-hidecanvas').addEventListener(
                 'click',
@@ -638,13 +613,12 @@ const RevealInking = {
                 serializeCanvasToFile
             );
 
-            if(options.math.enabled) {
+            if(options.math.enabled)
                 document.querySelector('.ink-formula').addEventListener(
                     'click',
                     createNewFormulaWithQuery
                 );
-            }
-        }
+        }///addInkingControlsEventListeners
 
         function addCanvasEventListeners() {
             canvas.on('mouse:down', function (eventInfo) {
@@ -665,17 +639,17 @@ const RevealInking = {
             canvas.on('mouse:move', function (eventInfo) {
                 mousePosition.x = eventInfo.e.layerX;
                 mousePosition.y = eventInfo.e.layerY;
-                if (spotlight) {
-                    spotlight.set({
-                        left: mousePosition.x - spotlight.radius,
-                        top: mousePosition.y - spotlight.radius
-                    });
-                    canvas.renderAll();
-                }
+                if(!spotlight)
+                    return;
+                spotlight.set({
+                    left: mousePosition.x - spotlight.radius,
+                    top: mousePosition.y - spotlight.radius
+                });
+                canvas.renderAll();
             });
 
             canvas.on('mouse:over', function (evt) {
-                if (isInEraseMode && isMouseLeftButtonDown)
+                if (isInDeletionMode && isMouseLeftButtonDown)
                     canvas.remove(evt.target);
             });
 
@@ -685,14 +659,14 @@ const RevealInking = {
             });
 
             canvas.on('selection:cleared', function () {
-                if (currentMathImage) {
-                    currentMathImage = null;
-                    toggleControlButton(inkControlButtons.formula, false);
-                }
+                if(!currentMathImage)
+                    return;
+                currentMathImage = null;
+                toggleControlButton(inkControlButtons.formula, false);
             });
 
             document.querySelector('.canvas-container').oncontextmenu = function(){return false};
-        }
+        }///addCanvasEventListeners
 
         function addDocumentEventListeners(){
             document.addEventListener( 'keydown', function(event){
@@ -732,7 +706,6 @@ const RevealInking = {
 
                 if(event.key === options.hotkeys.serializeCanvas)
                     serializeCanvasToFile();
-
             });
 
             document.addEventListener( 'keyup', function(evt){
@@ -764,19 +737,20 @@ const RevealInking = {
                     }
                 }
             });
-        }
+        }///addDocumentEventListeners
 
         function addRevealEventListeners(){
             reveal.addEventListener('overviewshown', function () {
+                currentCanvasSlide
                 canvasVisibleBeforeRevealOverview = isCanvasVisible();
                 toggleCanvas(false);
             });
 
             reveal.addEventListener('overviewhidden', function () {
-                if(canvasVisibleBeforeRevealOverview) {
-                    canvasVisibleBeforeRevealOverview = false;
-                    toggleCanvas(true);
-                }
+                if(!canvasVisibleBeforeRevealOverview)
+                    return;
+                canvasVisibleBeforeRevealOverview = false;
+                toggleCanvas(true);
             });
 
 
@@ -791,12 +765,9 @@ const RevealInking = {
                     canvas.clear();
                 }
                 slide = event.currentSlide;
-                if(slide.hasAttribute('data-hide-inking-canvas')) {
-                    toggleCanvas(false);
-                }
-                else if(slide.hasAttribute('data-show-inking-canvas')) {
-                    toggleCanvas(true);
-                }
+
+                slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
+                slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
             });
 
             reveal.addEventListener('slidetransitionend', function(event){
@@ -804,12 +775,8 @@ const RevealInking = {
                 if(slide !== reveal.getCurrentSlide())
                     return;
 
-                if(slide.hasAttribute('data-hide-inking-canvas')) {
-                    toggleCanvas(false);
-                }
-                else if(slide.hasAttribute('data-show-inking-canvas')) {
-                    toggleCanvas(true);
-                }
+                slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
+                slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
 
                 if(!slide.dataset.inkingCanvasContent)
                     return;
@@ -826,8 +793,7 @@ const RevealInking = {
 
                 currentCanvasSlide = slide;
             });
-        }
-
+        }///addRevealEventListeners
 
         function serializeCanvasToFile(){
             function download(filename, text) {
@@ -865,7 +831,7 @@ const RevealInking = {
             });
 
             return download('all_slides.json', JSON.stringify(allSlidesContent));
-        }
+        }///serializeCanvasToFile
 
         function loadSVGFromURL(slide, url, loadAsGroup){
             window.fabric.loadSVGFromURL(
@@ -935,18 +901,15 @@ const RevealInking = {
             if(options.inkingCanvasContent) {
                 let slides = document.querySelectorAll('.reveal .slides section');
                 function loadMultipleSlides(arrayOfContent) {
-                    for (let c of arrayOfContent) {
+                    for(let c of arrayOfContent) {
                         let slide;
-                        if (c.slideId) {
+                        if (c.slideId)
                             slide = document.getElementById(c.slideId);
-                        } else if (c.slideNumber) {
-                            if (slides && c.slideNumber < slides.length) {
-                                slide = slides[c.slideNumber];
-                            }
-                        }
-                        if (slide && !slide.dataset.inkingCanvasSrc && c.inkingCanvasContent) {
+                        else if(c.slideNumber && slides && c.slideNumber < slides.length)
+                            slide = slides[c.slideNumber];
+
+                        if (slide && !slide.dataset.inkingCanvasSrc && c.inkingCanvasContent)
                             slide.dataset.inkingCanvasContent = JSON.stringify(c.inkingCanvasContent);
-                        }
                     }
                 }
 
@@ -957,26 +920,21 @@ const RevealInking = {
                     if(options.inkingCanvasContent.toLowerCase().endsWith('.json')){
                         let url = options.inkingCanvasContent;
                         sendAjaxRequest(url, slides, function (response, slides){
-                            if(response.startsWith('{')) {
+                            if(response.startsWith('{'))
                                 for (let slide of slides)
                                     slide.dataset.inkingCanvasContent = response;
-                            }
-                            else {
+                            else
                                 loadMultipleSlides(JSON.parse(response));
-                            }
                         });
                     }
-                    else {
-                        for(let slide of slides){
+                    else
+                        for(let slide of slides)
                             slide.dataset.inkingCanvasContent = options.inkingCanvasContent;
-                        }
-                    }
                 }
                 else {
                     let slides = document.querySelectorAll('.reveal .slides section');
-                    for(let slide of slides){
+                    for(let slide of slides)
                         slide.dataset.inkingCanvasContent = JSON.stringify(options.inkingCanvasContent);
-                    }
                 }
             }
 
@@ -985,7 +943,7 @@ const RevealInking = {
             if(wasCanvasVisible){
                 toggleCanvas(false);
             }
-            for(let slide of document.querySelectorAll('section[data-inking-canvas-src]')) {
+            for(let slide of reveal.getViewportElement().querySelectorAll('section[data-inking-canvas-src]')) {
                 let inkingCanvasSrc = slide.dataset.inkingCanvasSrc;
                 if(!inkingCanvasSrc)
                     continue;
@@ -995,7 +953,7 @@ const RevealInking = {
                     let filenames = tokens;
 
                     if(tokens[0].endsWith('/')){
-                        path = tokens[0] ;
+                        path = tokens[0];
                         filenames = tokens.slice(1, tokens.length);
                     }
 
@@ -1022,7 +980,7 @@ const RevealInking = {
                 toggleCanvas(true);
 
             loadCanvasFromMathEnrichedJSON(savedCanvasContent);
-        }
+        }///loadPredefinedCanvasContent
 
         function loadScript(params, extraCallback) {
             if(params.condition !== undefined
@@ -1030,13 +988,13 @@ const RevealInking = {
                 return extraCallback ? extraCallback.call() : false;
             }
 
-            if( params.type === undefined )
+            if(params.type === undefined)
                 params.type = (params.url && params.url.match(/\.css[^.]*$/)) ? 'text/css' : 'text/javascript';
 
             let script;
 
             if( params.type === 'text/css' ){
-                if( params.content ){
+                if(params.content){
                     script = document.createElement('style');
                     script.textContent = params.content;
                 }
@@ -1050,7 +1008,7 @@ const RevealInking = {
             else {
                 script = document.createElement('script');
                 script.type = params.type || 'text/javascript';
-                if( params.content ) {
+                if(params.content) {
                     script.textContent = params.content;
                 }
                 else
@@ -1079,17 +1037,18 @@ const RevealInking = {
 
         function loadScripts( scripts, callback ) {
             if(!scripts || scripts.length === 0) {
-                if (typeof callback === 'function') {
-                    if(reveal.isReady()) {
+                if (typeof callback !== 'function')
+                    return;
+                if(reveal.isReady()) {
+                    callback.call();
+                    callback = null;
+                }
+                else
+                    reveal.addEventListener('ready', function () {
                         callback.call();
                         callback = null;
-                    }
-                    else
-                        reveal.addEventListener('ready', function () {
-                            callback.call();
-                            callback = null;
-                        });
-                }
+                    });
+
                 return;
             }
 

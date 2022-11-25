@@ -126,8 +126,9 @@ const RevealHighlightAce = {
 					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) + 'px';
 					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) + 'px';
 					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) + 'px';
-					editorDiv.style.zIndex = window.getComputedStyle(document.querySelector('.controls')).zIndex;
-					document.body.appendChild(editorDiv);
+					let revealViewport = reveal.getViewportElement();
+					editorDiv.style.zIndex = window.getComputedStyle(revealViewport.querySelector('.controls')).zIndex;
+					revealViewport.appendChild(editorDiv);
 
 					editor = window.ace.edit(editorDiv);
 					editor.commands.removeCommands(["gotoline", "find"]);
@@ -200,7 +201,7 @@ const RevealHighlightAce = {
 				exec: destroyEditorSavingChanges
 			});
 
-			for(let node of document.querySelectorAll(options.selector))
+			for(let node of reveal.getViewportElement().querySelectorAll(options.selector))
 				attachAce(node);
 		})});
 

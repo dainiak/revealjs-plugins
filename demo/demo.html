@@ -72,7 +72,7 @@
 <!-- Modified stock zooming plugin -->
 <script src="../reveal-custom/plugins/zoom.js"></script>
 
-
+<!-- MathJax/KaTeX macros that you wish to be available in the slide deck. -->
 <script type="text/latex" id="mathjaxPreamble">
     \DeclareMathOperator{\roots}{roots}
     \DeclareMathOperator{\ord}{ord}
@@ -124,11 +124,12 @@
             // RevealNotes,
 
             // RevealMenu,
+
+            // RevealWebcam,
+            // RevealZoom,
             RevealMath,
             RevealInking,
-            // RevealZoom,
             RevealHighlightAce,
-            // RevealWebcam,
             RevealPyodide
         ],
         slideNumber: true,
@@ -151,15 +152,12 @@
                 {
                     selector: '.auto-fragmentize',
                     init: e => e.childNodes.forEach(c => c.classList && c.classList.add('fragment'))
-                },
-                {
+                }, {
                     selector: '.random',
                     init: e => (e.textContent = Math.random())
-                },
-                {
+                }, {
                     selector: '.echart'
-                },
-                {
+                }, {
                     selector: '.vegachart',
                     init: function(element){
                         window.vegaEmbed(element, element.dataset['vegaJson'], {
@@ -170,38 +168,29 @@
                             // dark, excel, ggplot2, quartz, vox, fivethirtyeight,
                             // latimes, urbaninstitute, googlecharts, powerbi
                             // See all of them at https://vega.github.io/vega-themes/
-                            actions: false,
                             tooltip: {
                                 // Change this along with the main Vega-Embed theme:
                                 theme: 'default'
-                            }
+                            },
+                            // Disable the Save button for the chart:
+                            actions: false
                         });
                     }
                 }
             ]
         },
 
-        menu: {
-            openSlideNumber: true,
-            openButton: false,
-            themes: true,
-            themesPath: '../reveal/css/theme/',
-            transitions: true,
-            titleSelector: 'h1, h2, h3, h4, h5, h6, figcaption, div.theorem > div.title',
-            // autoOpen: true,
-            // sticky: true
-        },
         math: {
             svg: {
                 enabled: true,
                 mathScale: 0.0015,
                 fixedScale: false,
                 escapeClipping: false,
-                defaultAlignment: 'C'
+                defaultAlignment: 'C' // L/C/R for horizontal and T/M/B for vertical
             },
             fragments: true,
-            preamble: "#mathjaxPreamble",
-            macros: {
+            preamble: "#mathjaxPreamble", // Most macros are in the preamble (see above)
+            macros: {                     // But some macros can be provided here as well
                 zoomable: ["\\class{zoomable}{#1}", 1],
                 floor: ["{\\left\\lfloor #1 \\right\\rfloor}", 1],
                 ceil: ["{\\left\\lceil #1 \\right\\rceil}", 1],
@@ -239,6 +228,17 @@
         pyodide: {
             preloadPackages: ['pandas']
         },
+
+        menu: {
+            openSlideNumber: true,
+            openButton: false,
+            themes: true,
+            themesPath: '../reveal/css/theme/',
+            transitions: true,
+            titleSelector: 'h1, h2, h3, h4, h5, h6, figcaption, div.theorem > div.title',
+            // autoOpen: true,
+            // sticky: true
+        }
     });
 </script>
 

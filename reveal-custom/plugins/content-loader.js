@@ -1,13 +1,13 @@
 /*
   ContentLoader
   [Author: ] Alex Dainiak
-  Heavily based on content-loader.js and anything.js
-  External.js authors:
-      Jan Schoepke (https://github.com/janschoepke/reveal_external)
-      Thomas Weinert (https://github.com/ThomasWeinert)
-      Cal Evans (https://github.com/calevans/external)
-  Anything.js author:
-      Asvin Goel (https://github.com/rajgoel/reveal.js-plugins/)
+  Heavily based on External.js and anything.js
+      External.js authors:
+          Jan Schoepke (https://github.com/janschoepke/reveal_external)
+          Thomas Weinert (https://github.com/ThomasWeinert)
+          Cal Evans (https://github.com/calevans/external)
+      Anything.js author:
+          Asvin Goel (https://github.com/rajgoel/reveal.js-plugins/)
 
   Released under the MIT license
 
@@ -45,6 +45,9 @@ const RevealContentLoader = {
             actions: options.actions || []
         };
 
+        /*
+        The function is used tu update the options objects for the actions.
+         */
         function updateRecursively(objTo, objFrom) {
             for (let p in objFrom)
                 if (typeof objTo[p] === 'object' && typeof objFrom[p] === 'object')
@@ -62,6 +65,9 @@ const RevealContentLoader = {
             return htmlStr;
         }
 
+        /*
+        Parse a description of an action inside an html contents string.
+         */
         function parseAction(str) {
             str = str.trim();
             let hasDetectedAction = false;
@@ -377,9 +383,9 @@ const RevealContentLoader = {
         }
 
 
-        /*                      */
-        /* Main actions and PDF */
-        /*                      */
+        /*
+            Main actions and PDF
+        */
 
         let revealViewport = reveal.getViewportElement();
         loadExternalElementsInside(revealViewport);
