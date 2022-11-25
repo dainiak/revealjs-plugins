@@ -1,0 +1,35 @@
+<section>
+    <h3>Embedding PDFs as images</h3>
+</section>
+
+<section title="PDF images">
+    <h4>Embedding a single page of a PDF file</h4>
+    <canvas class="r-stretch"
+            data-pdf="img/pdf-example.pdf"
+            width=600 height=400>
+    </canvas>
+</section>
+
+<section title="PDF images" data-hide-inking-canvas>
+    <h4>Embedding multiple pages of a PDF file (scrollable)</h4>
+    <canvas
+            class="r-stretch"
+            style="height: 1000px; width: 600px;"
+            data-pdf="img/pdf-example.pdf"
+            data-pages="1,3;5-7"
+            data-pages-as-fragments
+            width=600 height=400
+    ></canvas>
+</section>
+
+<section title="PDF images">
+    <h4>Embedding multiple pages of a PDF file (as fragments)</h4>
+    <canvas
+            class="r-stretch auto-fragmentize r-stack"
+            style="height: 1000px; width: 600px;"
+            data-pdf="img/pdf-example.pdf"
+            data-pages="1,3;5-7"
+            data-pages-as-fragments
+            width=600 height=400
+    ></canvas>
+</section>

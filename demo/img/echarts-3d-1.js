@@ -3,7 +3,7 @@ function f(targetNode, params, revealInstance){
         tooltip: {},
         backgroundColor: '#fff',
         visualMap: {
-            show: false,
+            show: true,
             dimension: 2,
             min: -1,
             max: 1,
@@ -61,13 +61,14 @@ function f(targetNode, params, revealInstance){
         ]
     };
 
-    revealInstance.on( 'slidechanged', () => {
-        if(targetNode.hasAttribute('echartInitialized'))
-            return;
-        window.echarts.init(
-            targetNode// null, {renderer: 'svg'}
-        ).setOption(echartOptions);
-        revealInstance.layout();
-        targetNode.setAttribute('echartInitialized', true);
-    });
+    function chartLoader() {
+        if(!targetNode.hasAttribute('echartInitialized')) {
+            window.echarts.init(targetNode).setOption(echartOptions);
+            revealInstance.layout();
+            targetNode.setAttribute('echartInitialized', true);
+        }
+        revealInstance.off( 'ready', chartLoader );
+    }
+
+    revealInstance.on( 'ready', chartLoader );
 }

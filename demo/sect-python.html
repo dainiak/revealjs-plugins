@@ -1,12 +1,21 @@
 <section>
+  <h3>Python live coding in the slides using <a href="https://pyodide.org/">Pyodide</a></h3>
+</section>
+
+<section data-hide-inking-canvas>
+  <p>This code is loaded with <code>data-inner-text="..."</code></p>
+  <p>You can edit this code. Just click on it.</p>
   <pre><code
             data-inner-text="code/example.py"
             data-language="python"
             contenteditable="true"
             data-editor-in-place></code></pre>
+
+  <p>After editing press <kbd>ESC</kbd> to exit editing mode without saving or <kbd>Ctrl+Enter</kbd> to save.</p>
 </section>
 
-<section>
+<section data-hide-inking-canvas>
+  <p>The code below is run at the beginning of the slideshow and the result is displayed in a separate fragment (press <kbd>Space</kbd> to show the fragment). You can edit the code and press <kbd>Ctrl+Enter</kbd> to recompute the result.</p>
   <pre><code
           data-inner-text="code/example-autorun.py"
           data-language="python"
@@ -17,7 +26,7 @@
           data-editor-in-place></code></pre>
 </section>
 
-<section>
+<section data-hide-inking-canvas>
   <pre><code
           data-stdout="#seperateoutput"
           data-language="python"
@@ -30,15 +39,17 @@
 for i in range(5, -1, -1):
     print(1.0 / i)
 </code></pre>
+  <p>The error message is output onto the next slide. You can also edit and rerun this piece of code.</p>
 </section>
 
-<section>
+<section data-hide-inking-canvas>
   <pre><code
           id="seperateoutput"
           data-language="text"></code></pre>
 </section>
 
-<section>
+<section data-hide-inking-canvas>
+  <p>You can reserve several lines of code for the in-class coding:</p>
   <pre><code
           data-language="python"
           contenteditable="true"

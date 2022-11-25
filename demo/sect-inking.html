@@ -1,0 +1,36 @@
+<section>
+    <h3>Interactive whiteboard</h3>
+</section>
+
+<section data-show-inking-canvas>
+    <p>Try the following keys:</p>
+    <ul>
+        <li><kbd>Ctrl+LeftClick+Drag</kbd> to draw freely</li>
+        <li>While in drawing mode you can choose color from the menu at the bottom of the page.</li>
+        <li><kbd>=</kbd> to insert math (LaTeX) at the current mouse position</li>
+        <li><kbd>Shift+LeftClick+Drag</kbd> to erase elements</li>
+        <li><kbd>Click+Drag</kbd> to select/move elements</li>
+        <li><kbd>Del</kbd> to remove selected elements</li>
+        <li><kbd>Q</kbd> to show/hide canvas</li>
+        <li><kbd>-</kbd> to clear canvas</li>
+        <li><kbd>Alt+LeftClick</kbd> to show spotlight</li>
+        <li><kbd>Z</kbd> to save the current canvas content as svg or current/all slides as json that you can preload onto the slides in future talks.</li>
+    </ul>
+</section>
+
+<section
+        data-show-inking-canvas
+        data-inking-canvas-src="img/venn-diagram-unlabeled.svg::img/preload-test.svg">
+    This is a slide with preloaded canvas content from multiple SVG files. You can move it around and resize it.
+</section>
+
+<section data-show-inking-canvas data-inking-canvas-src="img/venn-diagram-unlabeled.svg:split">
+    This is a slide with preloaded SVG which is split into individual pieces.
+</section>
+
+<section
+        data-show-inking-canvas
+        data-inking-canvas-src="img/canvas-content-preload.json">
+    <p>This is a slide with content saved from one of the previous presentations.</p>
+    <p>Note that you can still click the \(e=mc^2\) math formula and press <kbd>=</kbd> to change it.</p>
+</section>

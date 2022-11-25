@@ -498,6 +498,10 @@ const RevealInking = {
                 }
 
                 mathRenderingDiv.innerHTML = '';
+                if(!window.MathJax) {
+                    console.warn('MathJax not loaded. Cannot create math formula on inking canvas.');
+                    return;
+                }
                 let mjMetrics = window.MathJax.getMetricsFor(mathRenderingDiv, options.math.displayStyle);
 
                 let svg = window.MathJax.tex2svg(
@@ -786,11 +790,28 @@ const RevealInking = {
                     slide.dataset.inkingCanvasContent = canvas.getObjects().length > 0 ? getMathEnrichedCanvasJSON() : null;
                     canvas.clear();
                 }
+                slide = event.currentSlide;
+                if(slide.hasAttribute('data-hide-inking-canvas')) {
+                    toggleCanvas(false);
+                }
+                else if(slide.hasAttribute('data-show-inking-canvas')) {
+                    toggleCanvas(true);
+                }
             });
 
             reveal.addEventListener('slidetransitionend', function(event){
                 let slide = event.currentSlide;
-                if(slide !== reveal.getCurrentSlide() || !slide.dataset.inkingCanvasContent)
+                if(slide !== reveal.getCurrentSlide())
+                    return;
+
+                if(slide.hasAttribute('data-hide-inking-canvas')) {
+                    toggleCanvas(false);
+                }
+                else if(slide.hasAttribute('data-show-inking-canvas')) {
+                    toggleCanvas(true);
+                }
+
+                if(!slide.dataset.inkingCanvasContent)
                     return;
 
                 loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
@@ -832,9 +853,7 @@ const RevealInking = {
             reveal.getCurrentSlide().dataset.inkingCanvasContent = getMathEnrichedCanvasJSON();
             let allSlidesContent = [];
 
-            Array.from(
-                document.querySelectorAll('.reveal .slides section')
-            ).forEach(function(slide, slideNumber){
+            document.querySelectorAll('.reveal .slides section').forEach(function(slide, slideNumber){
                 if(slide.dataset.inkingCanvasContent) {
                     let slideContent = {inkingCanvasContent: JSON.parse(slide.dataset.inkingCanvasContent)};
                     if(slide.id)
@@ -994,7 +1013,7 @@ const RevealInking = {
                 }
                 else if(inkingCanvasSrc.toLowerCase().endsWith('.json')) {
                     sendAjaxRequest(inkingCanvasSrc, slide, function (response, slide){
-                        slide.dataset.inkingCanvasContent = xhr.responseText;
+                        slide.dataset.inkingCanvasContent = response;
                     });
                 }
             }

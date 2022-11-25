@@ -337,4 +337,8 @@ html, body {
   margin: 0;
 }
 
+kbd {
+  border: dashed 1px black;
+  font-family: monospace;
+}
 /*# sourceMappingURL=extras.css.map */

@@ -32,9 +32,9 @@ const RevealContentLoader = {
             async: !!options.async,
             mapAttributes: (options.mapAttributes instanceof Array) ? options.mapAttributes : ['src', 'data-background-image', 'data-background-iframe', 'data-src'],
             inherit: {
-                attributes: true,
-                classList: true,
-                style: true
+                attributes: (options.inherit || {}).attributes !== false,
+                classList:  (options.inherit || {}).classList !== false,
+                style: (options.inherit || {}).style !== false
             },
             pdf: {
                 enabled: options.pdf === true || options.pdf && options.pdf.enabled === true,
@@ -80,6 +80,7 @@ const RevealContentLoader = {
                 }
             }
 
+            str = str.trim();
             if(str.startsWith('function ')){
                 hasDetectedAction = true;
             }
@@ -132,7 +133,9 @@ const RevealContentLoader = {
                                 node.dataset[key] = targetNode.dataset[key];
 
                     if (options.inherit.style && targetNode.style)
-                        node.style = targetNode.style;
+                        for(let property of targetNode.style) {
+                            node.style.setProperty(property, targetNode.style[property]);
+                        }
                 }
 
                 node = document.importNode(node, true);
@@ -156,7 +159,7 @@ const RevealContentLoader = {
 
 
         function loadExternalNode(targetNode, path) {
-            let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text');
+            let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text') || targetNode.getAttribute('data-outer-text');
             let replacementType;
             for (replacementType of ['inner-html', 'inner-text', 'outer-html', 'outer-text'])
                 if (targetNode.hasAttribute('data-' + replacementType))
@@ -213,8 +216,9 @@ const RevealContentLoader = {
                     let path = url.substring(0, url.lastIndexOf('/'));
                     let loadedNodes;
 
-                    if (replacementType.endsWith('text'))
+                    if (replacementType.endsWith('text')) {
                         loadedNodes = [document.createTextNode(xhr.responseText)];
+                    }
                     else {
                         let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
                         if (!html)
@@ -240,10 +244,27 @@ const RevealContentLoader = {
             if (container instanceof Element && (container.hasAttribute('data-inner-html') || container.hasAttribute('data-outer-html') || container.hasAttribute('data-inner-text') || container.hasAttribute('data-outer-text')))
                 loadExternalNode(container, path);
             else
-                for (let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text]'))
+                for (let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text],[data-outer-text]'))
                     loadExternalNode(node, path);
         }
 
+        function performActions(rootElement) {
+            for (let action of options.actions)
+                for (let element of rootElement.querySelectorAll(action.selector)) {
+                    let elementActionParams = parseAction(element.innerHTML) || {};
+                    if (typeof elementActionParams === 'function')
+                        elementActionParams = {init: elementActionParams}
+
+                    if (elementActionParams.init && action.init)
+                        elementActionParams.defaultInit = action.init
+
+                    if (elementActionParams)
+                        updateRecursively(elementActionParams, action);
+
+                    if (typeof elementActionParams.init === 'function')
+                        elementActionParams.init(element, elementActionParams, reveal);
+                }
+        }
 
         function parsePageNumbers(s, totalPages) {
             let pages = [];
@@ -299,6 +320,7 @@ const RevealContentLoader = {
                             };
                             pdfPage.render(renderContext);
                             canvas.dataset.pdfRendered = 'true';
+                            performActions(canvas.parentNode);
                         });
                     } else {
                         let div = document.createElement('div');
@@ -313,22 +335,28 @@ const RevealContentLoader = {
                         canvas.parentNode.removeChild(canvas);
                         canvas = null;
 
-                        for (let pageNumber of pageNumbers)
-                            pdfDocument.getPage(pageNumber).then(function (pdfPage) {
-                                let viewport = pdfPage.getViewport({scale: 3});
-                                let canvas = document.createElement('canvas');
-                                canvas.width = Math.floor(viewport.width);
-                                canvas.height = Math.floor(viewport.height);
-                                canvas.style.width = '100%';
-                                div.appendChild(canvas);
+                        for (let pageNumber of pageNumbers) {
+                            canvas = document.createElement('canvas');
+                            canvas.style.width = '100%';
+                            div.appendChild(canvas);
 
-                                let renderContext = {
-                                    canvasContext: canvas.getContext('2d'),
-                                    viewport: viewport
-                                };
-                                pdfPage.render(renderContext);
-                                canvas.dataset.pdfRendered = 'true';
-                            });
+                            ((canvas) => {
+                                pdfDocument.getPage(pageNumber).then(function (pdfPage) {
+                                    let viewport = pdfPage.getViewport({scale: 3});
+                                    canvas.width = Math.floor(viewport.width);
+                                    canvas.height = Math.floor(viewport.height);
+
+                                    let renderContext = {
+                                        canvasContext: canvas.getContext('2d'),
+                                        viewport: viewport
+                                    };
+                                    pdfPage.render(renderContext);
+                                    canvas.dataset.pdfRendered = 'true';
+                                });
+                            })(canvas);
+                        }
+
+                        performActions(div.parentNode);
                     }
                 });
             }
@@ -353,32 +381,18 @@ const RevealContentLoader = {
         /* Main actions and PDF */
         /*                      */
 
-        loadExternalElementsInside(reveal.getViewportElement());
+        let revealViewport = reveal.getViewportElement();
+        loadExternalElementsInside(revealViewport);
+        performActions(revealViewport);
 
-        for (let action of options.actions)
-            for (let element of document.querySelectorAll(action.selector)) {
-                let elementActionParams = parseAction(element.innerHTML) || {};
-                if (typeof elementActionParams === 'function')
-                    elementActionParams = {init: elementActionParams}
-
-                if(elementActionParams.init && action.init)
-                    elementActionParams.defaultInit = action.init
-
-                if (elementActionParams)
-                    updateRecursively(elementActionParams, action);
-
-                if (typeof elementActionParams.init === 'function')
-                    elementActionParams.init(element, elementActionParams, reveal);
-            }
-
-        if (options.pdf.enabled && document.querySelectorAll('canvas[data-pdf]'))
+        if (options.pdf.enabled && revealViewport.querySelectorAll('canvas[data-pdf]'))
             loadScript(options.pdf.pdfjsUrl, function () {
                 window.pdfjsLib.GlobalWorkerOptions.workerSrc = options.pdf.pdfjsWorkerUrl;
                 let selector = 'canvas[data-pdf]:not([data-pdf-rendered])';
 
                 if(options.pdf.preload)
                     renderPdfCanvases(
-                        reveal.getViewportElement().querySelectorAll(selector)
+                        revealViewport.querySelectorAll(selector)
                     )
                 else {
                     reveal.addEventListener('slidechanged', event => renderPdfCanvases(event.currentSlide.querySelectorAll(selector)));

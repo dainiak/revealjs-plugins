@@ -10,5 +10,11 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="pdf.js" level="application" />
     <orderEntry type="library" name="fabric.js" level="application" />
+    <orderEntry type="library" name="font-awesome" level="application" />
+    <orderEntry type="library" name="vega" level="application" />
+    <orderEntry type="library" name="vega-lite" level="application" />
+    <orderEntry type="library" name="echarts" level="application" />
+    <orderEntry type="library" name="vega-embed" level="application" />
+    <orderEntry type="library" name="echarts-gl" level="application" />
   </component>
 </module>
