@@ -201,7 +201,7 @@ const RevealHighlightAce = {
 				exec: destroyEditorSavingChanges
 			});
 
-			for(let node of reveal.getViewportElement().querySelectorAll(options.selector))
+			for(let node of reveal.getSlidesElement().querySelectorAll(options.selector))
 				attachAce(node);
 		})});
 

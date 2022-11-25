@@ -106,7 +106,7 @@ const RevealPyodide = {
             });
 
             function runWithDeck(){
-                reveal.getViewportElement().querySelectorAll('[data-language="python"][data-run-with-deck]').forEach(runPythonCodeInElement);
+                reveal.getSlidesElement().querySelectorAll('[data-language="python"][data-run-with-deck]').forEach(runPythonCodeInElement);
                 reveal.layout();
             }
             if(reveal.isReady())
@@ -114,7 +114,7 @@ const RevealPyodide = {
             else
                 reveal.on('ready', runWithDeck);
 
-            reveal.getViewportElement().querySelectorAll('[data-language="python"][data-run-on-edit]').forEach((element)=>{
+            reveal.getSlidesElement().querySelectorAll('[data-language="python"][data-run-on-edit]').forEach((element)=>{
                 element.addEventListener('codeupdated', () => {runPythonCodeInElement(element)});
             });
         });

@@ -643,66 +643,67 @@ const RevealInking = {
             document.querySelector('.canvas-container').oncontextmenu = function(){return false};
         }///addCanvasEventListeners
 
+        function documentKeyDownEventHandler(event){
+            if(reveal.aceEditorActive)
+                return;
+
+            if(options.spotlight.enabled && event.key === options.hotkeys.spotlight){
+                if(spotlight)
+                    destroySpotlight();
+                else{
+                    if(!isCanvasVisible())
+                        toggleCanvas();
+
+                    createSpotlight();
+                }
+                return;
+            }
+
+            switch(event.key){
+                case options.hotkeys.toggleCanvas: toggleCanvas(); break;
+                case options.hotkeys.clear: if(isCanvasVisible()) canvas.clear(); break;
+                case options.hotkeys.serializeCanvas: if(isCanvasVisible()) serializeCanvasToFile(); break;
+                case options.hotkeys.draw: if(isCanvasVisible()) enterDrawingMode(); break;
+                case options.hotkeys.erase: if(isCanvasVisible()) {enterDeletionMode(); canvas.selection = false;} break;
+            }
+        }
+
+        function documentKeyUpEventHandler(event){
+            if(
+                options.math.enabled
+                && event.key === options.hotkeys.insertMath
+                && isCanvasVisible()
+            ) {
+                createNewFormulaWithQuery();
+            }
+
+            if(event.key === options.hotkeys.draw) {
+                canvasElement.dispatchEvent(new MouseEvent('mouseup', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                }));
+                leaveDrawingMode();
+            }
+            if(event.key === options.hotkeys.erase)
+                leaveDeletionMode();
+
+            if(event.key === options.hotkeys.delete) {
+                if(!canvas.getActiveObjects())
+                    return;
+                canvas.getActiveObjects().forEach(function (obj) {
+                    canvas.remove(obj);
+                });
+                canvas.discardActiveObject();
+            }
+        }
         function addDocumentEventListeners(){
-            document.addEventListener( 'keydown', function(event){
-                if(reveal.aceEditorActive)
-                    return;
-
-                if(options.spotlight.enabled && event.key === options.hotkeys.spotlight){
-                    if(spotlight)
-                        destroySpotlight();
-                    else{
-                        if(!isCanvasVisible())
-                            toggleCanvas();
-
-                        createSpotlight();
-                    }
-                    return;
-                }
-
-                switch(event.key){
-                    case options.hotkeys.toggleCanvas: toggleCanvas(); break;
-                    case options.hotkeys.clear: if(isCanvasVisible()) canvas.clear(); break;
-                    case options.hotkeys.serializeCanvas: if(isCanvasVisible()) serializeCanvasToFile(); break;
-                    case options.hotkeys.draw: if(isCanvasVisible()) enterDrawingMode(); break;
-                    case options.hotkeys.erase: if(isCanvasVisible()) {enterDeletionMode(); canvas.selection = false;} break;
-                }
-            });
-
-            document.addEventListener( 'keyup', function(evt){
-                if(
-                    options.math.enabled
-                    && evt.key === options.hotkeys.insertMath
-                    && isCanvasVisible()
-                ) {
-                    createNewFormulaWithQuery();
-                }
-
-                if(evt.key === options.hotkeys.draw) {
-                    canvasElement.dispatchEvent(new MouseEvent('mouseup', {
-                        'view': window,
-                        'bubbles': true,
-                        'cancelable': true
-                    }));
-                    leaveDrawingMode();
-                }
-                if(evt.key === options.hotkeys.erase)
-                    leaveDeletionMode();
-
-                if(evt.key === options.hotkeys.delete) {
-                    if(!canvas.getActiveObjects())
-                        return;
-                    canvas.getActiveObjects().forEach(function (obj) {
-                        canvas.remove(obj);
-                    });
-                    canvas.discardActiveObject();
-                }
-            });
-        }///addDocumentEventListeners
+            document.addEventListener( 'keydown', documentKeyDownEventHandler);
+            document.addEventListener( 'keyup', documentKeyUpEventHandler);
+        }
 
         function addRevealEventListeners(){
             reveal.addEventListener('overviewshown', function () {
-                currentCanvasSlide
                 canvasVisibleBeforeRevealOverview = isCanvasVisible();
                 toggleCanvas(false);
             });
@@ -779,7 +780,7 @@ const RevealInking = {
             reveal.getCurrentSlide().dataset.inkingCanvasContent = getMathEnrichedCanvasJSON();
             let allSlidesContent = [];
 
-            document.querySelectorAll('.reveal .slides section').forEach(function(slide, slideNumber){
+            reveal.getSlidesElement().querySelectorAll('section').forEach(function(slide, slideNumber){
                 if(slide.dataset.inkingCanvasContent) {
                     let slideContent = {inkingCanvasContent: JSON.parse(slide.dataset.inkingCanvasContent)};
                     if(slide.id)
@@ -870,7 +871,7 @@ const RevealInking = {
                 }
             }
 
-            let slides = reveal.getViewportElement().querySelectorAll('.reveal .slides section');
+            let slides = reveal.getSlidesElement().querySelectorAll('section');
 
             if(Array.isArray(options.inkingCanvasContent)) {
                 loadMultipleSlides(options.inkingCanvasContent);
@@ -908,7 +909,7 @@ const RevealInking = {
             if(wasCanvasVisible){
                 toggleCanvas(false);
             }
-            for(let slide of reveal.getViewportElement().querySelectorAll('section[data-inking-canvas-src]')) {
+            for(let slide of reveal.getSlidesElement().querySelectorAll('section[data-inking-canvas-src]')) {
                 let inkingCanvasSrc = slide.dataset.inkingCanvasSrc;
                 if(!inkingCanvasSrc)
                     continue;
