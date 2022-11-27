@@ -1,32 +1,23 @@
 /*
     Reveal.js basic CSS animation plugin
     Author: Alex Dainiak
-    Author's webpage: www.dainiak.com
+    Webpage: www.dainiak.com
     Email: dainiak@gmail.com
-    Plugin is hosted on GitHub:
  */
 
 
-(function() {
-    if(!String.prototype.includes){
-        String.prototype.includes = function(s){return this.indexOf(s) >= 0}
-    }
-    if(!String.prototype.startsWith){
-        String.prototype.startsWith = function(s){return this.indexOf(s) === 0}
-    }
-    if(!String.prototype.endsWith){
-        String.prototype.endsWith = function(s){return this.lastIndexOf(s) === this.length - s.length}
-    }
-
+const RevealCSSAnimation = {
+    id: 'cssanimation',
+    init: (reveal) => {
     let defaultTransitionDuration =
-        Reveal.getConfig().animation && Reveal.getConfig().animation.defaultTransitionDuration !== undefined ?
-            Reveal.getConfig().animation.defaultTransitionDuration
+        reveal.getConfig().animation && reveal.getConfig().animation.defaultTransitionDuration !== undefined ?
+            reveal.getConfig().animation.defaultTransitionDuration
         :
             null;
 
     let globalSubstitutions =
-        Reveal.getConfig().animation && Reveal.getConfig().animation.macros ?
-            Reveal.getConfig().animation && Reveal.getConfig().animation.macros
+        reveal.getConfig().animation && reveal.getConfig().animation.macros ?
+            reveal.getConfig().animation && reveal.getConfig().animation.macros
         :
             [];
 
@@ -38,8 +29,8 @@
 
 
     /*
-        Function parses complex index notation like [1,2,4-9,18-] to explicit Array of numbers
-        Means: 1, 2, 4,5,6,7,8,9, 18,19,…
+        Function parses complex index notation to explicit Array of numbers
+        E.g.:  like [1,2,4-9,18-] will be parsed as 1, 2, 4,5,6,7,8,9, 18,19,…
         Returns Array filled with appropriate numbers.
      */
     function parseIndices(str){
@@ -150,7 +141,7 @@
         }
 
         let result = [];
-        for( let i = 0; i < preResult.length; ++i){
+        for(let i = 0; i < preResult.length; ++i){
             if(preResult[i].content || preResult[i].type === 'string'){
                 result.push(preResult[i]);
             }
@@ -160,7 +151,7 @@
 
         let localSubstitutions = [];
         let resultWithoutMacroCommands = [];
-        for (let i = 0; i < result.length; ++i){
+        for(let i = 0; i < result.length; ++i){
             if(i <= result.length - 4 && result[i].type !== 'string' && result[i].content === 'macro'
                 && ( result[i+1].type === 'string' || result[i+1].type === 'word' )
                 && result[i+2].type !== 'string' && result[i+2].content === '='
@@ -175,30 +166,29 @@
 
         substitutions = localSubstitutions.concat(substitutions);
 
-        if(substitutions.length > 0) {
-            let finalResult = [];
-            substitutionLoop: for(let i = 0; i < resultWithoutMacroCommands.length; ++i){
-                if(resultWithoutMacroCommands[i].type !== 'word'){
-                    finalResult.push(resultWithoutMacroCommands[i]);
-                }
-                else{
-                    for(let j = 0; j < substitutions.length; ++j){
-                        if(resultWithoutMacroCommands[i].content === substitutions[j][0]){
-                            let tokenList = tokenizeString(substitutions[j][1], substitutions);
-                            for (let k = 0; k < tokenList.length; ++k){
-                                finalResult.push(tokenList[k]);
-                            }
-                            continue substitutionLoop;
-                        }
-                    }
-                    finalResult.push(resultWithoutMacroCommands[i]);
-                }
-            }
+        if(!substitutions.length)
+            return resultWithoutMacroCommands;
 
-            return finalResult;
+        let finalResult = [];
+        substitutionLoop: for(let i = 0; i < resultWithoutMacroCommands.length; ++i){
+            if(resultWithoutMacroCommands[i].type !== 'word'){
+                finalResult.push(resultWithoutMacroCommands[i]);
+            }
+            else{
+                for(let j = 0; j < substitutions.length; ++j){
+                    if(resultWithoutMacroCommands[i].content === substitutions[j][0]){
+                        let tokenList = tokenizeString(substitutions[j][1], substitutions);
+                        for (let k = 0; k < tokenList.length; ++k){
+                            finalResult.push(tokenList[k]);
+                        }
+                        continue substitutionLoop;
+                    }
+                }
+                finalResult.push(resultWithoutMacroCommands[i]);
+            }
         }
 
-        return resultWithoutMacroCommands;
+        return finalResult;
     }
 
 
@@ -426,7 +416,7 @@
         return parsedAnimation;
     }
 
-    function getAnimationObjectsForAtom(animationAtom){
+    function getAnimationObjectsForAtom(animationAtom, scope){
         let animationObjectsUnfiltered = scope.querySelectorAll( animationAtom.objectQueryString );
         let animationObjects = [];
         for(let j = 0; j < animationObjectsUnfiltered.length; ++j){
@@ -476,7 +466,7 @@
                     continue;
                 }
 
-                let animationObjects = getAnimationObjectsForAtom(animationAtom);
+                let animationObjects = getAnimationObjectsForAtom(animationAtom, scope);
 
                 for (let j = 0; j < animationObjects.length; ++j){
                     if( animationAtom.objectQueryIndices && animationAtom.objectQueryIndices.indexOf(j) < 0
@@ -502,47 +492,38 @@
                                 parameter = parameter.slice('animation-initial-backup-'.length);
                                 if(parameter.startsWith('class-')){
                                     parameter = parameter.slice('class-'.length);
-                                    if(node.dataset[p] === 'true'){
+                                    if(node.dataset[p] === 'true')
                                         node.classList.add(parameter);
-                                    }
-                                    else{
+                                    else
                                         node.classList.remove(parameter);
-                                    }
                                 }
                                 else if(parameter.startsWith('general-')){
                                     parameter = parameter.slice('general-'.length);
                                     node.setAttribute(parameter, node.dataset[p]);
                                 }
-                                else{
+                                else
                                     node.style[parameter] = node.dataset[p];
-                                }
                             }
-                            else if(p.search(/^dataAnimation\d+Backup/) === 0){
+                            else if(p.search(/^dataAnimation\d+Backup/) === 0)
                                 node.removeAttribute(camelToDashed(p));
-                            }
                         }
                     }
                     if(animationType === 'show') {
                         animationType = 'apply';
                         animationAtom.propertiesToAssign = [];
-                        if(node.style.visibility !== 'visible'){
+                        if(node.style.visibility !== 'visible')
                             animationAtom.propertiesToAssign.push(['visibility','visible']);
-                        }
-                        if(node.style.opacity === '0'){
+                        if(node.style.opacity === '0')
                             animationAtom.propertiesToAssign.push(['opacity','1']);
-                        }
                     }
                     if(animationType === 'hide') {
                         animationType = 'apply';
                         animationAtom.propertiesToAssign = [];
                         if(node.style.visibility !== 'hidden'){
-                            if(animationAtom.duration > 0){
+                            if(animationAtom.duration > 0)
                                 animationAtom.propertiesToAssign.push(['opacity','0']);
-                            }
-                            else{
+                            else
                                 animationAtom.propertiesToAssign.push(['visibility','hidden']);
-                            }
-
                         }
                     }
                     if(animationType === 'apply'){
@@ -556,9 +537,8 @@
                                 node.setAttribute(bakupAttr, node.classList.contains(cls));
                             }
                             let initialBackupAttr = 'data-animation-initial-backup-class-' + cls;
-                            if(!noBackup && !node.hasAttribute(initialBackupAttr)){
+                            if(!noBackup && !node.hasAttribute(initialBackupAttr))
                                 node.setAttribute(initialBackupAttr, node.classList.contains(cls));
-                            }
                         }
                         if(classesToAdd){
                             for(let k = 0; k < classesToAdd.length; ++k){
@@ -575,12 +555,10 @@
                         if(classesToToggle){
                             for(let k = 0; k < classesToToggle.length; ++k){
                                 backupClass(classesToToggle[k]);
-                                if(node.classList.contains(classesToToggle[k])){
+                                if(node.classList.contains(classesToToggle[k]))
                                     node.classList.remove(classesToToggle[k]);
-                                }
-                                else {
+                                else
                                     node.classList.add(classesToToggle[k]);
-                                }
                             }
                         }
                         if(propertiesToAssign){
@@ -640,8 +618,7 @@
                 }
 
                 let backupAttrPrefix = 'data-animation' + animationAtom.id.toString() + '-backup-';
-
-                let animationObjects = getAnimationObjectsForAtom(animationAtom);
+                let animationObjects = getAnimationObjectsForAtom(animationAtom, scope);
 
                 for (let k = 0; k < animationObjects.length; ++k){
                     let node = animationObjects[k];
@@ -650,24 +627,19 @@
 
                     if(['apply','show','hide'].includes(animationAtom.animationType)){
                         let classes = [];
-                        if(animationAtom.classesToAdd){
+                        if(animationAtom.classesToAdd)
                             classes = classes.concat(animationAtom.classesToAdd);
-                        }
-                        if(animationAtom.classesToRemove){
+                        if(animationAtom.classesToRemove)
                             classes = classes.concat(animationAtom.classesToRemove);
-                        }
-                        if(animationAtom.classesToToggle){
+                        if(animationAtom.classesToToggle)
                             classes = classes.concat(animationAtom.classesToToggle);
-                        }
 
                         for(let m = 0; m < classes.length; ++m) {
                             let cls = classes[m];
-                            if (node.getAttribute(backupAttrPrefix + 'class-' + cls) === 'false') {
+                            if (node.getAttribute(backupAttrPrefix + 'class-' + cls) === 'false')
                                 node.classList.remove(cls);
-                            }
-                            if (node.getAttribute(backupAttrPrefix + 'class-' + cls) === 'true') {
+                            if (node.getAttribute(backupAttrPrefix + 'class-' + cls) === 'true')
                                 node.classList.add(cls);
-                            }
                         }
 
                         if(animationAtom.propertiesToAssign){
@@ -675,15 +647,12 @@
                                 let property = animationAtom.propertiesToAssign[m][0];
                                 if(property[0] === '*'){
                                     property = property.slice(1);
-                                    if(node.hasAttribute(backupAttrPrefix + 'general-' + property)){
+                                    if(node.hasAttribute(backupAttrPrefix + 'general-' + property))
                                         node.setAttribute(property, node.getAttribute(backupAttrPrefix + 'general-' + property));
-                                    }
                                 }
-                                else{
-                                    if(node.hasAttribute(backupAttrPrefix + property)){
+                                else
+                                    if(node.hasAttribute(backupAttrPrefix + property))
                                         node.style[property] = node.getAttribute(backupAttrPrefix + property);
-                                    }
-                                }
                             }
                         }
                     }
@@ -757,7 +726,7 @@
     }
 
     function initializeAnimationsOnPage(){
-        let animations = document.querySelectorAll('script[type="text/animation"]');
+        let animations = reveal.getSlidesElement().querySelectorAll('script[type="text/animation"]');
         let initialSettings = [];
 
         for(let animScriptDomElement of animations){
@@ -793,12 +762,12 @@
         }
 
         if(animations.length > 0){
-            Reveal.addEventListener('fragmentshown', function (event) {
+            reveal.addEventListener('fragmentshown', function (event) {
                 if (event.fragment['data-custom-animation-carrier']){
                     playAnimation(event.fragment['data-custom-animation-carrier'], event.fragment.parentNode, false);
                 }
             });
-            Reveal.addEventListener('fragmenthidden', function (event) {
+            reveal.addEventListener('fragmenthidden', function (event) {
                 if (event.fragment['data-custom-animation-carrier']){
                     rewindAnimation(event.fragment['data-custom-animation-carrier'], event.fragment.parentNode);
                 }
@@ -808,16 +777,16 @@
                 function initializer(event){
                     for(let i = 0; i < initialSettings.length; ++i){
                         if( event.currentSlide === initialSettings[i].slide ){
-                            Reveal.navigateFragment(-1);
+                            reveal.navigateFragment(-1);
                             playAnimation(initialSettings[i].animation, initialSettings[i].scope, false);
                             break;
                         }
                     }
                 }
-                Reveal.addEventListener('slidechanged', initializer);
+                reveal.addEventListener('slidechanged', initializer);
             }
         }
     }
 
     initializeAnimationsOnPage();
-})();
+}};

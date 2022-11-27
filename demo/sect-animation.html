@@ -1,0 +1,51 @@
+<section>
+    <h3>Declarative animation of CSS properties</h3>
+    <p>See the slide below. Available keywords:
+        apply, to, execute, show, hide, macro, initially, next, then, during, delay, reset, rewind</p>
+</section>
+
+<section>
+    <pre><code data-language="text" data-trim>
+initially /* What to do before animation starts */
+    apply color='red' to li[0,1]  /* Apply any CSS property */
+    apply color='teal' to li.special /* Use CSS selectors */
+next  /* Use "next" to define what is to be done on the next fragment */
+    hide li[2] during 500ms  /* Set duration of the animation */
+    then  /* If need to do several things, use "then" */
+    show li[2] during 500ms delay 1000ms
+    then
+    apply 'font-size'='16pt' to li[2] during 1000ms
+next
+    apply 'font-size'='16pt' to li[0]
+next
+    execute """console.log("Done!")"""
+next
+    reset
+    </code></pre>
+
+    <script type="text/animation">
+        /* This is a comment */
+        initially
+            apply color='red' to li[0,1]
+            apply color='teal' to li.special
+        next
+            hide li[2] during 500ms
+            then
+            show li[2] during 500ms delay 1000ms
+            then
+            apply 'font-size'='16pt' to li[2] during 1000ms
+        next
+            apply 'font-size'='16pt' to li[0]
+        next
+            execute """console.log("Done!")"""
+        next
+            reset
+    </script>
+
+    <ul>
+        <li>One</li>
+        <li>Two</li>
+        <li>Three</li>
+        <li class="special">Four</li>
+    </ul>
+</section>

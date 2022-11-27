@@ -46,7 +46,9 @@ const RevealHighlightAce = {
 					additionalText += '\n';
 				element.textContent += additionalText;
 			}
-			let showGutter = customOptions.showGutter !== undefined ? customOptions.showGutter : options.showGutter;
+			let showGutter =
+				element.hasAttribute('data-line-numbers')
+				|| (customOptions.showGutter !== undefined ? customOptions.showGutter : options.showGutter);
 
 			let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
 			highlight(element, {

@@ -39,6 +39,7 @@
     <section title="Loding content and executing actions" data-inner-html="sect-external.html"></section>
     <section title="PDF inclusion" data-inner-html="sect-pdf.html"></section>
     <section title="Python code" data-inner-html="sect-python.html"></section>
+    <section title="Declarative CSS animation" data-inner-html="sect-animation.html"></section>
     <section title="Summary" data-inner-html="sect-summary.html"></section>
 </div></div>
 
@@ -50,10 +51,14 @@
 <!-- Plugin for loading the external content, including PDFs: -->
 <script src="../reveal-custom/plugins/content-loader.js"></script>
 
-<!-- RevealMenu plugin: -->
+<!-- Modification of RevealMenu plugin by  Greg Denehy https://github.com/denehyg/reveal.js-menu -->
 <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css">
 <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css">
 <script src="../reveal-custom/plugins/menu/menu.js"></script>
+
+<!-- Verticator plugin by Martijn De Jongh (Martino) https://github.com/Martinomagnifico/reveal.js-verticator -->
+<link rel="stylesheet" href="../reveal-custom/plugins/verticator/verticator.css">
+<script src="../reveal-custom/plugins/verticator/verticator.js"></script>
 
 <!-- Use for MathJax-powered maths: -->
 <script src="../reveal-custom/plugins/math.js"></script>
@@ -70,6 +75,9 @@
 
 <!-- Display the webcam of the presenter along with the slides. -->
 <script src="../reveal-custom/plugins/webcam.js"></script>
+
+<!-- Declarative CSS animation plugin: -->
+<script src="../reveal-custom/plugins/cssanimation.js"></script>
 
 <!-- Modified stock zooming plugin -->
 <script src="../reveal-custom/plugins/zoom.js"></script>
@@ -122,17 +130,21 @@
     Reveal.initialize({
         plugins: [
             RevealContentLoader,
+
+            Verticator,
             // RevealHighlight,
             // RevealNotes,
 
-            // RevealMenu,
+            RevealMenu,
+            // RevealZoom,
 
             RevealWebcam,
-            // RevealZoom,
             RevealMath,
             RevealInking,
             RevealHighlightAce,
-            RevealPyodide
+            RevealPyodide,
+
+            RevealCSSAnimation
         ],
         slideNumber: true,
         width: 1280,
@@ -224,11 +236,12 @@
         highlighting: {
             editorInPlace: true
         },
-        zooming: {
-            explicitZoomables: false,
-        },
         pyodide: {
             preloadPackages: ['pandas']
+        },
+
+        zooming: {
+            explicitZoomables: false,
         },
 
         menu: {

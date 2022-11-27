@@ -5,15 +5,13 @@
         <a href="https://github.com/mathjax/MathJax">MathJax</a>-powered typeset) and even inside SVGs (for MathJax-powered math).</p>
 </section>
 
-<section data-menu-title="Defining finite fields">
+<section data-menu-title="Definitions">
     <div class="definition">
-        <div class="title">A field \( \bbF \) with operations \( + \) and \( \cdot \).</div>
+        <div class="title">Definition of a compact set</div>
+        <div class="statement">A subset of Euclidean space is called <span class="term">compact</span> if it is</div>
         <ul>
-            <li class="fragment fade-in-then-semi-out">commutative and associative,</li>
-            <li class="fragment fade-in-then-semi-out">distributivity of \( \cdot \) over \( + \),</li>
-            <li class="fragment fade-in-then-semi-out">existance of \( 0 \) and \( 1 \) such that \( 0+a=a \) for all \( a\in\bbF \) and \( 1\cdot b=b \) for all \( b\in\bbF\setminus\{0\} \).</li>
-            <li class="fragment fade-in-then-semi-out">equation \( a+x=b \) has a solution for all \( a, b\in\bbF \),</li>
-            <li class="fragment fade-in-then-semi-out">equation \( a\cdot x=b \) has a solution for all \( a\in\bbF\setminus\{0\} \) and \( b\in\bbF \).</li>
+            <li class="fragment fade-in-then-semi-out">closed,</li>
+            <li class="fragment fade-in-then-semi-out">bounded.</li>
         </ul>
     </div>
 </section>
@@ -21,46 +19,25 @@
 <section data-menu-title="P.r. modulo \(p^\ell\)">
     <div class="proposition">
         <div class="statement">
-            Let \(\gamma\) be a primitive root modulo \(p\). Then
-            <p style="text-align: center">\(\exists t: \quad (\gamma+pt)^{p-1} = 1 + pu\), and \(p\notdivides u\).</p>
-            <p>\(\gamma + pt\) is a p.r. modulo \(p^\ell\) for every \(\ell\).</p>
+            Some mathematical statement.
         </div>
     </div>
     <hr>
     <div class="proof">
-        Let \(q:=(\gamma^{p-1} - 1)/p \in\bbZ\)<span class="fragment display-then-remove"> (F. Little Th.)</span><span class="fragment">, and let \(t=1+\gamma q\).</span>
+        <strong>Proof.</strong> Let \(a,b\in\bbZ\)<span class="fragment display-then-remove"> (can really be \(\in\bbR\))</span><span class="fragment">, and \(n\in\bbN\).</span>
         <p class="fragment">We have
             \[ \begin{array}{rl}
-            (\gamma+pt)^{p-1} &\step{= \gamma^{p-1} + (p-1)\cdot \gamma^{p-2}\cdot pt + p^2\cdot \any} \\
-            &\step{= 1 + p\cdot (q-\gamma^{p-2}\cdot t + p\cdot \any)}\\
-            &\step{= 1 + p\cdot (q-\gamma^{p-2} - \gamma^{p-1}\cdot q + p\cdot \any)}\\
-            &\next{= 1 + p\cdot (-\gamma^{p-2} + p\cdot \any)}
+            (a+b)^n &\step{= \underbrace{(a+b)\cdot\dots\cdot(a+b)}_{n\text{ times}}  } \\
+                    &\next{= \sum\limits_{\next{k=0}}^\next{n}\next{\binom{n}{k} a^kb^{n-k}.}  }
             \end{array}
             \]</p>
-    </div>
-</section>
-
-<section>
-    <div class="proof">
-        \[
-        (\gamma+pt)^{p-1} = 1 + pu,\text{ where } p\notdivides u.
-        \]
-        Then
-        \[ \begin{array}{rl}
-        (\gamma+pt)^{p\cdot(p-1)} & =  (1 + pu)^p = 1 + p^2u + p^4\cdot\any\\
-        & \next{= 1 + p^2 u_1, \text{ where } p\notdivides u_1. }
-        \end{array} \]
-
-        <p class="fragment">Similarly for every \(k\in\bbN\) we have
-            \[ (\gamma+pt)^{p^k\cdot(p-1)} = 1 + p^{k+1} u_k, \text{ where } p\notdivides u_k. \]
-        </p>
     </div>
 </section>
 
 <section data-menu-title="Discrete logarithm">
     <div class="proposition">
         <div class="statement">
-            <p>If we fix a primitive root \(\alpha,\)
+            <p>If we fix a primitive root \(\alpha\) in a field \(\bbF\),
             then for every \(x\in \bbF\setminus\{0\}\) we can define a
             <span class="term">discrete logarithm</span>: \(\log_\alpha x \), having many properties similar to the “ordinary logarithm”:</p>
             <ul>

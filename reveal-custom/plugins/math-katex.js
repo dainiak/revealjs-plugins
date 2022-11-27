@@ -1,3 +1,10 @@
+/*
+    Reveal.js alternative math plugin powered by KaTeX
+    Author: Alex Dainiak
+    Web: www.dainiak.com
+    Email: dainiak@gmail.com
+ */
+
 const RevealMath = {
 	id: 'math',
 	renderer: 'katex',
