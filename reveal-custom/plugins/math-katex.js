@@ -1,5 +1,6 @@
 const RevealMath = {
 	id: 'math',
+	renderer: 'katex',
 	init: (reveal) => {
 		let katexVersion = '0.16.3';
 		let options = reveal.getConfig().math || {};

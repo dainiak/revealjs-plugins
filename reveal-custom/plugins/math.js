@@ -1,5 +1,6 @@
 const RevealMath = {
     id: 'math',
+    renderer: 'mathjax',
     init: (reveal) => {
         let options = reveal.getConfig().math || {};
         options = {

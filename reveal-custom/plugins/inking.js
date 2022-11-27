@@ -101,6 +101,8 @@ const RevealInking = {
             serializeCanvas: null
         };
 
+        let needToLoadOwnMath = options.math.enabled && (reveal.getPlugin('math') || {}).renderer !== 'mathjax' && !(window.MathJax || {}).version;
+
         let scriptsToLoad = [
             {
                 content: '.ink-controls {position: fixed;bottom: 10px;right: 200px;cursor: default;'
@@ -123,11 +125,11 @@ const RevealInking = {
             },
             {
                 url: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js',
-                condition: options.math.enabled && !reveal.getConfig().math && (!window.MathJax || !window.MathJax.version)
+                condition: needToLoadOwnMath
             }
         ];
 
-        if(options.math.enabled && !reveal.getConfig().math && (!window.MathJax || !window.MathJax.version)) {
+        if(needToLoadOwnMath) {
             window.MathJax = {
                 options: {
                     renderActions: {
@@ -183,6 +185,7 @@ const RevealInking = {
 
             controls.innerHTML =
                 colorControls
+                + '<div class="loading-progress ink-control-button"></div>'
                 + '<div class="ink-pencil ink-control-button"></div>'
                 + '<div class="ink-erase ink-control-button"></div>'
                 + (options.math.enabled ? '<div class="ink-formula ink-control-button"></div>' : '')
@@ -192,6 +195,7 @@ const RevealInking = {
 
             reveal.getViewportElement().appendChild(controls);
 
+            inkControlButtons.progressIndicator = controls.querySelector('.loading-progress');
             inkControlButtons.pencil = controls.querySelector('.ink-pencil');
             inkControlButtons.erase = controls.querySelector('.ink-erase');
             inkControlButtons.formula = controls.querySelector('.ink-formula');
@@ -212,6 +216,16 @@ const RevealInking = {
 
             for(let element of inkControlButtons.colorChoosers)
                 element.style.visibility = (b ? 'visible' : 'hidden');
+        }
+
+        function incrementLoadingQueue(s){
+            if(s)
+                console.log('Loading resource: ' + s);
+            inkControlButtons.progressIndicator.appendChild(document.createTextNode('\u25a2'));
+        }
+
+        function decrementLoadingQueue(){
+            inkControlButtons.progressIndicator.removeChild(inkControlButtons.progressIndicator.lastChild);
         }
 
         function setCanvasObjectDefaults(fabricObject){
@@ -268,6 +282,7 @@ const RevealInking = {
                 reveal.getViewportElement().appendChild(canvasElement);
             }
             canvasElement.id = 'revealjs_inking_canvas';
+            canvasElement.willReadFrequently = true;
             canvasElement.style.position = 'fixed';
             canvasElement.style.left = '0px';
             canvasElement.style.width = '100%';
@@ -516,18 +531,12 @@ const RevealInking = {
                 });
 
                 if(targetScaleX)
-                    img.set({
-                        scaleX: img.scaleX * targetScaleX,
-                        scaleY: img.scaleY * targetScaleY,
-                    });
+                    img.set({scaleX: img.scaleX * targetScaleX, scaleY: img.scaleY * targetScaleY});
 
                 if(targetAngle)
                     img.set({angle: targetAngle});
 
-                img.set({
-                    left: targetLeft,
-                    top: targetTop
-                });
+                img.set({left: targetLeft, top: targetTop});
 
                 setMathImageDefaults(img);
                 addMathImageEventListeners(img);
@@ -709,10 +718,10 @@ const RevealInking = {
             });
 
             reveal.addEventListener('overviewhidden', function () {
-                if(!canvasVisibleBeforeRevealOverview)
-                    return;
-                canvasVisibleBeforeRevealOverview = false;
-                toggleCanvas(true);
+                let slide = reveal.getCurrentSlide();
+                if(slide.hasAttribute('data-show-inking-canvas') ||
+                    canvasVisibleBeforeRevealOverview && !slide.hasAttribute('data-hide-inking-canvas'))
+                    toggleCanvas(true);
             });
 
             reveal.addEventListener('slidechanged', function(event){
@@ -721,38 +730,31 @@ const RevealInking = {
 
                 let slide = event.previousSlide;
 
-                if(currentCanvasSlide === slide || !currentCanvasSlide && !slide.dataset.inkingCanvasContent) {
+                if(!currentCanvasSlide || currentCanvasSlide === slide || !currentCanvasSlide && !slide.dataset.inkingCanvasContent) {
                     slide.dataset.inkingCanvasContent = canvas.getObjects().length > 0 ? getMathEnrichedCanvasJSON() : null;
                     canvas.clear();
                 }
-                slide = event.currentSlide;
 
-                slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
-                slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
-            });
+                setTimeout(function(){
+                    let slide = reveal.getCurrentSlide();
+                    slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
+                    slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
 
-            reveal.addEventListener('slidetransitionend', function(event){
-                let slide = event.currentSlide;
-                if(slide !== reveal.getCurrentSlide())
-                    return;
+                    if(!slide.dataset.inkingCanvasContent)
+                        return;
 
-                slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
-                slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
+                    loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
+                    slide.dataset.inkingCanvasContent = null;
 
-                if(!slide.dataset.inkingCanvasContent)
-                    return;
+                    if(slide.inkingObjectsPreload){
+                        for(let obj of slide.inkingObjectsPreload)
+                            canvas.add(obj);
 
-                loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
-                slide.dataset.inkingCanvasContent = null;
+                        slide.inkingObjectsPreload = null;
+                    }
 
-                if(slide.inkingObjectsPreload){
-                    for(let obj of slide.inkingObjectsPreload)
-                        canvas.add(obj);
-
-                    slide.inkingObjectsPreload = null;
-                }
-
-                currentCanvasSlide = slide;
+                    currentCanvasSlide = slide;
+                }, parseInt(window.getComputedStyle(slide).transitionDuration) || 800);
             });
         }///addRevealEventListeners
 
@@ -795,26 +797,27 @@ const RevealInking = {
         }///serializeCanvasToFile
 
         function loadSVGFromURL(slide, url, loadAsGroup){
+            incrementLoadingQueue();
             window.fabric.loadSVGFromURL(
                 url,
-                function (objects) {
+                function(objects) {
+                    decrementLoadingQueue();
                     if(!objects)
                         return;
 
-                    let objectsToAdd = objects;
                     if(loadAsGroup && objects.length > 1)
-                        objectsToAdd = [new window.fabric.Group(objects)];
+                        objects = [new window.fabric.Group(objects)];
                     else
-                        for(let obj of objectsToAdd)
+                        for(let obj of objects)
                             setCanvasObjectDefaults(obj);
 
                     if(slide === reveal.getCurrentSlide())
-                        for(let obj of objectsToAdd)
+                        for(let obj of objects)
                             canvas.add(obj);
                     else if(!slide.inkingObjectsPreload)
-                        slide.inkingObjectsPreload = objectsToAdd;
+                        slide.inkingObjectsPreload = objects;
                     else
-                        for(let obj of objectsToAdd)
+                        for(let obj of objects)
                             slide.inkingObjectsPreload.push(obj);
                 }
             )
@@ -914,8 +917,10 @@ const RevealInking = {
                 if(!inkingCanvasSrc)
                     continue;
                 if(inkingCanvasSrc.toLowerCase().endsWith('.json')) {
+                    incrementLoadingQueue();
                     sendAjaxRequest(inkingCanvasSrc, slide, function (response, slide){
                         slide.dataset.inkingCanvasContent = response;
+                        decrementLoadingQueue();
                     });
                     continue;
                 }
