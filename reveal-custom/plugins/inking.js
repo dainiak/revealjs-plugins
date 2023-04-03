@@ -1,11 +1,9 @@
 /*
     Inking plugin for reveal.js
 
-    Plugin author: Alex Dainiak, Assoc. Prof. at Moscow Institute of Physics and Technology: https://mipt.ru/english/
+    Plugin author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com
-
-    Plugin development was supported by a Vladimir Potanin Foundation grant: http://english.fondpotanin.ru/
 
     The plugin is powered by:
         Reveal.js:   https://github.com/hakimel/reveal.js     (MIT license)
@@ -120,7 +118,7 @@ const RevealInking = {
                     + '.ink-serializecanvas:before {content: "\u2B07"} ',
                 type: 'text/css'
             }, {
-                url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js',
+                url: 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js',
                 condition: !window.fabric
             },
             {

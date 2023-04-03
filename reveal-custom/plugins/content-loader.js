@@ -26,7 +26,7 @@
 const RevealContentLoader = {
     id: 'contentloader',
     init: (reveal) => {
-        let pdfjsVersion = '3.0.279';
+        let pdfjsVersion = '3.5.141';
         let options = reveal.getConfig().contentLoader || {};
         options = {
             async: !!options.async,
