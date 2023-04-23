@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,23 +9,17 @@
     <link rel="stylesheet" href="../reveal/dist/reset.css">
     <link rel="stylesheet" href="../reveal/dist/reveal.css">
 
-<!--    <link rel="stylesheet" href="../reveal/dist/theme/black.css" id="theme">-->
-    <link rel="stylesheet" href="../reveal/dist/theme/beige.css" id="theme">
+    <link rel="stylesheet" href="../reveal/dist/theme/league.css" id="theme">
 
     <link rel="stylesheet" href="../reveal/plugin/highlight/monokai.css" id="highlight-theme">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 
     <link rel="stylesheet" href="../reveal-custom/css/extras.css">
 
-    <!-- Only include those if embedding Vega-Lite charts: -->
-    <script src="https://cdn.jsdelivr.net/npm/vega@5.24.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.6.1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.3"></script>
-
     <!-- Only include those if embedding Apache ECharts: -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
     <!-- Only include this if embedding 3D Apache ECharts: -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts-gl/2.0.8/echarts-gl.min.js"></script>
 </head>
 
 
@@ -36,7 +30,7 @@
     <section title="Math" data-inner-html="sect-math.html"></section>
     <section title="Inking" data-inner-html="sect-inking.html"></section>
     <section title="Embedding vega-lite charts" data-inner-html="sect-charts.html"></section>
-    <section title="Loding content and executing actions" data-inner-html="sect-external.html"></section>
+    <section title="Loading content and executing actions" data-inner-html="sect-external.html"></section>
     <section title="PDF inclusion" data-inner-html="sect-pdf.html"></section>
     <section title="Python code" data-inner-html="sect-python.html"></section>
     <section title="Declarative CSS animation" data-inner-html="sect-animation.html"></section>
@@ -48,7 +42,7 @@
 <script src="../reveal/dist/reveal.js"></script>
 <script src="../reveal/plugin/notes/notes.js"></script>
 
-<!-- Plugin for loading the external content, including PDFs: -->
+<!-- Plugin for loading external content, including PDFs: -->
 <script src="../reveal-custom/plugins/content-loader.js"></script>
 
 <!-- Modification of RevealMenu plugin by  Greg Denehy https://github.com/denehyg/reveal.js-menu -->
@@ -60,9 +54,9 @@
 <link rel="stylesheet" href="../reveal-custom/plugins/verticator/verticator.css">
 <script src="../reveal-custom/plugins/verticator/verticator.js"></script>
 
-<!-- Use for MathJax-powered maths: -->
+<!-- Use for MathJax-powered math, and also if using inking plugin: -->
 <script src="../reveal-custom/plugins/math.js"></script>
-<!-- Use for KaTeX-powered maths: -->
+<!-- Use for KaTeX-powered math: -->
 <!--<script src="../reveal-custom/plugins/math-katex.js"></script>-->
 
 <!-- Code highlighting with editable code blocks. Powered by ACE.js editor -->
@@ -81,6 +75,9 @@
 
 <!-- Modified stock zooming plugin -->
 <script src="../reveal-custom/plugins/zoom.js"></script>
+
+<!-- Vega-embed plugin -->
+<script src="../reveal-custom/plugins/vega-embed.js"></script>
 
 <!-- MathJax/KaTeX macros that you wish to be available in the slide deck. -->
 <script type="text/latex" id="mathjaxPreamble">
@@ -144,7 +141,9 @@
             RevealHighlightAce,
             RevealPyodide,
 
-            RevealCSSAnimation
+            RevealCSSAnimation,
+
+            RevealVega
         ],
         slideNumber: true,
         width: 1280,
@@ -171,25 +170,6 @@
                     init: e => (e.textContent = Math.random())
                 }, {
                     selector: '.echart'
-                }, {
-                    selector: '.vegachart',
-                    init: function(element){
-                        window.vegaEmbed(element, element.dataset['vegaJson'], {
-                            mode: 'vega-lite',
-                            renderer: 'svg',
-                            theme: 'default',
-                            // try other themes:
-                            // dark, excel, ggplot2, quartz, vox, fivethirtyeight,
-                            // latimes, urbaninstitute, googlecharts, powerbi
-                            // See all of them at https://vega.github.io/vega-themes/
-                            tooltip: {
-                                // Change this along with the main Vega-Embed theme:
-                                theme: 'default'
-                            },
-                            // Disable the Save button for the chart:
-                            actions: false
-                        });
-                    }
                 }
             ]
         },
@@ -239,7 +219,6 @@
         pyodide: {
             preloadPackages: ['pandas']
         },
-
         zooming: {
             explicitZoomables: false,
         },

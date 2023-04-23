@@ -26,7 +26,6 @@ const RevealMath = {
                 resetIndicesAfterTypeset: (options.fragments && options.fragments.resetIndicesAfterTypeset) !== false,
                 builtinTexMacros: (options.fragments && options.fragments.builtinTexMacros) !== false,
                 cssIndices: (options.fragments && options.fragments.cssIndices) !== false,
-                maxFragments: options.fragments && options.fragments.maxFragments || 20,
                 indexClassPrefix: (options.fragments && options.fragments.indexClassPrefix) || 'fragidx-'
             },
             mathjaxUrl: options.mathjaxUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js',
@@ -327,29 +326,24 @@ const RevealMath = {
                 fragment.classList.remove('fragment')
 
             if(options.fragments.enabled && (options.fragments.resetIndicesAfterTypeset || options.fragments.cssIndices)) {
-                let cssSelector = '';
-                for(let i = 1; i < options.fragments.maxFragments; ++i){
-                    cssSelector += (cssSelector ? ',.' : '.') + options.fragments.indexClassPrefix + i.toString();
-                }
+                let cssSelector = '[class*="' + options.fragments.indexClassPrefix + '"]';
 
                 for(let slide of reveal.getSlides()){
-                    let numFragmentsWithCssIndex = slide.querySelectorAll(cssSelector).length;
-                    if(numFragmentsWithCssIndex > 0 && options.fragments.cssIndices || options.fragments.resetIndicesAfterTypeset){
-                        for(let fragment of slide.querySelectorAll('.fragment[data-fragment-index]')) {
+                    let fragmentsWithCssIndex = slide.querySelectorAll(cssSelector);
+                    if(fragmentsWithCssIndex.length > 0 && options.fragments.cssIndices || options.fragments.resetIndicesAfterTypeset)
+                        for(let fragment of slide.querySelectorAll('.fragment[data-fragment-index]'))
                             fragment.removeAttribute('data-fragment-index');
-                        }
-                    }
 
-                    if(options.fragments.cssIndices) {
-                        for (let i = 1; numFragmentsWithCssIndex > 0; ++i) {
-                            let fragments = slide.querySelectorAll('.' + options.fragments.indexClassPrefix + i.toString());
-                            for (let fragment of fragments) {
-                                fragment.classList.add('fragment');
-                                fragment.setAttribute('data-fragment-index', i.toString());
-                                numFragmentsWithCssIndex -= 1;
-                            }
-                        }
-                    }
+                    if(options.fragments.cssIndices)
+                        for (let fragment of fragmentsWithCssIndex) {
+                            let s = fragment.getAttribute('class');
+                            s = s.substring(
+                                s.indexOf(options.fragments.indexClassPrefix) + options.fragments.indexClassPrefix.length
+                            );
+                            s = s.substring(0, Math.max(s.indexOf(' '), s.length));
+                            fragment.classList.add('fragment');
+                            fragment.setAttribute('data-fragment-index', s);
+                        } 
                 }
             }
 
