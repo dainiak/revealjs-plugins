@@ -9,8 +9,10 @@ const RevealMath = {
     id: 'math',
     renderer: 'mathjax',
     init: (reveal) => {
+        let mathjaxVersion = '3.2.2';
         let options = reveal.getConfig().math || {};
         options = {
+            renderer: options.renderer || 'svg',
             svg: {
                 enabled: (options.svg !== false) && (options.svg && options.svg.enabled !== false),
                 mathScale: options.svg && options.svg.mathScale || 0.0015,
@@ -28,7 +30,9 @@ const RevealMath = {
                 cssIndices: (options.fragments && options.fragments.cssIndices) !== false,
                 indexClassPrefix: (options.fragments && options.fragments.indexClassPrefix) || 'fragidx-'
             },
-            mathjaxUrl: options.mathjaxUrl || 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js',
+            mathjaxUrl:
+                options.mathjaxUrl
+                || 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/' + mathjaxVersion + '/es5/tex-' + (options.renderer || 'svg') + '-full.min.js',
             macros: options.macros || {},
             delimiters: {
                 inline: options.delimiters && options.delimiters.inline || [["\\(", "\\)"]],
@@ -314,11 +318,11 @@ const RevealMath = {
                 let script = document.querySelector(scriptSelector);
                 let preamble = script ? script.innerText : options.preamble;
                 preamble = preamble.replace(/(?!\\)%.*$/mg, '');
-                window.MathJax.tex2svg(preamble);
+                (window.MathJax.tex2svg || window.MathJax.tex2chtml)(preamble);
             }
 
             window.MathJax.typeset();
-            if(options.svg.enabled) {
+            if(options.renderer === 'svg' && options.svg.enabled) {
                 typesetMathInSVG();
             }
 

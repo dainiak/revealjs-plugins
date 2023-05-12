@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="../reveal/dist/theme/league.css" id="theme">
 
     <link rel="stylesheet" href="../reveal/plugin/highlight/monokai.css" id="highlight-theme">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 
     <link rel="stylesheet" href="../reveal-custom/css/extras.css">
 
@@ -25,16 +24,16 @@
 
 <body>
 <div class="reveal"><div class="slides">
-    <section title="Title" data-inner-html="sect-title.html"></section>
-    <section title="Webcam" data-inner-html="sect-webcam.html"></section>
-    <section title="Math" data-inner-html="sect-math.html"></section>
-    <section title="Inking" data-inner-html="sect-inking.html"></section>
-    <section title="Embedding vega-lite charts" data-inner-html="sect-charts.html"></section>
-    <section title="Loading content and executing actions" data-inner-html="sect-external.html"></section>
-    <section title="PDF inclusion" data-inner-html="sect-pdf.html"></section>
-    <section title="Python code" data-inner-html="sect-python.html"></section>
-    <section title="Declarative CSS animation" data-inner-html="sect-animation.html"></section>
-    <section title="Summary" data-inner-html="sect-summary.html"></section>
+    <section data-menu-title="Title" data-inner-html="sect-title.html"></section>
+    <section data-menu-title="Webcam" data-inner-html="sect-webcam.html"></section>
+    <section data-menu-title="Math" data-inner-html="sect-math.html"></section>
+    <section data-menu-title="Inking" data-inner-html="sect-inking.html"></section>
+    <section data-menu-title="Embedding vega-lite charts" data-inner-html="sect-charts.html"></section>
+    <section data-menu-title="Loading content and executing actions" data-inner-html="sect-external.html"></section>
+    <section data-menu-title="PDF inclusion" data-inner-html="sect-pdf.html"></section>
+    <section data-menu-title="Python code" data-inner-html="sect-python.html"></section>
+    <section data-menu-title="Declarative CSS animation" data-inner-html="sect-animation.html"></section>
+    <section data-menu-title="Summary" data-inner-html="sect-summary.html"></section>
 </div></div>
 
 
@@ -59,6 +58,9 @@
 <!-- Use for KaTeX-powered math: -->
 <!--<script src="../reveal-custom/plugins/math-katex.js"></script>-->
 
+<!-- Vega-embed plugin -->
+<script src="../reveal-custom/plugins/vega-embed.js"></script>
+
 <!-- Code highlighting with editable code blocks. Powered by ACE.js editor -->
 <script src="../reveal-custom/plugins/highlight-ace.js"></script>
 <!-- In-browser code execution. Supports sympy, numpy, pandas. Powered by Pyodide -->
@@ -75,9 +77,6 @@
 
 <!-- Modified stock zooming plugin -->
 <script src="../reveal-custom/plugins/zoom.js"></script>
-
-<!-- Vega-embed plugin -->
-<script src="../reveal-custom/plugins/vega-embed.js"></script>
 
 <!-- MathJax/KaTeX macros that you wish to be available in the slide deck. -->
 <script type="text/latex" id="mathjaxPreamble">
@@ -135,9 +134,9 @@
             RevealMenu,
             // RevealZoom,
 
-            RevealWebcam,
+            // RevealWebcam,
             RevealMath,
-            RevealInking,
+            // RevealInking,
             RevealHighlightAce,
             RevealPyodide,
 
@@ -175,6 +174,7 @@
         },
 
         math: {
+            renderer: 'svg', // 'svg' or 'chtml'
             svg: {
                 enabled: true,
                 mathScale: 0.0015,
@@ -227,7 +227,7 @@
             openSlideNumber: true,
             openButton: false,
             themes: true,
-            themesPath: '../reveal/css/theme/',
+            themesPath: '../reveal/dist/theme/',
             transitions: true,
             titleSelector: 'h1, h2, h3, h4, h5, h6, figcaption, div.theorem > div.title',
             // autoOpen: true,

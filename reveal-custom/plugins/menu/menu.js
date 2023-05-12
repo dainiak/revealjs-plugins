@@ -30,6 +30,7 @@ const RevealMenu = {
 		options.hideMissingTitles = options.hideMissingTitles || false;
 		options.useTextContentForMissingTitles = options.useTextContentForMissingTitles || false;
 		options.markers = options.markers !== undefined ? options.markers : true;
+
 		options.themesPath = typeof options.themesPath === 'string' ? options.themesPath : 'css/theme/';
 		if (!options.themesPath.endsWith('/')) options.themesPath += '/';
 		options.themes = document.querySelector('link#theme') ? options.themes : false;
@@ -50,6 +51,7 @@ const RevealMenu = {
 		} else if (!Array.isArray(options.themes)) {
 			options.themes = false;
 		}
+		
 		options.transitions = options.transitions || false;
 
 		if (options.transitions === true) {

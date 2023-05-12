@@ -9,7 +9,7 @@ const RevealMath = {
 	id: 'math',
 	renderer: 'katex',
 	init: (reveal) => {
-		let katexVersion = '0.16.6';
+		let katexVersion = '0.16.7';
 		let options = reveal.getConfig().math || {};
 		options = {
 			urls: {
@@ -201,7 +201,7 @@ const RevealMath = {
 			}
 
 			if(params.content){
-				document.querySelector('head').appendChild( script );
+				document.querySelector('head').appendChild(script);
 				if(params.callback) {
 					params.callback.call();
 				}
@@ -219,11 +219,11 @@ const RevealMath = {
 					}
 				};
 
-				document.querySelector( 'head' ).appendChild( script );
+				document.querySelector( 'head' ).appendChild(script);
 			}
 		}
 
-		function loadScripts( scripts, callback ) {
+		function loadScripts(scripts, callback) {
 			if(!scripts || scripts.length === 0) {
 				if (typeof callback === 'function') {
 					if(reveal.isReady()) {
