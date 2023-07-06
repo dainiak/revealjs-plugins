@@ -4,9 +4,10 @@
     opacity: 0;
     &.visible {
       opacity: 0.5;
-    }
-    &.current-fragment {
-      opacity: 1;
+
+      &.current-fragment {
+        opacity: 1;
+      }
     }
   }
 
@@ -14,9 +15,36 @@
     display: none;
     &.visible {
       display: none;
+
+      &.current-fragment {
+        display: inline;
+      }
     }
-    &.visible.current-fragment {
-      display: inline;
+  }
+
+  .fragment.neon {
+    &.visible {
+      &.current-fragment {
+        @keyframes neon-blink-animation {
+          0% {text-shadow: none;}
+          40% {text-shadow: none;}
+          50% {
+            text-shadow:
+                    0 0 7px #fff,
+                    0 0 10px #fff,
+                    0 0 21px #fff,
+                    0 0 42px #0fa,
+                    0 0 82px #0fa,
+                    0 0 92px #0fa,
+                    0 0 102px #0fa,
+                    0 0 151px #0fa;
+          }
+
+          60% {text-shadow: none;}
+          100% {text-shadow: none;}
+        }
+        animation: neon-blink-animation 1s infinite;
+      }
     }
   }
 

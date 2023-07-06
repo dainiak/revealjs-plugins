@@ -16,5 +16,8 @@
     <orderEntry type="library" name="echarts" level="application" />
     <orderEntry type="library" name="vega-embed" level="application" />
     <orderEntry type="library" name="echarts-gl" level="application" />
+    <orderEntry type="library" name="echarts" level="application" />
+    <orderEntry type="library" name="echarts-gl" level="application" />
+    <orderEntry type="library" name="mermaid" level="application" />
   </component>
 </module>

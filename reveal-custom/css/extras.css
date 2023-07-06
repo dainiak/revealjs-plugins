@@ -141,7 +141,7 @@
 .reveal .slides section .fragment.step.visible, .reveal .slides section ul.steps li.fragment.visible {
   opacity: 0.5;
 }
-.reveal .slides section .fragment.step.current-fragment, .reveal .slides section ul.steps li.fragment.current-fragment {
+.reveal .slides section .fragment.step.visible.current-fragment, .reveal .slides section ul.steps li.fragment.visible.current-fragment {
   opacity: 1;
 }
 .reveal .slides section .fragment.display-then-remove {
@@ -152,6 +152,26 @@
 }
 .reveal .slides section .fragment.display-then-remove.visible.current-fragment {
   display: inline;
+}
+.reveal .slides section .fragment.neon.visible.current-fragment {
+  animation: neon-blink-animation 1s infinite;
+}
+@keyframes neon-blink-animation {
+  0% {
+    text-shadow: none;
+  }
+  40% {
+    text-shadow: none;
+  }
+  50% {
+    text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #0fa, 0 0 82px #0fa, 0 0 92px #0fa, 0 0 102px #0fa, 0 0 151px #0fa;
+  }
+  60% {
+    text-shadow: none;
+  }
+  100% {
+    text-shadow: none;
+  }
 }
 .reveal .slides section .fragment.sliding-underline {
   display: inline-block;
@@ -207,7 +227,7 @@ ul.frombooks {
   list-style-type: none;
 }
 ul.frombooks > li:before {
-  content: " ";
+  content: "\f02d ";
   font-family: "FontAwesome", sans-serif;
 }
 
@@ -215,19 +235,19 @@ ul.charging {
   list-style-type: none;
 }
 ul.charging > li:nth-of-type(1):before {
-  content: " ";
+  content: "\f243 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.charging > li:before {
-  content: " ";
+  content: "\f242 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.charging > li:nth-last-of-type(2):before {
-  content: " ";
+  content: "\f241 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.charging > li:nth-last-of-type(1):before {
-  content: " ";
+  content: "\f240 ";
   font-family: "FontAwesome", sans-serif;
 }
 
@@ -235,23 +255,23 @@ ul.discharging {
   list-style-type: none;
 }
 ul.discharging > li:nth-of-type(1):before {
-  content: " ";
+  content: "\f240 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.discharging > li:nth-of-type(2):before {
-  content: " ";
+  content: "\f241 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.discharging > li:before {
-  content: " ";
+  content: "\f242 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.discharging > li:nth-last-of-type(2):before {
-  content: " ";
+  content: "\f243 ";
   font-family: "FontAwesome", sans-serif;
 }
 ul.discharging > li:nth-last-of-type(1):before {
-  content: " ";
+  content: "\f244 ";
   font-family: "FontAwesome", sans-serif;
 }
 
@@ -341,4 +361,5 @@ kbd {
   border: dashed 1px black;
   font-family: monospace;
 }
+
 /*# sourceMappingURL=extras.css.map */

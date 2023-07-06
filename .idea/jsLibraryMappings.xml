@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="PROJECT" libraries="{echarts, echarts-gl, font-awesome, vega, vega-embed, vega-lite}" />
+    <file url="PROJECT" libraries="{echarts, echarts-gl, font-awesome, mermaid}" />
   </component>
 </project>
