@@ -153,7 +153,7 @@
 .reveal .slides section .fragment.display-then-remove.visible.current-fragment {
   display: inline;
 }
-.reveal .slides section .fragment.neon.visible.current-fragment {
+.reveal .slides section .neon {
   animation: neon-blink-animation 1s infinite;
 }
 @keyframes neon-blink-animation {

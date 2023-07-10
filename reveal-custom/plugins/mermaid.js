@@ -28,7 +28,7 @@ const RevealMermaid = {
                 setClassCommand: (options.css && options.css.setClassCommand) || 'setClass',
                 setAttributeCommand: (options.css && options.css.setAttributeCommand) || 'setAttribute',
             },
-            overflowVisible: options.overflowVisible !== false,
+            overflowVisible: options.overflowVisible === undefined ? true : options.overflowVisible,
             mermaidInit: options.mermaidInit || { startOnLoad: false, theme: 'auto' }
         };
 

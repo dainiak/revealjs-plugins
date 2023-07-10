@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../reveal/dist/reset.css">
     <link rel="stylesheet" href="../reveal/dist/reveal.css">
 
-    <link rel="stylesheet" href="../reveal/dist/theme/league.css" id="theme">
+    <link rel="stylesheet" href="../reveal/dist/theme/beige.css" id="theme">
 
     <link rel="stylesheet" href="../reveal/plugin/highlight/monokai.css" id="highlight-theme">
 
@@ -19,6 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
     <!-- Only include this if embedding 3D Apache ECharts: -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts-gl/2.0.8/echarts-gl.min.js"></script>
+
 </head>
 
 
@@ -32,6 +33,7 @@
     <section data-menu-title="Loading content and executing actions" data-inner-html="sect-external.html"></section>
     <section data-menu-title="PDF inclusion" data-inner-html="sect-pdf.html"></section>
     <section data-menu-title="Python code" data-inner-html="sect-python.html"></section>
+    <section data-menu-title="Mermaid diagrams" data-inner-html="sect-mermaid.html"></section>
     <section data-menu-title="Declarative CSS animation" data-inner-html="sect-animation.html"></section>
     <section data-menu-title="Summary" data-inner-html="sect-summary.html"></section>
 </div></div>
@@ -77,6 +79,9 @@
 
 <!-- Modified stock zooming plugin -->
 <script src="../reveal-custom/plugins/zoom.js"></script>
+
+<!-- Modified stock zooming plugin -->
+<script src="../reveal-custom/plugins/mermaid.js"></script>
 
 <!-- MathJax/KaTeX macros that you wish to be available in the slide deck. -->
 <script type="text/latex" id="mathjaxPreamble">
@@ -142,7 +147,8 @@
 
             RevealCSSAnimation,
 
-            RevealVega
+            RevealVega,
+            RevealMermaid
         ],
         slideNumber: true,
         width: 1280,
@@ -218,6 +224,9 @@
         },
         pyodide: {
             preloadPackages: ['pandas']
+        },
+        mermaid: {
+            overflowVisible: '*'
         },
         zooming: {
             explicitZoomables: false,
