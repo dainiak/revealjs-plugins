@@ -17,6 +17,16 @@ const RevealMath = {
 				css: options.urls && options.urls.css || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/' + katexVersion + '/katex.min.css',
 				autorender: options.urls && options.urls.autorender || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/' + katexVersion + '/contrib/auto-render.min.js'
 			},
+			svg: {
+				enabled: (options.svg !== false) && (options.svg && options.svg.enabled !== false),
+				mathScale: options.svg && options.svg.mathScale || 0.2,
+				fixedScale: options.svg && options.svg.fixedScale ? options.svg.fixedScale: false,
+				escapeClipping: !!(options.svg && options.svg.escapeClipping),
+				defaultAlignment: options.svg && options.svg.defaultAlignment || 'C',
+				defaultVerticalAlignment: options.svg && options.svg.defaultVerticalAlignment || 'B',
+				inheritAttributes: options.svg && options.svg.inheritAttributes || ['id', 'classlist'],
+				inheritRecursively: options.svg && options.svg.inheritRecursively || false
+			},
 			fragments: {
 				enabled: (options.fragments && options.fragments.enabled) !== false,
 				resetIndicesAfterTypeset: (options.fragments && options.fragments.resetIndicesAfterTypeset) !== false,
@@ -95,6 +105,223 @@ const RevealMath = {
 			}
 		];
 
+		function typesetMathInSVG(renderOptions) {
+			function getTargetProperties(node){
+				let properties = {
+					id: null,
+					classList: [],
+					x: 0,
+					y: 0,
+					fontSize: 20,
+					style: {}
+				};
+
+				function fixPx(value){
+					if(value === null || value === undefined)
+						return null;
+					if(typeof(value) === 'number')
+						return value;
+					if(typeof(value) === 'string'){
+						value = value.replace('px', '');
+						return parseFloat(value);
+					}
+					return null;
+				}
+
+				let t = node;
+				properties.x = fixPx(node.getAttribute('x')) || node.getBBox().x;
+				properties.y = fixPx(node.getAttribute('y')) || node.getBBox().y;
+				while(t.tagName !== 'svg') {
+					let transform = t.getAttribute('transform')
+					let match;
+					if(transform) {
+						match = transform.match(/translate\(\s*(-?[\d.]*)\s*[,]?\s*(-?[\d.]*)\s*/);
+					}
+
+					if(match && match.length >= 2) {
+						properties.x += parseFloat(match[1]);
+						properties.y += parseFloat(match[2]);
+					}
+
+					if (t.hasAttribute('dx'))
+						properties.x += +fixPx(t.getAttribute('dx'));
+					if (t.hasAttribute('dy'))
+						properties.y += +fixPx(t.getAttribute('dy'));
+					t = t.parentNode;
+				}
+
+				t = node;
+				while (!t.style.fontSize && ['text', 'tspan'].includes((t.parentNode || {}).tagName)) {
+					t = t.parentNode;
+				}
+				let fontSize = t.style.fontSize;
+				properties.fontSize = fontSize ? +(fixPx(fontSize)) : 20
+
+				let defaultStyle = {
+					'fill': '#000000',
+					'stroke': '#000000',
+					'fill-opacity': '1'
+				};
+
+				for(let property of options.svg.inheritAttributes){
+					t = node;
+					while(!t.style.getPropertyValue(property) && ['text', 'tspan'].includes((t.parentNode || {}).tagName)) {
+						t = t.parentNode;
+					}
+
+					let value = t.style.getPropertyValue(property) || defaultStyle[property];
+					if(value !== '' && value !== undefined){
+						properties.style[property] = value;
+					}
+				}
+
+				if(options.svg.inheritAttributes.includes('classlist') || options.svg.inheritAttributes.includes('classList')){
+					t = node;
+					properties.classList = Array.from(t.classList);
+					while(['text', 'tspan'].includes((t.parentNode || {}).tagName)) {
+						t = t.parentNode;
+						Array.prototype.push.apply(properties.classList, Array.from(t.classList));
+					}
+				}
+
+				t = node;
+				while(!t.hasAttribute('id') && ['text', 'tspan'].includes((t.parentNode || {}).tagName)){
+					t = t.parentNode;
+				}
+				if(t.hasAttribute('id')){
+					properties.id = t.getAttribute('id');
+				}
+
+				return properties;
+			}
+
+			function setTransform(node, params) {
+				let katexSpan = foreignObjectNode.querySelector('span.katex');
+				let width = katexSpan.getBoundingClientRect().width;
+				let height = katexSpan.getBoundingClientRect().height;
+				let x1 = (params.hAlignment === 'L' ? 0 : -width) * (params.hAlignment === 'C' ? 0.5 : 1.0);
+				let y1 = (params.vAlignment === 'B' ? 0 : height) * (params.vAlignment === 'M' ? 0.5 : 1.0);
+				node.setAttribute('width', width.toString());
+				node.setAttribute('height', height.toString());
+				node.setAttribute('overflow', 'visible');
+				node.setAttribute(
+					'transform',
+					'translate('+params.x0+' '+params.y0+')' + ' scale('+params.scale+') translate('+x1+' '+y1+')'
+				);
+			}
+
+			function createSvgMathNode(textNode) {
+				let regexpInline = /^\s*([LCRBMT]{0,2})\s*\\\((.*)\\\)\s*$/i;
+				let regexpDisplay = /^\s*([LCRBMT]{0,2})\s*\\\[(.*)\\]\s*$/i;
+				let math = textNode.textContent.match(regexpInline);
+				let displayMath = textNode.textContent.match(regexpDisplay);
+				let isDisplay = false;
+				if(displayMath){
+					isDisplay = true;
+					math = displayMath;
+				}
+				if(!math) {
+					return {
+						foreignObjectNode: null,
+						x0: undefined,
+						y0: undefined,
+						scale: undefined,
+						hAlignment: undefined,
+						vAlignment: undefined
+					};
+				}
+
+				let foreignObjectNode = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+
+				let katexOptions = {
+					output: 'html',
+					displayMode: isDisplay
+				};
+				Object.assign(katexOptions, renderOptions);
+
+				foreignObjectNode.innerHTML = window.katex.renderToString(math[2], katexOptions);
+
+
+				// foreignObjectNode.style.zIndex = 1000;
+				foreignObjectNode.setAttribute('width', '100%');
+				foreignObjectNode.setAttribute('height', '100%');
+
+				let targetProperties = getTargetProperties(textNode);
+				let x0 = targetProperties.x;
+				let y0 = targetProperties.y;
+				let scale = options.svg.mathScale;
+				let hAlignment = (math[1].match(/[LCR]/i) || options.svg.defaultAlignment || 'L')[0].toUpperCase();
+				let vAlignment = (math[1].match(/[BMT]/i) || options.svg.defaultVerticalAlignment || 'T')[0].toUpperCase();
+				foreignObjectNode.setAttribute(
+					'transform',
+					'translate('+x0+' '+y0+')' + ' scale('+scale+')'
+				);
+
+				foreignObjectNode.setAttribute('width', '100%');
+				foreignObjectNode.setAttribute('height', '100%');
+
+				for(let property in targetProperties.style){
+					let value = targetProperties.style[property];
+					if(!value) {
+						continue;
+					}
+					foreignObjectNode.style.setProperty(property, value);
+				}
+
+				for(let cssClass of targetProperties.classList){
+					foreignObjectNode.classList.add(cssClass);
+				}
+				if(targetProperties.id){
+					foreignObjectNode.id = targetProperties.id;
+				}
+
+				return {foreignObjectNode, x0, y0, scale, hAlignment, vAlignment};
+			}
+
+			for(let textNode of reveal.getSlidesElement().querySelectorAll('svg text')) {
+				let hadMathInside = false;
+				let nodesForRemoval = [];
+				for(let tspanNode of textNode.getElementsByTagName('tspan')) {
+					let {foreignObjectNode, x0, y0, scale, hAlignment, vAlignment} = createSvgMathNode(tspanNode);
+					if(!foreignObjectNode){
+						continue;
+					}
+					hadMathInside = true;
+					textNode.parentNode.insertBefore(foreignObjectNode, textNode);
+					setTransform(foreignObjectNode, {
+						x0, y0, scale, hAlignment, vAlignment
+					});
+
+					nodesForRemoval.push(tspanNode);
+				}
+
+				for(let node of nodesForRemoval)
+					if(node && node.parentNode && node.parentNode.removeChild)
+						node.parentNode.removeChild(node);
+
+				nodesForRemoval = [];
+
+				let {foreignObjectNode, x0, y0, scale, hAlignment, vAlignment} = createSvgMathNode(textNode);
+				if(foreignObjectNode) {
+					hadMathInside = true;
+					textNode.parentNode.insertBefore(foreignObjectNode, textNode);
+					setTransform(foreignObjectNode, {
+						x0, y0, scale, hAlignment, vAlignment
+					});
+
+					nodesForRemoval.push(textNode);
+				}
+
+				if(options.svg.escapeClipping && hadMathInside){
+					textNode.parentNode.removeAttribute('clip-path');
+				}
+
+				for(let node of nodesForRemoval)
+					if(node && node.parentNode && node.parentNode.removeChild)
+						node.parentNode.removeChild(node);
+			}
+		}
+
 		function renderMath() {
 			window.addEventListener('load', function(){
 				if(options.preamble && (typeof(options.preamble) === 'string' || options.preamble === true)){
@@ -137,6 +364,9 @@ const RevealMath = {
 					renderOptions.ignoredClasses = options.ignore.classes
 				}
 				window.renderMathInElement(reveal.getViewportElement(), renderOptions);
+
+				typesetMathInSVG(renderOptions);
+
 
 				if(options.fragments.enabled && (options.fragments.resetIndicesAfterTypeset || options.fragments.cssIndices)) {
 					let cssSelector = '[class*="' + options.fragments.indexClassPrefix + '"]';
