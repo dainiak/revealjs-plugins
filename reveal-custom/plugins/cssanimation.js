@@ -99,7 +99,7 @@ const RevealCSSAnimation = {
             if(s.slice(0,2) === '/*'){
                 let posEnd = s.indexOf('*/');
                 if(posEnd === -1){
-                    console.log('Unable to parse: a comment was not closed');
+                    console.warn('Unable to parse: a comment was not closed');
                     return {error: 'Unable to parse: a comment was not closed'};
                 }
                 s = s.slice(posEnd+2);
@@ -110,7 +110,7 @@ const RevealCSSAnimation = {
                 s = s.slice(quot.length);
                 let posEnd = s.indexOf(quot);
                 if(posEnd === -1){
-                    console.log('Unable to parse: a string literal starting with ' + quot + ' was not closed');
+                    console.warn('Unable to parse: a string literal starting with ' + quot + ' was not closed');
                     return {error: 'Unable to parse: a string literal starting with ' + quot + ' was not closed'};
                 }
                 preResult.push({content: s.slice(0,posEnd), type: 'string'});
