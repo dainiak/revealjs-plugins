@@ -158,7 +158,7 @@ const RevealMenu = {
 		function selectMenuItem(el) {
 			deselectAllMenuItems();
 			el.classList.add('selected');
-			keepVisible(el);
+			// keepVisible(el); // Breaks markup
 			if (options.autoOpen && options.sticky)
 				openMenuItem(el, !options.sticky);
 		}
