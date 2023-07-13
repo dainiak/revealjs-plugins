@@ -13,6 +13,7 @@ const RevealWebcam = {
 
         let options = reveal.getConfig().webcam || {};
         options = {
+            initializeOnLoad: options.initializeOnLoad !== false,
             keys: {
                 toggle: options.keys && options.keys.toggle || 'c',
                 fullscreen: options.keys && options.keys.fullscreen || 'C'
@@ -32,12 +33,13 @@ const RevealWebcam = {
                     height: '100px',
                     position: 'absolute',
                     transition: '0.5s ease',
-                    opacity: '0.3',
+                    opacity: '0.7',
                     'z-index': '100'
                 }
             }
         };
 
+        let isInitialized = false;
         let currentlyFullscreen = false;
         let currentlyHidden = false;
 
@@ -50,6 +52,14 @@ const RevealWebcam = {
                 permanentCam.style.setProperty(attr, options.sidecam.style[attr]);
 
             reveal.getViewportElement().appendChild(permanentCam);
+        }
+
+        if(!options.initializeOnLoad && permanentCam) {
+            if (!permanentCam.hasAttribute('data-webcam-old-opacity')) {
+                permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
+            }
+            permanentCam.style.opacity = '0';
+            currentlyHidden = true;
         }
 
         function shrinkWebcamVideo() {
@@ -118,11 +128,11 @@ const RevealWebcam = {
             }
         }
 
-        reveal.addEventListener('ready', function () {
-            if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-                console.warn('Couldn\'t retrieve webcam video: feature unsupported by your browser');
+        function initializeWebcam() {
+            if(isInitialized)
                 return;
-            }
+            isInitialized = true;
+
             navigator.mediaDevices.getUserMedia({video: true}).then(function (localMediaStream) {
                 for (let webcamContainer of revealViewport.querySelectorAll('video.webcam')) {
                     webcamContainer.srcObject = localMediaStream;
@@ -135,53 +145,70 @@ const RevealWebcam = {
 
                 permanentCam.srcObject = localMediaStream;
                 permanentCam.setAttribute('autoplay', 'true');
-                if (options.fullscreen.shrinkOnOverview) {
-                    reveal.addEventListener('overviewshown', function () {
-                        if (currentlyFullscreen && !currentlyHidden) {
-                            shrinkWebcamVideo();
-                            currentlyFullscreen = false;
-                        }
-                    });
-                }
-
-                document.addEventListener('keydown', function (event) {
-                    if (document.querySelector(':focus') !== null || event.altKey || event.ctrlKey || event.metaKey)
-                        return;
-
-                    let config = reveal.getConfig();
-                    if(config.keyboardCondition === 'focused' && ! reveal.isFocused())
-                        return true;
-                    if(config.keyboardCondition === 'function' && config.keyboardCondition(event) === false ) {
-                        return true;
-                    }
-
-                    if (event.key === options.keys.toggle && options.sidecam.enabled || event.key === options.keys.fullscreen && options.fullscreen.enabled) {
-                        event.preventDefault();
-
-                        if (event.key === options.keys.fullscreen) {
-                            currentlyFullscreen ? shrinkWebcamVideo() : expandWebcamVideo();
-                            currentlyFullscreen = !currentlyFullscreen;
-                        } else {
-                            if (currentlyHidden) {
-                                permanentCam.style.opacity = currentlyFullscreen ? options.fullscreen.opacity : permanentCam.getAttribute('data-webcam-old-opacity');
-                                currentlyHidden = false;
-                            }
-                            else {
-                                if (!permanentCam.hasAttribute('data-webcam-old-opacity')) {
-                                    permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
-                                }
-
-                                permanentCam.style.opacity = '0';
-                                currentlyHidden = true;
-                            }
-                        }
-                    }
-                }, false);
             }).catch(
                 function (err) {
                     console.warn(err);
                 }
             );
+        }
+
+        reveal.addEventListener('ready', function () {
+            if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+                console.warn('Couldn\'t retrieve webcam video: feature unsupported by your browser');
+                return;
+            }
+
+            if(options.initializeOnLoad && !isInitialized) {
+                initializeWebcam();
+            }
+
+            if (options.fullscreen.shrinkOnOverview) {
+                reveal.addEventListener('overviewshown', function () {
+                    if (currentlyFullscreen && !currentlyHidden) {
+                        shrinkWebcamVideo();
+                        currentlyFullscreen = false;
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', function (event) {
+                if (document.querySelector(':focus') !== null || event.altKey || event.ctrlKey || event.metaKey)
+                    return;
+
+                let config = reveal.getConfig();
+                if(config.keyboardCondition === 'focused' && ! reveal.isFocused())
+                    return true;
+                if(config.keyboardCondition === 'function' && config.keyboardCondition(event) === false ) {
+                    return true;
+                }
+
+                if (event.key === options.keys.toggle && options.sidecam.enabled || event.key === options.keys.fullscreen && options.fullscreen.enabled) {
+                    event.preventDefault();
+
+                    if (!isInitialized) {
+                        initializeWebcam();
+                    }
+
+                    if (event.key === options.keys.fullscreen) {
+                        currentlyFullscreen ? shrinkWebcamVideo() : expandWebcamVideo();
+                        currentlyFullscreen = !currentlyFullscreen;
+                    } else {
+                        if (currentlyHidden) {
+                            permanentCam.style.opacity = currentlyFullscreen ? options.fullscreen.opacity : permanentCam.getAttribute('data-webcam-old-opacity');
+                            currentlyHidden = false;
+                        }
+                        else {
+                            if (!permanentCam.hasAttribute('data-webcam-old-opacity')) {
+                                permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
+                            }
+
+                            permanentCam.style.opacity = '0';
+                            currentlyHidden = true;
+                        }
+                    }
+                }
+            }, false);
+
         });
     }
 };
