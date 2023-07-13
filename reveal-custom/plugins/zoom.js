@@ -176,7 +176,3 @@ const RevealZoom = {
 		})
 	}
 };
-
-// Reveal.registerPlugin( 'revealZoom', RevealZoom );
-
-// export default () => RevealZoom;
