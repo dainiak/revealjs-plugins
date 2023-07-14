@@ -55,10 +55,13 @@ const RevealWebcam = {
         }
 
         if(!options.initializeOnLoad && permanentCam) {
-            if (!permanentCam.hasAttribute('data-webcam-old-opacity')) {
+            if (!permanentCam.hasAttribute('data-webcam-old-opacity'))
                 permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
-            }
+            if (!permanentCam.hasAttribute('data-webcam-old-height'))
+                permanentCam.setAttribute('data-webcam-old-height', permanentCam.style.height);
+
             permanentCam.style.opacity = '0';
+            permanentCam.style.height = '0px';
             currentlyHidden = true;
         }
 
@@ -195,6 +198,8 @@ const RevealWebcam = {
                     } else {
                         if (currentlyHidden) {
                             permanentCam.style.opacity = currentlyFullscreen ? options.fullscreen.opacity : permanentCam.getAttribute('data-webcam-old-opacity');
+                            if(!currentlyFullscreen)
+                                permanentCam.style.height = options.sidecam.style.height;
                             currentlyHidden = false;
                         }
                         else {
@@ -203,6 +208,8 @@ const RevealWebcam = {
                             }
 
                             permanentCam.style.opacity = '0';
+                            if(!currentlyFullscreen)
+                                permanentCam.style.height = '0px';
                             currentlyHidden = true;
                         }
                     }
