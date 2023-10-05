@@ -13,8 +13,8 @@ const RevealMermaid = {
             mathInLabels: options.mathInLabels !== false,
             urls: options.urls || {
                 mermaid: options.urls && options.urls.mermaid || 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
-                katex: options.urls && options.urls.katex || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js',
-                katexCss: options.urls && options.urls.katexCss || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css',
+                katex: options.urls && options.urls.katex || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js',
+                katexCss: options.urls && options.urls.katexCss || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css',
             },
             selectors: {
                 container: options.selectors && options.selectors.container || '[data-mermaid]',
