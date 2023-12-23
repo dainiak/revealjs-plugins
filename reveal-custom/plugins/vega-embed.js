@@ -15,7 +15,7 @@ const RevealVega = {
             urls: {
 				vega: options.urls && options.urls.vega || 'https://cdnjs.cloudflare.com/ajax/libs/vega/5.26.1/vega.min.js',
 				vegaLite: options.urls && options.urls.vegaLite || 'https://cdnjs.cloudflare.com/ajax/libs/vega-lite/5.16.3/vega-lite.min.js',
-				vegaEmbed: options.urls && options.urls.vegaEmbed || 'https://cdnjs.cloudflare.com/ajax/libs/vega-embed/6.23.0/vega-embed.min.js',
+				vegaEmbed: options.urls && options.urls.vegaEmbed || 'https://cdnjs.cloudflare.com/ajax/libs/vega-embed/6.24.0/vega-embed.min.js',
                 customIframeEmbedder: options.urls && options.urls.customIframeEmbedder || null,
                 customIframeCss: options.urls && options.urls.customIframeCss || null
 			},
