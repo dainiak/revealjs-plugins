@@ -144,8 +144,8 @@ const RevealMermaid = {
             }
 
             window.mermaid.initialize(options.mermaidInit);
-            let cssClassRegExp = RegExp('^\\s*' + options.css.setClassCommand + '\\s+(.*?)$', 'gmi');
-            let attrRegExp = RegExp('^\\s*' + options.css.setAttributeCommand + '\\s+(.*?)$', 'gmi');
+            let cssClassRegExp = RegExp(`^\\s*${options.css.setClassCommand}\\s+(.*?)$`, 'gmi');
+            let attrRegExp = RegExp(`^\\s*${options.css.setAttributeCommand}\\s+(.*?)$`, 'gmi');
 
             reveal.getSlidesElement().querySelectorAll(options.selectors.container).forEach(async (mermaidContainer) => {
                 const parent = mermaidContainer.parentNode;
@@ -172,7 +172,9 @@ const RevealMermaid = {
                         else
                             [selector, ...classNames] = s.split(/\s+/g);
 
-                        extraClasses.push([selector, classNames]);
+                        if(selector && classNames)
+                            extraClasses.push([selector, classNames]);
+
                         return "";
                     });
                 }
@@ -197,7 +199,9 @@ const RevealMermaid = {
                         attributeName = s.substring(0, s.indexOf(' '));
                         s = s.substring(s.indexOf(' ') + 1).trim();
 
-                        extraAttributes.push([selector, attributeName, s]);
+                        if(selector && attributeName)
+                            extraAttributes.push([selector, attributeName, s]);
+
                         return "";
                     });
                 }
@@ -237,9 +241,7 @@ const RevealMermaid = {
                     }
 
                     let addClasses = (element, classNames) => {
-                        element && classNames && classNames.map((className) => {
-                            className && element.classList.add(className)
-                        });
+                        element && classNames && classNames.map(className => className && element.classList.add(className));
                     };
 
                     newDiv.querySelectorAll('*').forEach((node) => {
@@ -264,21 +266,14 @@ const RevealMermaid = {
                         }
                     });
 
-                    if(extraClasses.length > 0) {
-                        for(let [selector, classNames] of extraClasses) {
-                            newDiv.querySelectorAll(selector).forEach((element) => {
-                                addClasses(element, classNames);
-                            });
-                        }
-                    }
+                    if(extraClasses.length > 0)
+                        for(let [selector, classNames] of extraClasses)
+                            newDiv.querySelectorAll(selector).forEach(element => addClasses(element, classNames));
 
-                    if(extraAttributes.length > 0) {
-                        for(let [selector, attr, value] of extraAttributes) {
-                            newDiv.querySelectorAll(selector).forEach((element) => {
-                                element.setAttribute(attr, value);
-                            });
-                        }
-                    }
+
+                    if(extraAttributes.length > 0)
+                        for(let [selector, attr, value] of extraAttributes)
+                            newDiv.querySelectorAll(selector).forEach(element => element.setAttribute(attr, value));
                 }
 
                 if(options.css.cssIndices) {

@@ -64,13 +64,14 @@ const RevealVega = {
             let chartFilename = iframe.getAttribute(options.chartSrcAttribute);
             iframe.scrolling = iframe.scrolling || options.scrolling;
             iframe.srcdoc =
-                '<head><script src="' + options.urls.vega + '"></scr' 
-                + 'ipt><script src="' + options.urls.vegaLite + '"></scr' 
+                '<head><script src="' + options.urls.vega + '"></scr'
+                + 'ipt><script src="' + options.urls.vegaLite + '"></scr'
                 + 'ipt><script src="' + options.urls.vegaEmbed + '"></scr'
-                + (options.urls.customIframeEmbedder ? 'ipt><script src="' + options.urls.customIframeEmbedder + '"></scr' : '') + 'ipt>'
+                + (options.urls.customIframeEmbedder ? 'ipt><script src="' + options.urls.customIframeEmbedder + '"></scr' : '')
+				+ 'ipt>'
                 + (options.urls.customIframeCss ? '<link rel="stylesheet" href="' + options.urls.customIframeCss + '">' : '')
                 + '</head>'
-                + '<body style="display:flex;justify-content:center;align-items:center;width:99vw;height:99vh;"><script>vegaEmbed' 
+                + '<body style="display:flex;justify-content:center;align-items:center;width:99vw;height:99vh;"><script>vegaEmbed'
                 + (options.urls.customIframeEmbedder ? 'Custom' : '')
                 + '("body", "'
                 + chartFilename
