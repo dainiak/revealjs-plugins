@@ -1,7 +1,6 @@
 /*
   ContentLoader
-  [Author: ] Alex Dainiak
-  Heavily based on External.js and anything.js
+  By Alex Dainiak (www.dainiak.com), heavily based on external.js and anything.js plugins:
       External.js authors:
           Jan Schoepke (https://github.com/janschoepke/reveal_external)
           Thomas Weinert (https://github.com/ThomasWeinert)
@@ -27,6 +26,7 @@ const RevealContentLoader = {
     id: 'contentloader',
     init: (reveal) => {
         let pdfjsVersion = '3.11.174';
+
         let options = reveal.getConfig().contentLoader || {};
         options = {
             async: !!options.async,
