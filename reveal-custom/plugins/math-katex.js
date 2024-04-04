@@ -9,13 +9,13 @@ const RevealMath = {
 	id: 'math',
 	renderer: 'katex',
 	init: (reveal) => {
-		let katexVersion = '0.16.9';
+		let katexVersion = '0.16.10';
 		let options = reveal.getConfig().math || {};
 		options = {
 			urls: {
-				katex: options.urls && options.urls.katex || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/' + katexVersion + '/katex.min.js',
-				css: options.urls && options.urls.css || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/' + katexVersion + '/katex.min.css',
-				autorender: options.urls && options.urls.autorender || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/' + katexVersion + '/contrib/auto-render.min.js'
+				katex: options.urls && options.urls.katex || `https://cdnjs.cloudflare.com/ajax/libs/KaTeX/${katexVersion}/katex.min.js`,
+				css: options.urls && options.urls.css || `https://cdnjs.cloudflare.com/ajax/libs/KaTeX/${katexVersion}/katex.min.css`,
+				autorender: options.urls && options.urls.autorender || `https://cdnjs.cloudflare.com/ajax/libs/KaTeX/${katexVersion}/contrib/auto-render.min.js`
 			},
 			svg: {
 				enabled: (options.svg !== false) && (options.svg && options.svg.enabled !== false),
@@ -67,9 +67,9 @@ const RevealMath = {
 		}
 		if(options.fragments.enabled && options.fragments.builtinTexMacros){
 			Object.assign(macros, {
-				"\\fragidx": "\\htmlClass{fragment " + options.fragments.indexClassPrefix + "#1}{#2}",
-				"\\sfragidx": "\\htmlClass{fragment fade-in-then-semi-out " + options.fragments.indexClassPrefix + "#1}{#2}",
-				"\\vfragidx": "\\rlap{\\htmlClass{fragment fade-in-then-out " + options.fragments.indexClassPrefix + "#1}{#2}}",
+				"\\fragidx": `\\htmlClass{fragment ${options.fragments.indexClassPrefix}#1}{#2}`,
+				"\\sfragidx": `\\htmlClass{fragment fade-in-then-semi-out ${options.fragments.indexClassPrefix}#1}{#2}`,
+				"\\vfragidx": `\\rlap{\\htmlClass{fragment fade-in-then-out ${options.fragments.indexClassPrefix}#1}{#2}}`,
 				"\\next": "\\htmlClass{fragment}{#1}",
 				"\\step": "\\htmlClass{fragment fade-in-then-semi-out}{#1}",
 				"\\vstep": "\\rlap{\\htmlClass{fragment fade-in-then-out}{#1}}"
@@ -89,19 +89,19 @@ const RevealMath = {
 				options.urls.css,
 				condition:
 					!window.katex
-					&& !document.querySelector('script[src="' + options.urls.katex + '"]')
+					&& !document.querySelector(`script[src="${options.urls.katex}"]`)
 			}, {
 				url:
 				options.urls.katex,
 				condition:
 					!window.katex
-					&& !document.querySelector('script[src="' + options.urls.katex + '"]')
+					&& !document.querySelector(`script[src="${options.urls.katex}"]`)
 			},{
 				url:
 				options.urls.autorender,
 				condition:
 					!window.renderMathInElement
-					&& !document.querySelector('script[src="' + options.urls.autorender + '"]')
+					&& !document.querySelector(`script[src="${options.urls.autorender}"]`)
 			}
 		];
 
@@ -206,7 +206,7 @@ const RevealMath = {
 				node.setAttribute('overflow', 'visible');
 				node.setAttribute(
 					'transform',
-					'translate('+params.x0+' '+params.y0+')' + ' scale('+params.scale+') translate('+x1+' '+y1+')'
+					`translate(${params.x0} ${params.y0}) scale(${params.scale}) translate(${x1} ${y1})`
 				);
 			}
 
@@ -369,7 +369,7 @@ const RevealMath = {
 
 
 				if(options.fragments.enabled && (options.fragments.resetIndicesAfterTypeset || options.fragments.cssIndices)) {
-					let cssSelector = '[class*="' + options.fragments.indexClassPrefix + '"]';
+					let cssSelector = `[class*="${options.fragments.indexClassPrefix}"]`;
 
 					for(let slide of reveal.getSlides()){
 						let fragmentsWithCssIndex = slide.querySelectorAll(cssSelector);

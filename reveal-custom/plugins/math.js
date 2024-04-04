@@ -32,7 +32,7 @@ const RevealMath = {
             },
             mathjaxUrl:
                 options.mathjaxUrl
-                || 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/' + mathjaxVersion + '/es5/tex-' + (options.renderer || 'svg') + '-full.min.js',
+                || `https://cdnjs.cloudflare.com/ajax/libs/mathjax/${mathjaxVersion}/es5/tex-${options.renderer || 'svg'}-full.min.js`,
             macros: options.macros || {},
             delimiters: {
                 inline: options.delimiters && options.delimiters.inline || [["\\(", "\\)"]],
@@ -95,9 +95,9 @@ const RevealMath = {
 
         if(options.fragments.enabled && options.fragments.builtinTexMacros){
             Object.assign(window.MathJax.tex.macros, {
-                fragidx: ["\\class{fragment " + options.fragments.indexClassPrefix + "#1}{#2}", 2],
-                sfragidx: ["\\class{fragment fade-in-then-semi-out " + options.fragments.indexClassPrefix + "#1}{#2}", 2],
-                vfragidx: ["\\rlap{\\class{fragment fade-in-then-out " + options.fragments.indexClassPrefix + "#1}{#2}}", 2],
+                fragidx: [`\\class{fragment ${options.fragments.indexClassPrefix}#1}{#2}`, 2],
+                sfragidx: [`\\class{fragment fade-in-then-semi-out ${options.fragments.indexClassPrefix}#1}{#2}`, 2],
+                vfragidx: [`\\rlap{\\class{fragment fade-in-then-out ${options.fragments.indexClassPrefix}#1}{#2}}`, 2],
                 next: ["\\class{fragment}{#1}", 1],
                 step: ["\\class{fragment fade-in-then-semi-out}{#1}", 1],
                 vstep: ["\\rlap{\\class{fragment fade-in-then-out}{#1}}", 1]
@@ -248,7 +248,7 @@ const RevealMath = {
                 let gNode = svgMath.gNode;
                 gNode.setAttribute(
                     'transform',
-                    'translate('+x0+' '+y0+')' + ' scale('+scale+') translate('+x1+' '+y1+') matrix(1 0 0 -1 0 0)'
+                    `translate(${x0} ${y0}) scale(${scale}) translate(${x1} ${y1}) matrix(1 0 0 -1 0 0)`
                 );
 
                 for(let property in targetProperties.style){
@@ -330,7 +330,7 @@ const RevealMath = {
                 fragment.classList.remove('fragment')
 
             if(options.fragments.enabled && (options.fragments.resetIndicesAfterTypeset || options.fragments.cssIndices)) {
-                let cssSelector = '[class*="' + options.fragments.indexClassPrefix + '"]';
+                let cssSelector = `[class*="${options.fragments.indexClassPrefix}"]`;
 
                 for(let slide of reveal.getSlides()){
                     let fragmentsWithCssIndex = slide.querySelectorAll(cssSelector);

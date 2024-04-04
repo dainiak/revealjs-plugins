@@ -38,13 +38,13 @@ const RevealMermaid = {
                 url: options.urls.mermaid,
                 condition:
                     !window.mermaid
-                    && !document.querySelector('script[src="' + options.mermaidUrl + '"]')
+                    && !document.querySelector(`script[src="${options.mermaidUrl}"]`)
             }, {
                 url: options.urls.katex,
                 condition:
                     options.mathInLabels
                     && !window.katex
-                    && !document.querySelector('script[src="' + options.katexUrl + '"]')
+                    && !document.querySelector(`script[src="${options.katexUrl}"]`)
             },{
                 url: options.urls.katexCss,
                 type: 'text/css',

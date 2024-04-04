@@ -39,8 +39,8 @@ const RevealContentLoader = {
             pdf: {
                 enabled: options.pdf === true || options.pdf && options.pdf.enabled === true,
                 preload: options.pdf && options.pdf.preload,
-                pdfjsUrl: options.pdf && options.pdf.pdfjsUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + pdfjsVersion + '/pdf.min.js',
-                pdfjsWorkerUrl: options.pdf && options.pdf.pdfjsWorkerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + pdfjsVersion + '/pdf.worker.min.js'
+                pdfjsUrl: options.pdf && options.pdf.pdfjsUrl || `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.min.js`,
+                pdfjsWorkerUrl: options.pdf && options.pdf.pdfjsWorkerUrl || `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`
             },
             actions: options.actions || []
         };
@@ -101,7 +101,7 @@ const RevealContentLoader = {
                     return new Function('return ' + unEscape(str))();
                 }
                 catch(e) {
-                    console.warn('RevealContentLoader: Was unable to parse action: "' + str + '". Error: ' + e);
+                    console.warn(`RevealContentLoader: Was unable to parse action: "${str}". Error: ${e}`);
                     return null;
                 }
             }
@@ -190,7 +190,7 @@ const RevealContentLoader = {
                     else
                         loadedNodes = [document.createTextNode(data.toString())];
                 } catch (e) {
-                    console.warn('RevealContentLoader error: found neither a valid url nor parseable action, error while action parsing: ' + e);
+                    console.warn(`RevealContentLoader error: found neither a valid url nor parseable action, error while action parsing: ${e}`);
                 }
                 attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
                 return;
@@ -215,8 +215,7 @@ const RevealContentLoader = {
 
                     if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 0 && xhr.responseText !== ''))
                         return console.warn(
-                            'RevealContentLoader: The attempt to fetch ' + url +
-                            ' failed with HTTP status ' + xhr.status + '.'
+                            `RevealContentLoader: The attempt to fetch ${url} failed with HTTP status ${xhr.status}.`
                         );
 
                     let path = url.substring(0, url.lastIndexOf('/'));
@@ -228,7 +227,7 @@ const RevealContentLoader = {
                     else {
                         let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
                         if (!html)
-                            return console.warn('RevealContentLoader: Could not parse HTML ' + url);
+                            return console.warn(`RevealContentLoader: Could not parse HTML ${url}`);
 
                         loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
                     }
@@ -241,7 +240,7 @@ const RevealContentLoader = {
             try {
                 xhr.send();
             } catch (e) {
-                console.warn('RevealContentLoader: Failed to get the file ' + url + '\nException: ' + e);
+                console.warn(`RevealContentLoader: Failed to get the file ${url}\nException: ${e}`);
             }
         }
 

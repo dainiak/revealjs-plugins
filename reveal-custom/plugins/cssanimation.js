@@ -110,8 +110,8 @@ const RevealCSSAnimation = {
                 s = s.slice(quot.length);
                 let posEnd = s.indexOf(quot);
                 if(posEnd === -1){
-                    console.warn('Unable to parse: a string literal starting with ' + quot + ' was not closed');
-                    return {error: 'Unable to parse: a string literal starting with ' + quot + ' was not closed'};
+                    console.warn(`Unable to parse: a string literal starting with ${quot} was not closed`);
+                    return {error: `Unable to parse: a string literal starting with ${quot} was not closed`};
                 }
                 preResult.push({content: s.slice(0,posEnd), type: 'string'});
                 preResult.push({content: '', type: 'word'});
@@ -597,7 +597,7 @@ const RevealCSSAnimation = {
             if(animationStepDuration > 0){
                 let remainingSteps = animationSequence.slice(nStep + 1);
                 setTimeout(
-                    function(){  playAnimation(remainingSteps, scope, false)  },
+                    () => playAnimation(remainingSteps, scope, false),
                     animationStepDuration
                 );
                 return;

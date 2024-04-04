@@ -104,9 +104,9 @@ const RevealInking = {
         let scriptsToLoad = [
             {
                 content: '.ink-controls {position: fixed;bottom: 10px;right: 200px;cursor: default;'
-                    + (options.controls.color ? 'color: ' + options.controls.color + ';' : '')
+                    + (options.controls.color ? `color: ${options.controls.color};` : '')
                     + (options.controls.visible ? '' : 'display: none;')
-                    + (options.controls.opacity ? 'opacity: ' + options.controls.opacity + ';' : '')
+                    + (options.controls.opacity ? `opacity: ${options.controls.opacity};` : '')
                     + 'z-index: 130;}'
                     + '.ink-control-button {float: left;display: inline;font-size: 20pt;padding-left: 10pt; padding-right: 10pt;}'
                     + '.ink-color:before {content: "\u25A0"} '
@@ -176,7 +176,7 @@ const RevealInking = {
                 for(let color of options.ink.colors){
                     color = color.trim();
                     if(color) {
-                        colorControls += '<div class="ink-color ink-control-button" style="color: ' + color + '"></div>';
+                        colorControls += `<div class="ink-color ink-control-button" style="color: ${color}"></div>`;
                     }
                 }
             }

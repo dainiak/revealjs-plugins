@@ -11,8 +11,8 @@ const RevealPyodide = {
         let pyodideVersion = '0.25.0';
         let options = reveal.getConfig().pyodide || {};
         options = {
-            pyodideUrl: options.pyodideUrl || 'https://cdn.jsdelivr.net/pyodide/v' + pyodideVersion + '/full/pyodide.js',
-            pyodideBaseUrl: options.pyodideBaseUrl || 'https://cdn.jsdelivr.net/pyodide/v' + pyodideVersion + '/full/',
+            pyodideUrl: options.pyodideUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`,
+            pyodideBaseUrl: options.pyodideBaseUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
             preloadPackages: options.preloadPackages || []
         };
 
