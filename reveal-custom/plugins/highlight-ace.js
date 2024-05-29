@@ -9,7 +9,7 @@
 const RevealHighlightAce = {
 	id: 'highlight-ace',
 	init: (reveal) => {
-		let aceVersion = '1.32.9';
+		let aceVersion = '1.34.2';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
 			theme: options.theme || 'twilight',

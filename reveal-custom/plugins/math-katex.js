@@ -13,9 +13,9 @@ const RevealMath = {
 		let options = reveal.getConfig().math || {};
 		options = {
 			urls: {
-				katex: options.urls && options.urls.katex || `https://cdnjs.cloudflare.com/ajax/libs/KaTeX/${katexVersion}/katex.min.js`,
-				css: options.urls && options.urls.css || `https://cdnjs.cloudflare.com/ajax/libs/KaTeX/${katexVersion}/katex.min.css`,
-				autorender: options.urls && options.urls.autorender || `https://cdnjs.cloudflare.com/ajax/libs/KaTeX/${katexVersion}/contrib/auto-render.min.js`
+				katex: options.urls && options.urls.katex || `https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.js`,
+				css: options.urls && options.urls.css || `https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.css`,
+				autorender: options.urls && options.urls.autorender || `https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/contrib/auto-render.min.js`
 			},
 			svg: {
 				enabled: (options.svg !== false) && (options.svg && options.svg.enabled !== false),
