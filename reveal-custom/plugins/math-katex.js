@@ -1,5 +1,7 @@
 /*
     Reveal.js alternative math plugin powered by KaTeX
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com

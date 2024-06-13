@@ -1,5 +1,7 @@
 /*
     Live webcam picture-in-picture plugin for reveal.js.
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Inspired by: http://vxlabs.com/2013/10/11/impress-js-with-embedded-live-webcam/
     Plugin author: Alex Dainiak
     Web: www.dainiak.com

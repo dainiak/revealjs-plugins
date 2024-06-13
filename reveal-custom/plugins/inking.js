@@ -1,5 +1,6 @@
 /*
     Inking plugin for reveal.js
+    GitHub: https://github.com/dainiak/revealjs-plugins/
 
     Plugin author: Alex Dainiak
     Web: www.dainiak.com

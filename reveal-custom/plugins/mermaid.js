@@ -1,5 +1,7 @@
 /*
     Plugin for embedding mermaid.js diagrams in reveal.js presentations
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com
@@ -8,13 +10,15 @@
 const RevealMermaid = {
     id: 'mermaid',
     init: (reveal) => {
+        const katexVersion = '0.16.10';
+        const mermaidVersion = '10.9.1';
         let options = reveal.getConfig().mermaid || {};
         options = {
             mathInLabels: options.mathInLabels !== false,
             urls: options.urls || {
-                mermaid: options.urls && options.urls.mermaid || 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
-                katex: options.urls && options.urls.katex || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js',
-                katexCss: options.urls && options.urls.katexCss || 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css',
+                mermaid: options.urls && options.urls.mermaid || `https://cdn.jsdelivr.net/npm/mermaid@${mermaidVersion}/dist/mermaid.min.js`,
+                katex: options.urls && options.urls.katex || `https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.js`,
+                katexCss: options.urls && options.urls.katexCss || `https://cdn.jsdelivr.net/npm/katex@${katexVersion}/dist/katex.min.css`,
             },
             selectors: {
                 container: options.selectors && options.selectors.container || '[data-mermaid]',

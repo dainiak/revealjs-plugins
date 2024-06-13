@@ -1,5 +1,7 @@
 /*
     In-browser python code blocks execution for Reveal.js using Pyodide
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com
@@ -8,7 +10,7 @@
 const RevealPyodide = {
     id: 'pyodide',
     init: (reveal) => {
-        let pyodideVersion = '0.26.0';
+        let pyodideVersion = '0.26.1';
         let options = reveal.getConfig().pyodide || {};
         options = {
             pyodideUrl: options.pyodideUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`,

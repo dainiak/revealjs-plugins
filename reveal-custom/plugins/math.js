@@ -1,5 +1,7 @@
 /*
     Reveal.js alternative math plugin powered by MathJax, capable of math rendering in SVG nodes
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com

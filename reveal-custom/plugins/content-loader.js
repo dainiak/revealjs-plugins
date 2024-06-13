@@ -1,5 +1,7 @@
 /*
-  ContentLoader
+  ContentLoader Reveal.JS plugin
+  https://github.com/dainiak/revealjs-plugins/
+
   By Alex Dainiak (www.dainiak.com), heavily based on external.js and anything.js plugins:
       External.js authors:
           Jan Schoepke (https://github.com/janschoepke/reveal_external)

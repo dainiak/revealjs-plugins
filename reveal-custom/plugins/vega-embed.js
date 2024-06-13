@@ -1,5 +1,7 @@
 /*
     Plugin for embedding interactive vega charts in reveal.js presentations
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com

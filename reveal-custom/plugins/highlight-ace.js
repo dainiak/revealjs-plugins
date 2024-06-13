@@ -1,5 +1,7 @@
 /*
     Reveal.js alternative highlighting plugin based on ACE editor
+    GitHub: https://github.com/dainiak/revealjs-plugins/
+
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com
@@ -9,14 +11,14 @@
 const RevealHighlightAce = {
 	id: 'highlight-ace',
 	init: (reveal) => {
-		let aceVersion = '1.34.2';
+		let aceVersion = '1.35.0';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
 			theme: options.theme || 'twilight',
 			language: options.language || 'python',
-			aceMainUrl: options.aceMainUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/' + aceVersion + '/ace.min.js',
-			aceBasePath: options.aceBasePath || 'https://cdnjs.cloudflare.com/ajax/libs/ace/' + aceVersion + '/',
-			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || 'https://cdnjs.cloudflare.com/ajax/libs/ace/' + aceVersion + '/ext-static_highlight.min.js',
+			aceMainUrl: options.aceMainUrl || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/ace.min.js`,
+			aceBasePath: options.aceBasePath || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/`,
+			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/ext-static_highlight.min.js`,
 			editorInPlace: options.editorInPlace !== false,
 			closeEditorOnBlur: options.closeEditorOnBlur,
 			mouseclickModifierKey: options.mouseclickModifierKey,

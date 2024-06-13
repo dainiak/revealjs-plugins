@@ -1,6 +1,7 @@
 /*
     Reveal.js basic CSS animation plugin
     Author: Alex Dainiak
+    GitHub: https://github.com/dainiak/revealjs-plugins/
     Webpage: www.dainiak.com
     Email: dainiak@gmail.com
  */
