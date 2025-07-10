@@ -11,10 +11,10 @@
 const RevealHighlightAce = {
 	id: 'highlight-ace',
 	init: (reveal) => {
-		let aceVersion = '1.35.0';
+		let aceVersion = '1.36.5';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
-			theme: options.theme || 'twilight',
+			theme: options.theme || 'auto',
 			language: options.language || 'python',
 			aceMainUrl: options.aceMainUrl || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/ace.min.js`,
 			aceBasePath: options.aceBasePath || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/`,
@@ -28,6 +28,16 @@ const RevealHighlightAce = {
 			showGutter: options.showGutter !== false,
 			trim: options.trim !== false
 		};
+
+		if((options.theme || 'auto') === 'auto') {
+			options.theme = 'chrome';
+			if(document.querySelector(
+				'[href*="black.css"],[href*="league.css"],[href*="night.css"],[href*="moon.css"],[href*="dracula.css"],[href*="blood.css"]'
+			)) {
+				options.theme = 'monokai';
+			}
+		}
+
 		reveal.getConfig().highlighting = options;
 
 		let aceStaticStyle = null;

@@ -10,7 +10,7 @@
 const RevealPyodide = {
     id: 'pyodide',
     init: (reveal) => {
-        let pyodideVersion = '0.26.1';
+        let pyodideVersion = '0.28.0';
         let options = reveal.getConfig().pyodide || {};
         options = {
             pyodideUrl: options.pyodideUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`,
@@ -34,7 +34,7 @@ const RevealPyodide = {
 
         loadScript(options.pyodideUrl, async function(){
             let stdoutBuffer = null;
-            function stdout(line) {
+            function stdoutWriter(line) {
                 if(stdoutBuffer !== null)
                     stdoutBuffer += line + '\n';
                 else
@@ -43,13 +43,10 @@ const RevealPyodide = {
 
             let pyodide = await window.loadPyodide({
                 indexURL : options.pyodideBaseUrl,
-                stdout: stdout
+                stdout: stdoutWriter
             });
 
-            options.preloadPackages.forEach((packageName) => {
-                pyodide.loadPackage(packageName);
-            });
-
+            pyodide.loadPackage(options.preloadPackages);
 
             function runPythonCodeInElement(element) {
                 if(!element.hasAttribute('data-language') || element.getAttribute('data-language') !== 'python')
@@ -80,25 +77,28 @@ const RevealPyodide = {
                 }
 
                 stdoutBuffer = '';
-                let executionResult;
-                try {
-                    executionResult = pyodide.runPython(element.textContent, {stdout: stdout}) || '';
-                } catch (e) {
-                    executionResult = e.toString();
-                }
+                pyodide.loadPackagesFromImports(element.textContent).then(() => {
+                    let executionResult;
+                    try {
+                        pyodide.setStdout({ batched: stdoutWriter });
+                        executionResult = pyodide.runPython(element.textContent) || '';
+                    } catch (e) {
+                        executionResult = e.toString();
+                    }
 
-                let textContent = stdoutBuffer;
-                if(textContent.length && executionResult.length && !textContent.endsWith('\n'))
-                    textContent += '\n';
-                textContent += executionResult;
-                stdoutBuffer = null;
+                    let textContent = stdoutBuffer || '';
+                    if(textContent.length && executionResult.length && !textContent.endsWith('\n'))
+                        textContent += '\n';
+                    textContent += executionResult;
+                    stdoutBuffer = null;
 
-                out.textContent = textContent;
+                    out.textContent = textContent;
 
-                if (Reveal.getPlugin('highlight-ace') && reveal.highlightBlockWithAce) {
-                    reveal.highlightBlockWithAce(out, {theme: element.dataset['theme'], language: 'text', showGutter: false})
-                    element.setAttribute('data-raw-code', element.textContent);
-                }
+                    if (Reveal.getPlugin('highlight-ace') && reveal.highlightBlockWithAce) {
+                        reveal.highlightBlockWithAce(out, {theme: element.dataset['theme'], language: 'text', showGutter: false})
+                        element.setAttribute('data-raw-code', element.textContent);
+                    }
+                });
             }
 
             reveal.runPythonCodeInElement = runPythonCodeInElement;

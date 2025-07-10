@@ -10,8 +10,8 @@
 const RevealMermaid = {
     id: 'mermaid',
     init: (reveal) => {
-        const katexVersion = '0.16.10';
-        const mermaidVersion = '10.9.1';
+        const katexVersion = '0.16.22';
+        const mermaidVersion = '11.8.1';
         let options = reveal.getConfig().mermaid || {};
         options = {
             mathInLabels: options.mathInLabels !== false,
@@ -33,7 +33,11 @@ const RevealMermaid = {
                 setAttributeCommand: (options.css && options.css.setAttributeCommand) || 'setAttribute',
             },
             overflowVisible: options.overflowVisible === undefined ? true : options.overflowVisible,
-            mermaidInit: options.mermaidInit || { startOnLoad: false, theme: 'auto' }
+            mermaidInit: options.mermaidInit || {
+                startOnLoad: false,
+                theme: 'auto',
+                suppressErrorRendering: true
+            }
         };
 
 
@@ -218,6 +222,12 @@ const RevealMermaid = {
                         });
                         return output.replaceAll('"', "'");
                     });
+                }
+
+                try {
+                    const isParseable = await window.mermaid.parse(graphDefinition, {suppressErrors: false});
+                } catch (error) {
+                    console.warning(`Mermaid diagram failed to parse:\n\n${graphDefinition}\n\nError: `, error);
                 }
 
                 const { svg } = await window.mermaid.render(mermaidContainer.id, graphDefinition);

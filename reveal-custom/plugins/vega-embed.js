@@ -15,9 +15,9 @@ const RevealVega = {
             chartSrcAttribute: options.chartSrcAttribute || 'data-vega',
             scrolling: options.scrolling || 'no',
             urls: {
-				vega: options.urls && options.urls.vega || 'https://cdnjs.cloudflare.com/ajax/libs/vega/5.30.0/vega.min.js',
-				vegaLite: options.urls && options.urls.vegaLite || 'https://cdnjs.cloudflare.com/ajax/libs/vega-lite/5.19.0/vega-lite.min.js',
-				vegaEmbed: options.urls && options.urls.vegaEmbed || 'https://cdnjs.cloudflare.com/ajax/libs/vega-embed/6.25.0/vega-embed.min.js',
+				vega: options.urls && options.urls.vega || 'https://cdn.jsdelivr.net/npm/vega@6.1.2/build/vega.min.js',
+				vegaLite: options.urls && options.urls.vegaLite || 'https://cdn.jsdelivr.net/npm/vega-lite@6.2.0/build/vega-lite.min.js',
+				vegaEmbed: options.urls && options.urls.vegaEmbed || 'https://cdn.jsdelivr.net/npm/vega-embed@7.0.2/build/vega-embed.min.js',
                 customIframeEmbedder: options.urls && options.urls.customIframeEmbedder || null,
                 customIframeCss: options.urls && options.urls.customIframeCss || null
 			},
