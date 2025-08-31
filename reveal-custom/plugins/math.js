@@ -11,7 +11,7 @@ const RevealMath = {
     id: 'math',
     renderer: 'mathjax',
     init: (reveal) => {
-        let mathjaxVersion = '3.2.2';
+        let mathjaxVersion = '4.0.0';
         let options = reveal.getConfig().math || {};
         options = {
             renderer: options.renderer || 'svg',
@@ -34,7 +34,7 @@ const RevealMath = {
             },
             mathjaxUrl:
                 options.mathjaxUrl
-                || `https://cdnjs.cloudflare.com/ajax/libs/mathjax/${mathjaxVersion}/es5/tex-${options.renderer || 'svg'}-full.min.js`,
+                || `https://cdn.jsdelivr.net/npm/mathjax@${mathjaxVersion}/tex-${options.renderer || 'svg'}.js`,
             macros: options.macros || {},
             delimiters: {
                 inline: options.delimiters && options.delimiters.inline || [["\\(", "\\)"]],
@@ -64,13 +64,31 @@ const RevealMath = {
                 renderActions: {
                     addMenu: [0, '', '']
                 },
-                skipHtmlTags: options.ignore.tags
+                skipHtmlTags: options.ignore.tags,
+                menuOptions: {
+                    settings: {
+                        enrich: false
+                    }
+                }
+            },
+            loader: {
+                load: [
+                    "input/tex/extensions/autoload",
+                    "input/tex/extensions/html",
+                    "input/tex/extensions/newcommand",
+                    "input/tex/extensions/noerrors",
+                    "input/tex/extensions/noundefined",
+                    "input/tex/extensions/texhtml",
+                    "input/tex/extensions/unicode",
+                    'output/svg'
+                ]
             },
             startup: {
                 typeset: false,
-                ready: () => {
-                    window.MathJax.startup.defaultReady();
-                    reveal.typesetMath();
+                ready: async () => {
+                    await window.MathJax.startup.defaultReady();
+                    await window.MathJax.startup.document.outputJax.font.loadDynamicFiles();
+                    await reveal.typesetMath();
                 }
             },
             svg: {
@@ -313,7 +331,7 @@ const RevealMath = {
         }
 
 
-        function typesetMath() {
+        async function typesetMath() {
             if(options.preamble && (typeof(options.preamble) === 'string' || options.preamble === true)){
                 let scriptSelector = options.preamble === true ? '' : options.preamble;
                 scriptSelector = (scriptSelector.startsWith('script') ? '' : 'script[type="text/latex"]') + scriptSelector;
@@ -323,7 +341,7 @@ const RevealMath = {
                 (window.MathJax.tex2svg || window.MathJax.tex2chtml)(preamble);
             }
 
-            window.MathJax.typeset();
+            await window.MathJax.typesetPromise();
             if(options.renderer === 'svg' && options.svg.enabled) {
                 typesetMathInSVG();
             }

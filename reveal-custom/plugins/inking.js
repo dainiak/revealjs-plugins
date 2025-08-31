@@ -123,7 +123,7 @@ const RevealInking = {
                 condition: !window.fabric
             },
             {
-                url: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js',
+                url: 'https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-svg.js',
                 condition: needToLoadOwnMath
             }
         ];
@@ -146,8 +146,8 @@ const RevealInking = {
                 },
                 startup: {
                     typeset: false,
-                    ready: () => {
-                        window.MathJax.startup.defaultReady();
+                    ready: async () => {
+                        await window.MathJax.startup.defaultReady();
                     }
                 },
                 svg: {
