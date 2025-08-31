@@ -11,7 +11,7 @@
 const RevealHighlightAce = {
 	id: 'highlight-ace',
 	init: (reveal) => {
-		let aceVersion = '1.36.5';
+		let aceVersion = '1.43.2';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
 			theme: options.theme || 'auto',

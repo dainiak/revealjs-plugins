@@ -11,7 +11,7 @@ const RevealMermaid = {
     id: 'mermaid',
     init: (reveal) => {
         const katexVersion = '0.16.22';
-        const mermaidVersion = '11.8.1';
+        const mermaidVersion = '11.10.1';
         let options = reveal.getConfig().mermaid || {};
         options = {
             mathInLabels: options.mathInLabels !== false,
