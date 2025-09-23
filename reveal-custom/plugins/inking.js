@@ -91,6 +91,8 @@ const RevealInking = {
         let spotlight = null;
         let spotlightBackground = null;
 
+        let currentlyTransitioningBetweenSlides = false;
+
         let inkControlButtons = {
             pencil: null,
             erase: null,
@@ -712,6 +714,41 @@ const RevealInking = {
             document.addEventListener( 'keyup', documentKeyUpEventHandler);
         }
 
+        function createDebouncer(func) {
+            let timeoutId;
+            return function(delay, ...args) {
+                const context = this;
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(context, args);
+                }, delay);
+            };
+        }
+
+        function restoreCanvasForCurrentSlide(){
+            let slide = reveal.getCurrentSlide();
+            slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
+            slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
+
+            if(!slide.dataset.inkingCanvasContent) {
+                currentlyTransitioningBetweenSlides = false;
+                return;
+            }
+
+            loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
+            slide.dataset.inkingCanvasContent = null;
+            currentlyTransitioningBetweenSlides = false;
+
+            if(slide.inkingObjectsPreload){
+                for(let obj of slide.inkingObjectsPreload)
+                    canvas.add(obj);
+
+                slide.inkingObjectsPreload = null;
+            }
+        }
+
+        const debouncedRestoreCanvasForCurrentSlide = createDebouncer(restoreCanvasForCurrentSlide);
+
         function addRevealEventListeners(){
             reveal.addEventListener('overviewshown', function () {
                 canvasVisibleBeforeRevealOverview = isCanvasVisible();
@@ -731,31 +768,18 @@ const RevealInking = {
 
                 let slide = event.previousSlide;
 
-                if(!currentCanvasSlide || currentCanvasSlide === slide || !currentCanvasSlide && !slide.dataset.inkingCanvasContent) {
+                if (!currentlyTransitioningBetweenSlides) {
                     slide.dataset.inkingCanvasContent = canvas.getObjects().length > 0 ? getMathEnrichedCanvasJSON() : null;
                     canvas.clear();
+                    currentlyTransitioningBetweenSlides = true;
                 }
 
-                setTimeout(function(){
-                    let slide = reveal.getCurrentSlide();
-                    slide.hasAttribute('data-hide-inking-canvas') ? toggleCanvas(false) : null;
-                    slide.hasAttribute('data-show-inking-canvas') ? toggleCanvas(true) : null;
-
-                    if(!slide.dataset.inkingCanvasContent)
-                        return;
-
-                    loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
-                    slide.dataset.inkingCanvasContent = null;
-
-                    if(slide.inkingObjectsPreload){
-                        for(let obj of slide.inkingObjectsPreload)
-                            canvas.add(obj);
-
-                        slide.inkingObjectsPreload = null;
-                    }
-
-                    currentCanvasSlide = slide;
-                }, parseInt(window.getComputedStyle(slide).transitionDuration) || 800);
+                let debounceTime = 400;
+                try {
+                    debounceTime = Math.ceil(1000 * window.getComputedStyle(slide).transitionDuration.replace("s", ""));
+                }
+                catch {}
+                debouncedRestoreCanvasForCurrentSlide(debounceTime);
             });
         }///addRevealEventListeners
 
