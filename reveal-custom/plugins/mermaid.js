@@ -11,7 +11,7 @@ const RevealMermaid = {
     id: 'mermaid',
     init: (reveal) => {
         const katexVersion = '0.16.22';
-        const mermaidVersion = '11.10.1';
+        const mermaidVersion = '11.12.0';
         let options = reveal.getConfig().mermaid || {};
         options = {
             mathInLabels: options.mathInLabels !== false,
@@ -231,7 +231,24 @@ const RevealMermaid = {
                 }
 
                 const { svg } = await window.mermaid.render(mermaidContainer.id, graphDefinition);
-                newDiv.innerHTML = svg;
+                newDiv.outerHTML = svg;
+                const svgElement = parent.querySelector(`#${mermaidContainer.id}`);
+                svgElement.classList += " " + mermaidContainer.classList;
+                if(mermaidContainer.classList.contains("r-stretch")) {
+                    svgElement.style.width = "";
+                    svgElement.style.height = "";
+                    svgElement.style.maxWidth = "";
+                    svgElement.style.maxHeight = "";
+                    svgElement.style.minWidth = "";
+                    svgElement.style.minHeight = "";
+                }
+                for (const prop of mermaidContainer.style) {
+                    const value = mermaidContainer.style.getPropertyValue(prop);
+                    if (value && value.trim() !== '') {
+                        svgElement.style.setProperty(prop, value);
+                    }
+                }
+                mermaidContainer.remove();
 
                 if(options.overflowVisible) {
                     let selector = options.overflowVisible === '*' ? '*' : 'foreignObject';
