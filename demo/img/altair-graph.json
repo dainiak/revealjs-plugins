@@ -1,5 +1,4 @@
 {
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.5.0.json",
   "config": {
     "view": {
       "continuousHeight": "100%",

@@ -11,7 +11,7 @@ const RevealMath = {
 	id: 'math',
 	renderer: 'katex',
 	init: (reveal) => {
-		let katexVersion = '0.16.22';
+		let katexVersion = '0.16.27';
 		let options = reveal.getConfig().math || {};
 		options = {
 			urls: {

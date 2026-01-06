@@ -11,7 +11,7 @@ const RevealMath = {
     id: 'math',
     renderer: 'mathjax',
     init: (reveal) => {
-        let mathjaxVersion = '4.0.0';
+        let mathjaxVersion = '4.1.0';
         let options = reveal.getConfig().math || {};
         options = {
             renderer: options.renderer || 'svg',

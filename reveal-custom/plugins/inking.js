@@ -125,7 +125,7 @@ const RevealInking = {
                 condition: !window.fabric
             },
             {
-                url: 'https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-svg.js',
+                url: 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-svg.js',
                 condition: needToLoadOwnMath
             }
         ];

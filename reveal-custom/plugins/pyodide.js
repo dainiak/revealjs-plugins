@@ -10,7 +10,7 @@
 const RevealPyodide = {
     id: 'pyodide',
     init: (reveal) => {
-        let pyodideVersion = '0.28.2';
+        let pyodideVersion = '0.29.0';
         let options = reveal.getConfig().pyodide || {};
         options = {
             pyodideUrl: options.pyodideUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`,
