@@ -64,7 +64,7 @@ const RevealInking = {
 
         options.inkingCanvasContent = options.inkingCanvasContent || null;
 
-        let mousePosition = {};
+        let mousePosition = { x: 0, y: 0 };
 
         let canvasElement = null;
         let canvas = null;
@@ -121,7 +121,7 @@ const RevealInking = {
                     + '.ink-serializecanvas:before {content: "\u2B07"} ',
                 type: 'text/css'
             }, {
-                url: 'https://cdn.jsdelivr.net/npm/fabric@5.5.2-browser/dist/fabric.min.js',
+                url: 'https://cdn.jsdelivr.net/npm/fabric@7/dist/index.min.js',
                 condition: !window.fabric
             },
             {
@@ -286,17 +286,20 @@ const RevealInking = {
             canvasElement.willReadFrequently = true;
             canvasElement.style.position = 'fixed';
             canvasElement.style.left = '0px';
-            canvasElement.style.width = '100%';
             canvasElement.style.top = '0px';
+            canvasElement.style.width = '100%';
             canvasElement.style.bottom = bottomPadding.toString() + 'px';
             canvasElement.style.zIndex = controlsComputerStyle.zIndex;
-            canvasElement.width = viewportWidth;
-            canvasElement.height = viewportHeight - bottomPadding;
 
             canvas = new window.fabric.Canvas(canvasElement, {
                 perPixelTargetFind: true,
                 renderOnAddRemove: true,
                 uniformScaling: true
+            });
+
+            canvas.setDimensions({
+                width: viewportWidth,
+                height: viewportHeight - bottomPadding
             });
 
             canvas.upperCanvasEl.style.position = 'fixed';
@@ -326,8 +329,8 @@ const RevealInking = {
 
             spotlight = new window.fabric.Circle({
                 radius: options.spotlight.radius,
-                left: mousePosition.x - options.spotlight.radius,
-                top: mousePosition.y - options.spotlight.radius,
+                left: mousePosition.x,
+                top: mousePosition.y,
                 fill: "white",
                 cursor: "none",
                 opacity: 1,
@@ -340,8 +343,8 @@ const RevealInking = {
             spotlightBackground = new window.fabric.Rect({
                 left: 0,
                 top: 0,
-                width: canvas.width,
-                height: canvas.height,
+                width: canvas.getWidth() * 2,
+                height: canvas.getHeight() * 2,
                 fill: "black",
                 opacity: options.spotlight.backgroundOpacity,
                 hasControls: false,
@@ -516,11 +519,15 @@ const RevealInking = {
             let svgString = svg.outerHTML;
             mathRenderingDiv.innerHTML = '';
 
-            window.fabric.loadSVGFromString(svgString, function(objects, extraInfo) {
+            window.fabric.loadSVGFromString(svgString).then(function(result) {
+                let objects = result.objects;
+                let extraInfo = result.options;
+
                 for(let obj of objects)
                     obj.set({fill: mathColor});
 
-                let img = window.fabric.util.groupSVGElements(objects, extraInfo).setCoords();
+                let img = new window.fabric.Group(objects, extraInfo);
+                img.setCoords();
 
                 img.scaleToHeight(svgHeight * options.math.scaling);
 
@@ -530,7 +537,9 @@ const RevealInking = {
                         'color': mathColor,
                         'originalScaleX': img.scaleX,
                         'originalScaleY': img.scaleY
-                    }
+                    },
+                    originX: 'left',
+                    originY: 'top'
                 });
 
                 if(targetScaleX)
@@ -546,6 +555,9 @@ const RevealInking = {
 
                 canvas.add(img);
                 canvas.setActiveObject(img);
+                canvas.requestRenderAll();
+            }).catch(function(err) {
+                console.error("Error loading SVG string:", err);
             });
         }///createFormulaWithQuery
 
@@ -557,7 +569,9 @@ const RevealInking = {
         }
 
         function loadCanvasFromMathEnrichedObject(serializedCanvas){
-            canvas.loadFromJSON(serializedCanvas, function() {
+            if(!serializedCanvas) return Promise.resolve();
+
+            return canvas.loadFromJSON(serializedCanvas).then(function() {
                 let objects = canvas.getObjects();
                 if (!objects.length)
                     return;
@@ -569,11 +583,13 @@ const RevealInking = {
                     else
                         setCanvasObjectDefaults(obj);
                 });
+                canvas.requestRenderAll();
             });
         }
 
         function loadCanvasFromMathEnrichedJSON(s){
-            loadCanvasFromMathEnrichedObject(JSON.parse(s));
+            if(!s) return Promise.resolve();
+            return loadCanvasFromMathEnrichedObject(JSON.parse(s));
         }
 
         function addInkingControlsEventListeners() {
@@ -608,41 +624,51 @@ const RevealInking = {
         }///addInkingControlsEventListeners
 
         function addCanvasEventListeners() {
-            canvas.on('mouse:down', function (eventInfo) {
+            canvas.on('mouse:down', function (opt) {
                 isMouseLeftButtonDown = true;
-                mousePosition.x = eventInfo.e.layerX;
-                mousePosition.y = eventInfo.e.layerY;
-                if (options.spotlight.enabled && eventInfo.e.altKey)
+
+                let pointer = opt.scenePoint;
+                if(pointer) {
+                    mousePosition.x = pointer.x;
+                    mousePosition.y = pointer.y;
+                }
+
+                if (options.spotlight.enabled && opt.e.altKey)
                     createSpotlight()
-                else if (isMathImage(eventInfo.target))
-                    currentMathImage = eventInfo.target;
+                else if (isMathImage(opt.target))
+                    currentMathImage = opt.target;
             });
-            canvas.on('mouse:up', function (eventInfo) {
+            canvas.on('mouse:up', function (opt) {
                 isMouseLeftButtonDown = false;
-                if (options.spotlight.enabled && eventInfo.e.altKey)
+                if (options.spotlight.enabled && opt.e.altKey)
                     destroySpotlight();
             });
 
-            canvas.on('mouse:move', function (eventInfo) {
-                mousePosition.x = eventInfo.e.layerX;
-                mousePosition.y = eventInfo.e.layerY;
+            canvas.on('mouse:move', function (opt) {
+                let pointer = opt.scenePoint;
+                if(pointer) {
+                    mousePosition.x = pointer.x;
+                    mousePosition.y = pointer.y;
+                }
+
                 if(!spotlight)
                     return;
                 spotlight.set({
-                    left: mousePosition.x - spotlight.radius,
-                    top: mousePosition.y - spotlight.radius
+                    left: mousePosition.x,
+                    top: mousePosition.y,
                 });
-                canvas.renderAll();
+
+                canvas.requestRenderAll();
             });
 
-            canvas.on('mouse:over', function (evt) {
+            canvas.on('mouse:over', function (opt) {
                 if (isInDeletionMode && isMouseLeftButtonDown)
-                    canvas.remove(evt.target);
+                    canvas.remove(opt.target);
             });
 
-            canvas.on('object:added', function (evt) {
-                if(!isMathImage(evt.target))
-                    setCanvasObjectDefaults(evt.target)
+            canvas.on('object:added', function (opt) {
+                if(!isMathImage(opt.target))
+                    setCanvasObjectDefaults(opt.target)
             });
 
             canvas.on('selection:cleared', function () {
@@ -690,10 +716,11 @@ const RevealInking = {
             }
 
             if(event.key === options.hotkeys.draw) {
-                canvasElement.dispatchEvent(new MouseEvent('mouseup', {
+                canvasElement.dispatchEvent(new PointerEvent('pointerup', {
                     'view': window,
                     'bubbles': true,
-                    'cancelable': true
+                    'cancelable': true,
+                    'pointerType': 'mouse'
                 }));
                 leaveDrawingMode();
             }
@@ -735,16 +762,18 @@ const RevealInking = {
                 return;
             }
 
-            loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
-            slide.dataset.inkingCanvasContent = null;
-            currentlyTransitioningBetweenSlides = false;
+            loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent).then(() => {
+                slide.dataset.inkingCanvasContent = null;
+                currentlyTransitioningBetweenSlides = false;
 
-            if(slide.inkingObjectsPreload){
-                for(let obj of slide.inkingObjectsPreload)
-                    canvas.add(obj);
+                if(slide.inkingObjectsPreload){
+                    for(let obj of slide.inkingObjectsPreload)
+                        canvas.add(obj);
 
-                slide.inkingObjectsPreload = null;
-            }
+                    slide.inkingObjectsPreload = null;
+                    canvas.requestRenderAll();
+                }
+            });
         }
 
         const debouncedRestoreCanvasForCurrentSlide = createDebouncer(restoreCanvasForCurrentSlide);
@@ -823,29 +852,40 @@ const RevealInking = {
 
         function loadSVGFromURL(slide, url, loadAsGroup){
             incrementLoadingQueue();
-            window.fabric.loadSVGFromURL(
-                url,
-                function(objects) {
-                    decrementLoadingQueue();
-                    if(!objects)
-                        return;
+            // CHANGE: Return the promise so we can wait for it
+            return window.fabric.loadSVGFromURL(url).then(function(result) {
+                let objects = result.objects;
+                let options = result.options;
 
-                    if(loadAsGroup && objects.length > 1)
-                        objects = [new window.fabric.Group(objects)];
-                    else
-                        for(let obj of objects)
-                            setCanvasObjectDefaults(obj);
+                decrementLoadingQueue();
+                if(!objects || objects.length === 0)
+                    return;
 
-                    if(slide === reveal.getCurrentSlide())
-                        for(let obj of objects)
-                            canvas.add(obj);
-                    else if(!slide.inkingObjectsPreload)
-                        slide.inkingObjectsPreload = objects;
-                    else
-                        for(let obj of objects)
-                            slide.inkingObjectsPreload.push(obj);
+                if(loadAsGroup && objects.length > 1) {
+                    let group = new window.fabric.Group(objects, options);
+                    group.set({ originX: 'left', originY: 'top' });
+                    objects = [group];
                 }
-            )
+                else {
+                    for(let obj of objects) {
+                        setCanvasObjectDefaults(obj);
+                    }
+                }
+
+                if(slide === reveal.getCurrentSlide()) {
+                    for(let obj of objects)
+                        canvas.add(obj);
+                    canvas.requestRenderAll();
+                }
+                else if(!slide.inkingObjectsPreload)
+                    slide.inkingObjectsPreload = objects;
+                else
+                    for(let obj of objects)
+                        slide.inkingObjectsPreload.push(obj);
+            }).catch(function(err) {
+                decrementLoadingQueue();
+                console.warn('Error loading SVG from URL:', url, err);
+            });
         }
 
         function sendAjaxRequest(url, params, callback){
@@ -961,17 +1001,30 @@ const RevealInking = {
                     filenames = filenames.slice(1, filenames.length);
                 }
 
-                canvas.clear();
+                if(slide === reveal.getCurrentSlide()) {
+                    canvas.clear();
+                }
+
+                let loadPromises = [];
+
                 for(let filename of filenames){
                     let makeGroup = true;
                     if(filename.toLowerCase().endsWith(':split')){
                         filename = filename.slice(0, filename.length-':split'.length);
                         makeGroup = false;
                     }
-                    loadSVGFromURL(slide, path + filename, makeGroup);
+                    loadPromises.push(loadSVGFromURL(slide, path + filename, makeGroup));
                 }
 
-                slide.dataset.inkingCanvasContent = getMathEnrichedCanvasJSON();
+                // CHANGE: Wait for SVGs to load before setting the dataset content
+                Promise.all(loadPromises).then(() => {
+                    if(slide === reveal.getCurrentSlide()){
+                        slide.dataset.inkingCanvasContent = getMathEnrichedCanvasJSON();
+                    } else {
+                        // Set a dummy JSON so restoreCanvasForCurrentSlide knows to load the preloaded objects
+                        slide.dataset.inkingCanvasContent = JSON.stringify({objects:[]});
+                    }
+                });
             }
 
             if(wasCanvasVisible)
@@ -1059,7 +1112,7 @@ const RevealInking = {
         loadScripts(scriptsToLoad, function () {
             window.addEventListener('load', function() {
                 // This is important for MathJax equations to serialize well into fabric.js
-                window.fabric.Object.NUM_FRACTION_DIGITS = 5;
+                window.fabric.config.NUM_FRACTION_DIGITS = 5;
 
                 resetMainCanvasDomNode();
                 addInkingControls();
