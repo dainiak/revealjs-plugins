@@ -177,7 +177,9 @@ const RevealMermaid = {
                     },
                 ]);
 
-            reveal.getSlidesElement().querySelectorAll(options.selectors.container).forEach(async (mermaidContainer) => {
+            const mermaidContainers = Array.from(reveal.getSlidesElement().querySelectorAll(options.selectors.container));
+
+            const renderPromises = mermaidContainers.map(async (mermaidContainer) => {
                 const parent = mermaidContainer.parentNode;
                 const newDiv = document.createElement('div');
                 parent.insertBefore(newDiv, mermaidContainer);
@@ -225,7 +227,8 @@ const RevealMermaid = {
 
                 // Copy classes and styles from container
                 svgElement.classList += " " + mermaidContainer.classList;
-                if(mermaidContainer.classList.contains("r-stretch")) {
+                const hasStretchClass = mermaidContainer.classList.contains("r-stretch");
+                if(hasStretchClass) {
                     svgElement.style.width = "";
                     svgElement.style.height = "";
                     svgElement.style.maxWidth = "";
@@ -353,11 +356,15 @@ const RevealMermaid = {
                         }
 
                 }
+
+                if(hasStretchClass)
+                    svgElement.style.height = '100%';
             });
 
-            reveal.layout();
+            Promise.all(renderPromises).then(() => {
+                reveal.layout();
+            });
         });
-
         return true;
     }
 };
