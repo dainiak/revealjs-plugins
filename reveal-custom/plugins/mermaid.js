@@ -5,6 +5,23 @@
     Author: Alex Dainiak
     Web: www.dainiak.com
     Email: dainiak@gmail.com
+
+    Processing rules can be added to post-process the diagram SVG DOM subtree.
+    One can set the id, set or remove classes, or set attributes on the SVG elements. In any combinations:
+        %%% someCssSelector -> #cssIdToSet .css-class-to-set !.class-to-remove [some-property-to-set=newValue]
+    If the `->` arrow is used then the modifications are applied to the element itself.
+    If the `^->` arrow is used then the element is wrapped with a g element and modifications are applied to this g.
+    If the `_->` arrow is used then a single g is added as the only new child of the element and the modifications are applied to this g. All the former children are moved inside this g.
+    You can use [n] right after the selector to target a specific element in the list of matching elements. Works even when `:nth-child` does not.
+    Examples:
+        %% Apply .fragment class to the first of the mermaid nodes:
+        %%% g.node[1] -> .fragment
+
+        %% Make the "Start" node a fragment step and red
+        %%% rect[id*="A"] _-> .fragment .fade-up [data-fragment-index=1]
+
+        %% Remove default class and add new one
+        %%% #D -> !.node .end-state
  */
 
 const RevealMermaid = {
@@ -24,22 +41,20 @@ const RevealMermaid = {
                 container: options.selectors && options.selectors.container || '[data-mermaid]',
                 script: options.selectors && options.selectors.script || 'script[type="text/mermaid"]',
             },
-            css: {
-                enabled: (options.css && options.css.enabled) !== false,
-                cssIndices: (options.css && options.css.cssIndices) !== false,
-                indexClassPrefix: (options.css && options.css.indexClassPrefix) || 'fragidx-',
-                substituteClasses: (options.css && options.css.substituteClasses) || {},
-                setClassCommand: (options.css && options.css.setClassCommand) || 'setClass',
-                setAttributeCommand: (options.css && options.css.setAttributeCommand) || 'setAttribute',
-            },
             overflowVisible: options.overflowVisible === undefined ? true : options.overflowVisible,
             mermaidInit: options.mermaidInit || {
                 startOnLoad: false,
                 theme: 'auto',
                 suppressErrorRendering: true
+            },
+            registerIconPack: options.registerIconPack || false,
+            css: {
+                enabled: options?.css?.enabled !== false,
+                cssIndices: options?.css?.cssIndices !== false,
+                indexClassPrefix: options?.css?.indexClassPrefix || 'fragidx-',
+                debug: options?.css?.debug || false
             }
         };
-
 
         let scriptsToLoad = [
             {
@@ -152,8 +167,15 @@ const RevealMermaid = {
             }
 
             window.mermaid.initialize(options.mermaidInit);
-            let cssClassRegExp = RegExp(`^\\s*${options.css.setClassCommand}\\s+(.*?)$`, 'gmi');
-            let attrRegExp = RegExp(`^\\s*${options.css.setAttributeCommand}\\s+(.*?)$`, 'gmi');
+
+            if(options.registerIconPack)
+                window.mermaid.registerIconPacks([
+                    {
+                        name: 'logos',
+                        loader: () =>
+                            fetch('https://unpkg.com/@iconify-json/logos@1/icons.json').then((res) => res.json()),
+                    },
+                ]);
 
             reveal.getSlidesElement().querySelectorAll(options.selectors.container).forEach(async (mermaidContainer) => {
                 const parent = mermaidContainer.parentNode;
@@ -164,56 +186,22 @@ const RevealMermaid = {
                     mermaidContainer.id = `mermaid-${Math.floor(Math.random() * 1000000)}`;
 
                 let graphDefinition = mermaidContainer.querySelector(options.selectors.script).innerHTML;
+                let renderRules = [];
 
-                let extraClasses = [];
-                if(options.css.enabled && options.css.setClassCommand) {
-                    graphDefinition = graphDefinition.replace(cssClassRegExp, (m, s) => {
-                        s = s.trim();
-                        let selector;
-                        let classNames;
+                // 1. Extract Custom CSS Logic
+                // Regex matches: selector + (one of ->, ^->, _->) + assignment
+                const ruleRegex = /^\s*%%%\s+(.+?)\s+([\^_]?->)\s+(.+?)\s*$/gm;
 
-                        if(s.startsWith('"')) {
-                            s = s.substring(1, s.length - 1);
-                            [selector, s] = s.split('"');
-                            classNames = s.split(/\s+/g);
-                        }
-                        else
-                            [selector, ...classNames] = s.split(/\s+/g);
-
-                        if(selector && classNames)
-                            extraClasses.push([selector, classNames]);
-
-                        return "";
+                graphDefinition = graphDefinition.replace(ruleRegex, (match, selector, arrow, assignment) => {
+                    renderRules.push({
+                        selector,
+                        assignment,
+                        type: arrow
                     });
-                }
+                    return match;
+                });
 
-                let extraAttributes = [];
-                if(options.css.enabled && options.css.setAttributeCommand) {
-                    graphDefinition = graphDefinition.replace(attrRegExp, (m, s) => {
-                        s = s.trim();
-                        let selector;
-                        let attributeName;
-
-                        if(s.startsWith('"')) {
-                            s = s.substring(1, s.length - 1);
-                            selector = s.substring(0, s.indexOf('"'));
-                            s = s.substring(s.indexOf('"') + 1).trim();
-                        }
-                        else {
-                            selector = s.substring(0, s.indexOf(' '));
-                            s = s.substring(s.indexOf(' ') + 1).trim();
-                        }
-
-                        attributeName = s.substring(0, s.indexOf(' '));
-                        s = s.substring(s.indexOf(' ') + 1).trim();
-
-                        if(selector && attributeName)
-                            extraAttributes.push([selector, attributeName, s]);
-
-                        return "";
-                    });
-                }
-
+                // 2. Handle Math in Labels
                 if(options.mathInLabels) {
                     graphDefinition = graphDefinition.replace(/\\([(\[]).*?\\([)\]])/g, (s) => {
                         let output = window.katex.renderToString(s.substring(2, s.length - 2), {
@@ -224,15 +212,18 @@ const RevealMermaid = {
                     });
                 }
 
+                // 3. Render Mermaid
                 try {
                     const isParseable = await window.mermaid.parse(graphDefinition, {suppressErrors: false});
                 } catch (error) {
-                    console.warning(`Mermaid diagram failed to parse:\n\n${graphDefinition}\n\nError: `, error);
+                    console.warn(`Mermaid diagram failed to parse:\n\n${graphDefinition}\n\nError: `, error);
                 }
 
                 const { svg } = await window.mermaid.render(mermaidContainer.id, graphDefinition);
                 newDiv.outerHTML = svg;
                 const svgElement = parent.querySelector(`#${mermaidContainer.id}`);
+
+                // Copy classes and styles from container
                 svgElement.classList += " " + mermaidContainer.classList;
                 if(mermaidContainer.classList.contains("r-stretch")) {
                     svgElement.style.width = "";
@@ -250,85 +241,120 @@ const RevealMermaid = {
                 }
                 mermaidContainer.remove();
 
+                // 4. Handle Overflow
                 if(options.overflowVisible) {
                     let selector = options.overflowVisible === '*' ? '*' : 'foreignObject';
-                    newDiv.querySelectorAll(selector).forEach((obj) => {
+                    svgElement.querySelectorAll(selector).forEach((obj) => {
                         obj.setAttribute('overflow', 'visible');
                     });
                 }
 
-                if(options.css.enabled) {
-                    if(options.css.substituteClasses) {
-                        for(let className in options.css.substituteClasses) {
-                            newDiv.querySelectorAll('.' + className).forEach((element) => {
-                                element.classList.remove(className);
-                                let newClass = options.css.substituteClasses[className];
-                                if(typeof newClass === 'string')
-                                    newClass && element.classList.add(newClass)
-                                else for(let newClassName of newClass)
-                                    newClassName && element.classList.add(newClassName)
-                            });
-                        }
-                    }
+                // 5. Apply Custom CSS Logic
+                if (options.css.enabled && renderRules.length > 0) {
+                    const svgNS = "http://www.w3.org/2000/svg";
 
-                    let addClasses = (element, classNames) => {
-                        element && classNames && classNames.map(className => className && element.classList.add(className));
-                    };
-
-                    newDiv.querySelectorAll('*').forEach((node) => {
-                        Array.from(node.classList).forEach((className) => {
-                            if (className.indexOf('..') > -1) {
-                                let [nodeStyles, labelStyles] = className.split('..');
-                                node.classList.remove(className);
-                                addClasses(node, nodeStyles.split('.'));
-                                labelStyles && addClasses(node.querySelector('div'), labelStyles.split('.'));
-                            } else if (className.indexOf('.') > -1) {
-                                node.classList.remove(className);
-                                addClasses(node, className.split('.'));
+                    renderRules.forEach(({ selector, assignment, type }) => {
+                        try {
+                            selector = selector.trim();
+                            let indexPart = null;
+                            if(/.*\[\d+]$/.exec(selector)) {
+                                const digitPart = /\[\d+]$/.exec(selector)[0];
+                                indexPart = parseInt(digitPart.match(/\d+/)[0]);
+                                selector = selector.replace(/\[\d+]$/, '');
                             }
-                        });
 
-                        if(node.tagName.toLowerCase() === 'span' && node.innerHTML.indexOf(':::') > -1) {
-                            let [nodeHTML, classPart] = node.innerHTML.split(':::');
-                            node.innerHTML = nodeHTML;
-                            let [nodeStyles, labelStyles] = classPart.split('..');
-                            addClasses(node.closest('div'), nodeStyles.split('.'));
-                            labelStyles && addClasses(node, labelStyles.split('.'));
+                            const targets = svgElement.querySelectorAll(selector);
+                            targets.forEach((el, idx) => {
+                                if(indexPart !== null && idx + 1 !== indexPart)
+                                    return;
+
+                                if(options.css.debug) {
+                                    console.log(selector, idx + 1, type, el)
+                                }
+
+                                let modificationTarget = el;
+
+                                // --- LOGIC FOR ARROW TYPES ---
+                                if (type === '^->') {
+                                    // 1. OUTER WRAPPER
+                                    // Wraps the element in a new <g> and modifies the <g>
+                                    const wrapper = document.createElementNS(svgNS, 'g');
+                                    el.parentNode.insertBefore(wrapper, el);
+                                    wrapper.appendChild(el);
+                                    modificationTarget = wrapper;
+
+                                } else if (type === '_->') {
+                                    // 2. INNER WRAPPER
+                                    // Creates a new <g> inside the element, moves all children into it,
+                                    // and modifies that new internal <g>
+                                    const innerGroup = document.createElementNS(svgNS, 'g');
+
+                                    // Move all existing children of 'el' into 'innerGroup'
+                                    while (el.firstChild) {
+                                        innerGroup.appendChild(el.firstChild);
+                                    }
+
+                                    el.appendChild(innerGroup);
+                                    modificationTarget = innerGroup;
+                                }
+                                // Default '->' falls through here, keeping modificationTarget = el
+
+                                const tokens = assignment.match(/(\[.+?\])|(\S+)/g) || [];
+
+                                tokens.forEach(token => {
+                                    if (token.startsWith('.')) {
+                                        modificationTarget.classList.add(token.substring(1));
+                                    } else if (token.startsWith('!.')) {
+                                        modificationTarget.classList.remove(token.substring(2));
+                                    } else if (token.startsWith('#')) {
+                                        modificationTarget.id = token.substring(1);
+                                    } else if (token.startsWith('[')) {
+                                        const content = token.substring(1, token.length - 1);
+                                        const eqIndex = content.indexOf('=');
+
+                                        if (eqIndex > -1) {
+                                            const key = content.substring(0, eqIndex).trim();
+                                            let val = content.substring(eqIndex + 1).trim();
+
+                                            if ((val.startsWith('"') && val.endsWith('"')) ||
+                                                (val.startsWith("'") && val.endsWith("'"))) {
+                                                val = val.substring(1, val.length - 1);
+                                            }
+
+                                            modificationTarget.setAttribute(key, val);
+                                        } else {
+                                            modificationTarget.setAttribute(content, '');
+                                        }
+                                    }
+                                });
+                            });
+                        } catch (e) {
+                            console.warn(`Mermaid Plugin: Failed to apply selector "${selector}".`, e);
                         }
                     });
-
-                    if(extraClasses.length > 0)
-                        for(let [selector, classNames] of extraClasses)
-                            newDiv.querySelectorAll(selector).forEach(element => addClasses(element, classNames));
-
-
-                    if(extraAttributes.length > 0)
-                        for(let [selector, attr, value] of extraAttributes)
-                            newDiv.querySelectorAll(selector).forEach(element => element.setAttribute(attr, value));
                 }
 
-                if(options.css.cssIndices) {
-                    let cssSelector = '[class*="' + options.css.indexClassPrefix + '"]';
+                if(options.css.enabled && options.css.cssIndices) {
+                    const cssSelector = '[class*="' + options.css.indexClassPrefix + '"]';
+                    const fragmentsWithCssIndex = svgElement.querySelectorAll(cssSelector);
+                    if(fragmentsWithCssIndex.length > 0 && options.css.cssIndices || options.css.resetIndicesAfterTypeset)
+                        for(let fragment of svgElement.querySelectorAll('.fragment[data-fragment-index]'))
+                            fragment.removeAttribute('data-fragment-index');
 
-                    for(let slide of reveal.getSlides()){
-                        let fragmentsWithCssIndex = slide.querySelectorAll(cssSelector);
-                        if(fragmentsWithCssIndex.length > 0 && options.css.cssIndices || options.css.resetIndicesAfterTypeset)
-                            for(let fragment of slide.querySelectorAll('.fragment[data-fragment-index]'))
-                                fragment.removeAttribute('data-fragment-index');
+                    if(options.css.cssIndices)
+                        for (let fragment of fragmentsWithCssIndex) {
+                            let s = fragment.getAttribute('class');
+                            s = s.substring(
+                                s.indexOf(options.css.indexClassPrefix) + options.css.indexClassPrefix.length
+                            );
+                            s = s.substring(0, Math.max(s.indexOf(' '), s.length));
+                            fragment.classList.add('fragment');
+                            fragment.setAttribute('data-fragment-index', s);
+                        }
 
-                        if(options.css.cssIndices)
-                            for (let fragment of fragmentsWithCssIndex) {
-                                let s = fragment.getAttribute('class');
-                                s = s.substring(
-                                    s.indexOf(options.css.indexClassPrefix) + options.css.indexClassPrefix.length
-                                );
-                                s = s.substring(0, Math.max(s.indexOf(' '), s.length));
-                                fragment.classList.add('fragment');
-                                fragment.setAttribute('data-fragment-index', s);
-                            }
-                    }
                 }
             });
+
             reveal.layout();
         });
 

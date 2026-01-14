@@ -3,22 +3,32 @@
     <p><a href="https://mermaid.js.org/">Mermaid.js</a> is a widely used diagramming tool with simple text-based diagram description.</p>
 </section>
 
-<section data-auto-animate data-menu-title="Mermaid.js diagrams I">
-    <h4>TODO as a list:</h4>
+<section data-menu-title="Mermaid.js diagrams I">
+    <h4>Here's a list:</h4>
     <ul>
-        <li><span data-id="learnReveal">Try reveal.js</span></li>
-        <li>If <span data-id="satisfied">satisfied</span>, <span data-id="useIt">use</span> with profit.</li>
-        <li>If not, <span data-id="dropIt">drop</span> it.</li>
+        <li><span class="fragment">Try reveal.js</span></li>
+        <li><span class="fragment">If satisfied</span><span class="fragment">, use with profit.</span></li>
+        <li><span class="fragment">If not</span><span class="fragment">, drop it.</span></li>
     </ul>
 </section>
 
-<section data-auto-animate data-menu-title="Mermaid.js diagrams II">
-    <h4>TODO as a mermaid diagram:</h4>
+<section data-menu-title="Mermaid.js diagrams II">
+    <h4>The same list a Mermaid diagram:</h4>
     <div data-mermaid class="r-stretch"><script type="text/mermaid">
-graph LR
-A["<span data-id='learnReveal'>Try reveal.js</span>"]:::neon
-A --> B{"<span data-id='satisfied'>satisfied?</span>"}
-B -->|yes| C["<span data-id='useIt'>use</span>"]
-B -->|no| D["<span data-id='dropIt'>drop</span>"]
-</script>
-</div></section>
+        graph LR
+            A[Try reveal.js]
+            A --> B{satisfied?}
+            B -->|yes| C[use]
+            B -->|no| D[drop]
+        %%% g.node[1] -> .fragidx-1 .neon
+        %%% g.node[2] -> .fragidx-2
+        %%% g.node[3] -> .fragidx-3
+        %%% g.node[4] -> .fragidx-4
+        %%% g.edgePaths path[1] -> .fragidx-2
+        %%% g.edgePaths path[2] -> .fragidx-3
+        %%% g.edgePaths path[3] -> .fragidx-4
+        %%% g.edgeLabel[2] -> .fragidx-3
+        %%% g.edgeLabel[3] -> .fragidx-4
+        %%% g.label[2] _-> .fragidx-5 .grow
+    </script></div>
+</section>
