@@ -203,13 +203,15 @@
             // autoOpen: true,
             // sticky: true
         },
-        vegaOptions: {
-            mode: 'vega-lite',
-            theme: 'auto',
-            renderer: 'canvas',
-            actions: false,
-            tooltip: {
-                theme: 'fivethirtyeight'
+        vega: {
+            vegaOptions: {
+                mode: 'vega-lite',
+                theme: 'auto',
+                renderer: 'svg',
+                actions: false,
+                tooltip: {
+                    theme: 'fivethirtyeight'
+                }
             }
         }
     });
