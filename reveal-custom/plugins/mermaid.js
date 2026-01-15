@@ -47,7 +47,7 @@ const RevealMermaid = {
                 theme: 'auto',
                 suppressErrorRendering: true
             },
-            registerIconPack: options.registerIconPack || false,
+            iconPacks: options.iconPacks || [],
             css: {
                 enabled: options?.css?.enabled !== false,
                 cssIndices: options?.css?.cssIndices !== false,
@@ -168,14 +168,49 @@ const RevealMermaid = {
 
             window.mermaid.initialize(options.mermaidInit);
 
-            if(options.registerIconPack)
-                window.mermaid.registerIconPacks([
-                    {
-                        name: 'logos',
-                        loader: () =>
-                            fetch('https://unpkg.com/@iconify-json/logos@1/icons.json').then((res) => res.json()),
-                    },
-                ]);
+            if(options.iconPacks) {
+                for(let packName in options.iconPacks) {
+                    window.mermaid.registerIconPacks([
+                        {
+                            name: packName,
+                            loader: () =>
+                                fetch(options.iconPacks[packName]).then((res) => res.json()),
+                        },
+                    ]);
+                }
+            }
+
+
+            function dedentAndTrim(str) {
+                const TAB_WIDTH = 4;
+                const lines = str.split(/\r?\n/);
+                let minIndent = Infinity;
+
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    let width = 0;
+                    for (const char of line) {
+                        if (char === ' ') width++;
+                        else if (char === '\t') width += TAB_WIDTH;
+                        else break;
+                    }
+                    if (width < minIndent) minIndent = width;
+                }
+
+                if (minIndent === Infinity) minIndent = 0;
+
+                return lines.map(line => {
+                    let width = 0, i = 0;
+                    for (; i < line.length; i++) {
+                        if (width >= minIndent) break;
+                        const char = line[i];
+                        if (char === ' ') width++;
+                        else if (char === '\t') width += TAB_WIDTH;
+                        else break;
+                    }
+                    return ' '.repeat(Math.max(0, width - minIndent)) + line.slice(i);
+                }).join('\n').trim();
+            }
 
             const mermaidContainers = Array.from(reveal.getSlidesElement().querySelectorAll(options.selectors.container));
 
@@ -183,6 +218,11 @@ const RevealMermaid = {
                 const parent = mermaidContainer.parentNode;
                 const newDiv = document.createElement('div');
                 parent.insertBefore(newDiv, mermaidContainer);
+
+                const mermaidScript = mermaidContainer.querySelector("script");
+                if(mermaidScript) {
+                    mermaidScript.textContent = dedentAndTrim(mermaidScript.textContent);
+                }
 
                 if(!mermaidContainer.id)
                     mermaidContainer.id = `mermaid-${Math.floor(Math.random() * 1000000)}`;
