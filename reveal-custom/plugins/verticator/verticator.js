@@ -1,15 +1,350 @@
-/*****************************************************************
- *
- * Verticator for Reveal.js
- * Version 1.2.4
- *
- * @author: Martijn De Jongh (Martino), martijn.de.jongh@gmail.com
- * https://github.com/martinomagnifico
- *
- * @license
- * MIT licensed
- *
- * Copyright (C) 2023 Martijn De Jongh (Martino)
- *
- ******************************************************************/
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).Verticator=t()}(this,(function(){"use strict";var e="undefined"!=typeof document?document.currentScript:null,t={lightClass:"has-light-background",darkClass:"has-dark-background",themeColorVar:"--c-theme-color",vertiColorVar:"--v-color",forceColorVar:"--v-forcecolor",activeclass:"active",eventNames:["ready","slidechanged"]};const r=e=>e&&"object"==typeof e&&!Array.isArray(e),o=(e,...t)=>{if(!t.length)return e;const a=t.shift();if(r(e)&&r(a))for(const t in a)r(a[t])?(e[t]||Object.assign(e,{[t]:{}}),o(e[t],a[t])):Object.assign(e,{[t]:a[t]});return o(e,...t)},a=(e,t,r)=>{let o,a=document.querySelector("head"),i=!1;if("script"===t?document.querySelector(`script[src="${e}"]`)?i=!0:(o=document.createElement("script"),o.type="text/javascript",o.src=e):"stylesheet"===t&&(document.querySelector(`link[href="${e}"]`)?i=!0:(o=document.createElement("link"),o.rel="stylesheet",o.href=e)),!i){const e=()=>{"function"==typeof r&&(r.call(),r=null)};o.onload=e,o.onreadystatechange=function(){"loaded"===this.readyState&&e()},a.appendChild(o)}},i=t=>{let r,o=document.querySelector(`script[src$="${t}"]`);return r=o?o.getAttribute("src").slice(0,-1*t.length):("undefined"==typeof document&&"undefined"==typeof location?require("url").pathToFileURL(__filename).href:"undefined"==typeof document?location.href:e&&e.src||new URL("verticator.js",document.baseURI).href).slice(0,("undefined"==typeof document&&"undefined"==typeof location?require("url").pathToFileURL(__filename).href:"undefined"==typeof document?location.href:e&&e.src||new URL("verticator.js",document.baseURI).href).lastIndexOf("/")+1),r},s=(e,r,o,a,i)=>{e?(a.style.setProperty(t.themeColorVar,o.themeinverse),r.inversecolor||r.oppositecolor?i.style.setProperty(t.vertiColorVar,o.verticatorinverse):i.style.removeProperty(t.vertiColorVar)):(a.style.setProperty(t.themeColorVar,o.themeregular),r.color?i.style.setProperty(t.vertiColorVar,o.verticatorregular):i.style.removeProperty(t.vertiColorVar))},l=(e,r,o,a)=>{const i=((e,r)=>{const o={},a=document.createElement("section"),i=document.createElement(r);return e.getElementsByClassName("slides")[0].appendChild(a).appendChild(i),o.regular=getComputedStyle(i).getPropertyValue("color"),a.classList.add(t.lightClass),o.inverse=getComputedStyle(i).getPropertyValue("color"),o.regular==o.inverse?(o.theme="light",a.classList.remove(t.lightClass),a.classList.add(t.darkClass),o.inverse=getComputedStyle(i).getPropertyValue("color")):o.theme="dark",a.remove(),o})(r,a.themetag?a.themetag:"section");o.theme=i.theme,o.themeregular=i.regular,o.themeinverse=i.inverse,o.verticatorregular=a.color?a.color:i.regular,o.verticatorinverse=a.inversecolor?a.inversecolor:a.oppositecolor?a.oppositecolor:i.inverse,a.debug&&(console.log(`Theme regular color is: "${o.themeregular}"`),console.log(`Theme inverse color is: "${o.themeinverse}"`),a.color&&console.log(`Verticator regular color is: "${o.verticatorregular}"`),(a.inversecolor||a.oppositecolor)&&console.log(`Verticator inverse color is: "${o.verticatorinverse}"`)),a.color&&e.style.setProperty(t.vertiColorVar,o.verticatorregular)},c=(e,r,o)=>{let a=Array.from(r.querySelectorAll("li"));var i=o.indexbase-1;a.forEach((function(r,a){parseInt(r.dataset.index)<=e.indexv+o.indexbase&&(i=a),r.classList.remove(t.activeclass)})),i>=0&&a[i].classList.add(t.activeclass)},n=(e,t,r,o)=>{((e,t)=>{e.debug&&console.log(t)})(o,`Creating ${r.length} bullets`),t.classList.remove("visible");let a="";r.forEach((function(t){let r=t[0],i=t[1],s=`href="#/${e.indexh+o.indexbase}/${r+o.indexbase}"`,l=i?`data-name="${i}"`:"",c=i?`<div class="tooltip"><span>${i}</span></div>`:"";a+=`<li data-index="${r+o.indexbase}"><a ${o.clickable?s:""}${l}></a>${c}</li>`})),t.innerHTML=`<div class="verticator-holder">${a}</div>`,c(e,t,o),setTimeout((function(){t.classList.add("visible")}),300)},d=(e,t)=>{let r=e.parentNode;return Array.from(r.children).map((function(e,t){return[t,e]})).filter((function(e){let r="SECTION"==e[1].tagName&&"SECTION"==e[1].parentNode.tagName,o=t.skipuncounted&&"uncounted"==e[1].getAttribute("data-visibility");return r&&!o})).map((function(e){let r="";return t.tooltip&&(r=(e=>{if((!e.dataset.verticatorTooltip||"none"!=e.dataset.verticatorTooltip&&"false"!=e.dataset.verticatorTooltip)&&!e.classList.contains("no-verticator-tooltip")){if("auto"!=t.tooltip&&e.getAttribute(`${t.tooltip}`))return e.getAttribute(`${t.tooltip}`);if("auto"!=t.tooltip)return!1;for(const t of["data-verticator-tooltip","data-name","title"])if(e.getAttribute(t))return e.getAttribute(t);for(const t of["h1","h2","h3","h4"])if(e.querySelector(t))return e.querySelector(t).textContent}})(e[1])),[e[0],r]}))},u=(e,t,r,o)=>{"resize"==e.type&&(e.currentSlide=t.getCurrentSlide(),e.indexv=t.getIndices().v);let a=e.currentSlide,i=a.parentNode,s=d(a,o);if(s&&s.length)if(s.length<2)r.classList.remove("visible"),r.innerHTML="";else{if(e.previousSlide){i!=e.previousSlide.parentNode&&n(e,r,s,o)}else n(e,r,s,o);c(e,r,o)}else r.classList.remove("visible"),r.innerHTML=""};return()=>{let e={};const r={},c=function(e,o){let a,i,c=e.getRevealElement(),n=c.querySelector("ul.verticator");if(!n){if(!o.autogenerate)return;let e=document.createElement("ul");e.className+="verticator",c.insertBefore(e,c.childNodes[0]),n=c.querySelector("ul.verticator")}o.clickable||n.classList.add("no-click"),l(n,c,r,o),((e,t,r)=>{"auto"==r.position&&(r.position=e.getConfig().rtl?"left":"right"),"left"==r.position?(t.classList.add("left"),t.style.left=r.offset):t.style.right=r.offset;let o=r.scale;o=o>2?2:o<.5?.5:o;let a=e.getScale(),i=a>1?a*o:o;t.style.setProperty("--verticator-scale",i.toFixed(2));let s=1/Math.sqrt(i);t.style.setProperty("--verticator-tooltip-scale",s.toFixed(2)),e.on("resize",(e=>{a=e.scale,i=a>1?a*o:o,t.style.setProperty("--verticator-scale",i.toFixed(2))}))})(e,n,o),((e,r,o,a)=>{let i=r.getRevealElement(),l=r.getViewportElement(),c={};c.dark=i.classList.contains(t.darkClass),c.light=i.classList.contains(t.lightClass),c.darkParent=i.classList.contains("darkstack"),c.lightParent=i.classList.contains("lightstack");const n=new MutationObserver((r=>{r.forEach((r=>{if("class"===r.attributeName){const l=e=>r.target.classList.contains(e);let n=l(t.lightClass),d=l(t.darkClass),u=l("lightstack"),g=l("darkstack");n||d?c.dark===d&&c.light===n||("dark"==o.theme&&c.light!==n&&(c.light=n,s(n,a,o,i,e)),"light"==o.theme&&c.dark!==d&&(c.dark=d,s(d,a,o,i,e))):u||g?c.dark===g&&c.light===u||("dark"==o.theme&&c.light!==u&&(c.light=u,s(u,a,o,i,e)),"light"==o.theme&&c.dark!==g&&(c.dark=g,s(g,a,o,i,e))):(c.dark=!1,c.light=!1,s(!1,a,o,i,e))}}))}));l.classList.contains("reveal-scroll")?n.observe(l,{attributes:!0,attributeFilter:["class"]}):n.observe(i,{attributes:!0,attributeFilter:["class"]})})(n,e,r,o),e.on("slidechanged",(a=>((e,r,o,a,i)=>{let s=o.getRevealElement();e.currentSlide.parentNode.classList.contains("stack")&&(e.currentSlide.parentNode.classList.contains(t.lightClass)?s.classList.add("lightstack"):s.classList.remove("lightstack"),e.currentSlide.parentNode.classList.contains(t.darkClass)?s.classList.add("darkstack"):s.classList.remove("darkstack")),e.currentSlide.dataset.verticator||e.currentSlide.parentNode.dataset.verticator?"regular"==e.currentSlide.dataset.verticator||"regular"==e.currentSlide.parentNode.dataset.verticator?(r.style.setProperty(t.forceColorVar,a.verticatorregular),i.debug&&console.log(`Verticator forced to: "${a.verticatorregular}"`)):"inverse"==e.currentSlide.dataset.verticator||"inverse"==e.currentSlide.parentNode.dataset.verticator?(r.style.setProperty(t.forceColorVar,a.verticatorinverse),i.debug&&console.log(`Verticator forced to: "${a.verticatorinverse}"`)):(r.style.setProperty(t.forceColorVar,o.getCurrentSlide().dataset.verticator||o.getCurrentSlide().parentNode.dataset.verticator),i.debug&&console.log(`Verticator forced to: "${o.getCurrentSlide().dataset.verticator||o.getCurrentSlide().parentNode.dataset.verticator}"`)):r.style.removeProperty(t.forceColorVar)})(a,n,e,r,o))),t.eventNames.forEach((t=>e.on(t,(t=>{t.currentSlide!==a&&(u(t,e,n,o),a=t.currentSlide)})))),e.on("resize",(t=>{n.classList.add("resizing"),i&&clearTimeout(i),i=setTimeout((()=>{e.getCurrentSlide()!==a&&u(t,e,n,o),n.classList.remove("resizing"),i=null}),500)})),e.getConfig().embedded&&e.on("click",(t=>{((e,t)=>{if(e.target.matches(".verticator li a")){let o=t.getIndices().h,a=t.getIndices().v;e.preventDefault();let i=[...(r=e.target.parentNode).parentNode.children].indexOf(r);t.slide(o,i,a)}var r})(t,e)}))};return{id:"verticator",init:function(t){e=o({themetag:"h1",color:"",inversecolor:"",skipuncounted:!1,clickable:!0,position:"auto",offset:"3vmin",autogenerate:!0,tooltip:!1,scale:1,csspath:"",debug:!1},t.getConfig().verticator||{}),e.indexbase=t.getConfig().hashOneBasedIndex?1:0;let r=e.csspath.verticator?e.csspath.verticator:e.csspath?e.csspath:`${i()}verticator.css`||"plugin/verticator/verticator.css";e.debug&&(console.log(`Plugin path = ${i()}`),console.log(`Verticator CSS path = ${r}`));const s=document.querySelector("[name=generator]");s&&s.content.includes("quarto")||a(r,"stylesheet"),c(t,e)}}}}));
+/*
+    A mod of compiled https://github.com/Martinomagnifico/reveal.js-verticator
+    @author: Martijn De Jongh (Martino), martijn.de.jongh@gmail.com
+    https://github.com/martinomagnifico
+    Version 1.3.1.mod by Alex Dainiak
+ */
+
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+        typeof define === 'function' && define.amd ? define(factory) :
+            (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Verticator = factory());
+})(this, (function () {
+    'use strict';
+
+    const defaultConfig = {
+        themetag: 'h1',
+        color: '',
+        inversecolor: '',
+        skipuncounted: false,
+        clickable: true,
+        position: 'auto',
+        offset: '3vmin',
+        autogenerate: true,
+        tooltip: false,
+        scale: 1,
+        cssautoload: true,
+        csspath: '',
+        plaintextonly: false
+    };
+
+    const CONSTANTS = {
+        lightClass: 'has-light-background',
+        darkClass: 'has-dark-background',
+        themeColorVar: '--c-theme-color',
+        vertiColorVar: '--v-color',
+        forceColorVar: '--v-forcecolor',
+        activeClass: 'active'
+    };
+
+    /**
+     * Helper: Load CSS dynamically
+     */
+    const loadCSS = (config, pluginId) => {
+        if (!config.cssautoload || config.csspath === false) return;
+
+        const path = config.csspath || (function () {
+            const script = document.querySelector(`script[src$="${pluginId}.js"]`);
+            return script ? script.src.replace(/\.js$/, '.css') : `plugin/${pluginId}/${pluginId}.css`;
+        })();
+
+        if (!document.querySelector(`link[href="${path}"]`)) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = path;
+            document.head.appendChild(link);
+        }
+    };
+
+    /**
+     * Helper: Get base index (0 or 1)
+     */
+    const getIndexBase = (deck) => deck.getConfig().hashOneBasedIndex ? 1 : 0;
+
+    /**
+     * Helper: Determine tooltip text
+     */
+    const getTooltip = (element, config) => {
+        if (element.dataset.verticatorTooltip === 'none' || element.classList.contains('no-verticator-tooltip')) return null;
+
+        // 1. Explicit text in config
+        if (typeof config.tooltip === 'string' && config.tooltip !== 'auto' && config.tooltip !== 'true') {
+            return element.getAttribute(config.tooltip) || null;
+        }
+
+        // 2. Auto-detection
+        if (config.tooltip === true || config.tooltip === 'auto' || config.tooltip === 'true') {
+            // Check data attributes
+            // MODIFICATION: Check for data-menu-title
+            if (element.getAttribute('data-menu-title')) return element.getAttribute('data-menu-title');
+            if (element.getAttribute('data-name')) return element.getAttribute('data-name');
+            if (element.getAttribute('title')) return element.getAttribute('title');
+
+            // Check headings
+            const heading = element.querySelector('h1, h2, h3, h4');
+            if (heading && heading.textContent) return heading.textContent;
+        }
+        return null;
+    };
+
+    /**
+     * Main Plugin Class
+     */
+    class VerticatorPlugin {
+        constructor(deck, options) {
+            this.deck = deck;
+            this.config = Object.assign({}, defaultConfig, options);
+            this.revealElem = deck.getRevealElement();
+            this.verticatorElem = null;
+            this.colors = {};
+            this.currentSlide = null;
+
+            // State for direction detection
+            this.lastIndexH = 0;
+            this.lastIndexV = 0;
+        }
+
+        init() {
+            // Load CSS
+            loadCSS(this.config, 'verticator');
+
+            // Setup UI
+            this.setupElement();
+            if (!this.verticatorElem) return;
+
+            // Setup Theme Colors
+            this.setupColors();
+
+            // Setup Position & Scale
+            this.updateScaleAndPosition();
+
+            // Initial Render
+            // We verify slide exists to avoid initialization errors
+            const currentSlide = this.deck.getCurrentSlide();
+            if (currentSlide) {
+                this.onSlideChange(currentSlide);
+            } else {
+                // If plugin loads before Reveal is ready, wait for ready event
+                this.deck.on('ready', (event) => {
+                    this.onSlideChange(event.currentSlide);
+                });
+            }
+
+            // Bind Events
+            this.bindEvents();
+        }
+
+        setupElement() {
+            this.verticatorElem = this.revealElem.querySelector('ul.verticator');
+            if (!this.verticatorElem && this.config.autogenerate) {
+                this.verticatorElem = document.createElement('ul');
+                this.verticatorElem.classList.add('verticator');
+                if (!this.config.clickable) this.verticatorElem.classList.add('no-click');
+                this.revealElem.insertBefore(this.verticatorElem, this.revealElem.firstChild);
+            }
+        }
+
+        setupColors() {
+            // Create a temporary section to read computed styles
+            const tempSection = document.createElement('section');
+            const tempSubject = document.createElement(this.config.themetag);
+
+            // Force light theme calculation
+            tempSection.className = CONSTANTS.lightClass;
+            this.revealElem.querySelector('.slides').appendChild(tempSection).appendChild(tempSubject);
+
+            const lightColor = getComputedStyle(tempSubject).color;
+
+            // Force dark theme calculation
+            tempSection.className = CONSTANTS.darkClass;
+            const darkColor = getComputedStyle(tempSubject).color;
+
+            tempSection.remove();
+
+            // Store colors
+            this.colors = {
+                regular: lightColor,
+                inverse: darkColor,
+                verticatorRegular: this.config.color || lightColor,
+                verticatorInverse: this.config.inversecolor || this.config.oppositecolor || darkColor
+            };
+
+            // Set default variable
+            if (this.config.color) {
+                this.verticatorElem.style.setProperty(CONSTANTS.vertiColorVar, this.colors.verticatorRegular);
+            }
+        }
+
+        updateScaleAndPosition() {
+            // Position
+            let pos = this.config.position;
+            if (pos === 'auto') pos = this.deck.getConfig().rtl ? 'left' : 'right';
+
+            this.verticatorElem.classList.remove('left', 'right');
+            this.verticatorElem.classList.add(pos);
+            this.verticatorElem.style[pos === 'left' ? 'left' : 'right'] = this.config.offset;
+
+            // Scale logic
+            const applyScale = () => {
+                const revealScale = this.deck.getScale();
+                const userScale = Math.min(Math.max(this.config.scale, 0.5), 2);
+                const totalScale = revealScale > 1 ? revealScale * userScale : userScale;
+
+                this.verticatorElem.style.setProperty('--verticator-scale', totalScale.toFixed(2));
+                this.verticatorElem.style.setProperty('--verticator-tooltip-scale', (1 / Math.sqrt(totalScale)).toFixed(2));
+            };
+
+            applyScale();
+            this.deck.on('resize', applyScale);
+        }
+
+        bindEvents() {
+            this.deck.on('slidechanged', (event) => {
+                const indices = this.deck.getIndices();
+                const hasChangedH = indices.h !== this.lastIndexH;
+                const hasChangedV = indices.v !== this.lastIndexV;
+
+                // If horizontal changed or it's a new stack, regenerate bullets
+                if (hasChangedH || (hasChangedV && !this.verticatorElem.classList.contains('visible'))) {
+                    this.onSlideChange(event.currentSlide);
+                } else {
+                    // Just update active bullet
+                    this.activateBullet(indices.v);
+                }
+
+                this.updateColors(event.currentSlide);
+
+                this.lastIndexH = indices.h;
+                this.lastIndexV = indices.v;
+            });
+
+            // Observer for dark/light class changes on the viewport (Reveal.js 4+)
+            const observer = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    if (m.attributeName === 'class') {
+                        this.updateColors(this.deck.getCurrentSlide());
+                    }
+                }
+            });
+
+            observer.observe(this.revealElem, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        onSlideChange(currentSlide) {
+            // SAFETY CHECK: Ensure slide exists
+            if (!currentSlide) return;
+
+            const parent = currentSlide.parentNode;
+
+            // Check if we are in a vertical stack
+            const isVerticalStack = parent.tagName === 'SECTION' && parent.classList.contains('stack');
+            const sections = isVerticalStack ? Array.from(parent.querySelectorAll('section')) : [];
+
+            // Filter uncounted slides
+            const visibleSections = sections.filter(section => {
+                return !(this.config.skipuncounted && section.getAttribute('data-visibility') === 'uncounted');
+            });
+
+            if (visibleSections.length < 2) {
+                this.verticatorElem.classList.remove('visible');
+                this.verticatorElem.innerHTML = '';
+                return;
+            }
+
+            // Generate Bullets
+            const indexBase = getIndexBase(this.deck);
+            const currentHIndex = this.deck.getIndices().h;
+
+            let html = '';
+            visibleSections.forEach((section, index) => {
+                // Find original index in parent to ensure links work correctly even if some are skipped
+                const realIndex = Array.from(parent.children).indexOf(section);
+                const tooltip = getTooltip(section, this.config);
+                const link = this.config.clickable ? `href="#/${currentHIndex + indexBase}/${realIndex + indexBase}"` : '';
+                const tooltipHtml = tooltip ? `<div class="tooltip"><span>${tooltip}</span></div>` : '';
+                const dataName = tooltip ? `data-name="${tooltip}"` : '';
+
+                html += `<li data-index="${realIndex + indexBase}"><a ${link} ${dataName}></a>${tooltipHtml}</li>`;
+            });
+
+            this.verticatorElem.innerHTML = `<div class="verticator-holder">${html}</div>`;
+            this.verticatorElem.classList.add('visible');
+
+            this.activateBullet(this.deck.getIndices().v);
+            this.updateColors(currentSlide);
+        }
+
+        activateBullet(vIndex) {
+            const indexBase = getIndexBase(this.deck);
+            const bullets = Array.from(this.verticatorElem.querySelectorAll('li'));
+
+            bullets.forEach(li => li.classList.remove(CONSTANTS.activeClass));
+
+            // Find closest match (handling potential skipped indices)
+            let activeLi = null;
+            for (const li of bullets) {
+                if (parseInt(li.dataset.index, 10) <= vIndex + indexBase) {
+                    activeLi = li;
+                }
+            }
+            if (activeLi) activeLi.classList.add(CONSTANTS.activeClass);
+        }
+
+        updateColors(currentSlide) {
+            // SAFETY CHECK: Ensure slide exists
+            if (!currentSlide) return;
+
+            const revealClasses = this.revealElem.classList;
+            const parent = currentSlide.parentNode;
+
+            // 1. Determine if we need inverse colors
+            let isDark = revealClasses.contains(CONSTANTS.darkClass);
+            let isLight = revealClasses.contains(CONSTANTS.lightClass);
+
+            // Check stack specific classes
+            if (parent.classList.contains(CONSTANTS.darkClass)) isDark = true;
+            if (parent.classList.contains(CONSTANTS.lightClass)) isLight = true;
+
+            const useInverse = isDark || (revealClasses.contains('has-dark-background') && !isLight);
+
+            if (useInverse) {
+                if (this.config.inversecolor || this.config.oppositecolor) {
+                    this.verticatorElem.style.setProperty(CONSTANTS.vertiColorVar, this.colors.verticatorInverse);
+                } else {
+                    this.verticatorElem.style.removeProperty(CONSTANTS.vertiColorVar);
+                }
+            } else {
+                if (this.config.color) {
+                    this.verticatorElem.style.setProperty(CONSTANTS.vertiColorVar, this.colors.verticatorRegular);
+                } else {
+                    this.verticatorElem.style.removeProperty(CONSTANTS.vertiColorVar);
+                }
+            }
+
+            // 2. Handle Force Colors (per slide overrides)
+            const slideOverride = currentSlide.dataset.verticator || parent.dataset.verticator;
+
+            if (slideOverride) {
+                if (slideOverride === 'regular') {
+                    this.verticatorElem.style.setProperty(CONSTANTS.forceColorVar, this.colors.verticatorRegular);
+                } else if (slideOverride === 'inverse') {
+                    this.verticatorElem.style.setProperty(CONSTANTS.forceColorVar, this.colors.verticatorInverse);
+                } else {
+                    this.verticatorElem.style.setProperty(CONSTANTS.forceColorVar, slideOverride);
+                }
+            } else {
+                this.verticatorElem.style.removeProperty(CONSTANTS.forceColorVar);
+            }
+        }
+    }
+
+    // Reveal.js Plugin Interface
+    return () => ({
+        id: 'verticator',
+        init: (deck) => {
+            const plugin = new VerticatorPlugin(deck, deck.getConfig().verticator || {});
+            plugin.init();
+        }
+    });
+
+}));

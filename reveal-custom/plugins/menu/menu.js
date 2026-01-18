@@ -141,10 +141,14 @@ const RevealMenu = (() => {
             };
 
             const visibleOffset = (el) => {
+                if (!el.offsetParent) return 0;
+
                 const offsetFromTop = getOffset(el).top - el.offsetParent.offsetTop;
                 if (offsetFromTop < 0) return -offsetFromTop;
+
                 const offsetFromBottom = el.offsetParent.offsetHeight - (el.offsetTop - el.offsetParent.scrollTop + el.offsetHeight);
                 if (offsetFromBottom < 0) return offsetFromBottom;
+
                 return 0;
             };
 
@@ -155,6 +159,18 @@ const RevealMenu = (() => {
                     el.scrollIntoView(offset > 0);
                     reenableMouseSelection();
                 }
+            };
+
+            const scrollItemToTop = (el) => {
+                disableMouseSelection();
+                el.offsetParent.scrollTop = el.offsetTop;
+                reenableMouseSelection();
+            };
+
+            const scrollItemToBottom = (el) => {
+                disableMouseSelection();
+                el.offsetParent.scrollTop = el.offsetTop - el.offsetParent.offsetHeight + el.offsetHeight;
+                reenableMouseSelection();
             };
 
             // Selection & Interaction

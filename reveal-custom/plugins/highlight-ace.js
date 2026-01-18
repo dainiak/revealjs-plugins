@@ -157,7 +157,7 @@ const RevealHighlightAce = {
 				let additionalText = '';
 				for(let existingLines = codeElement.textContent.split('\n').length; existingLines < reservedLines; ++existingLines)
 					additionalText += '\n';
-				element.textContent += additionalText;
+				codeElement.textContent += additionalText;
 			}
 
 			if(dedent)
