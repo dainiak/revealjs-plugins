@@ -26,7 +26,8 @@ const RevealHighlightAce = {
 			selector: options.selector || 'pre code',
 			fontSize: '20px',
 			showGutter: options.showGutter !== false,
-			trim: options.trim !== false
+			trim: options.trim !== false,
+			dedent: options.dedent !== false
 		};
 
 		if((options.theme || 'auto') === 'auto') {
@@ -42,6 +43,37 @@ const RevealHighlightAce = {
 
 		let aceStaticStyle = null;
 
+		function dedentString(str) {
+			const TAB_WIDTH = 4;
+			const lines = str.split(/\r?\n/);
+			let minIndent = Infinity;
+
+			for (const line of lines) {
+				if (!line.trim()) continue;
+				let width = 0;
+				for (const char of line) {
+					if (char === ' ') width++;
+					else if (char === '\t') width += TAB_WIDTH;
+					else break;
+				}
+				if (width < minIndent) minIndent = width;
+			}
+
+			if (minIndent === Infinity) minIndent = 0;
+
+			return lines.map(line => {
+				let width = 0, i = 0;
+				for (; i < line.length; i++) {
+					if (width >= minIndent) break;
+					const char = line[i];
+					if (char === ' ') width++;
+					else if (char === '\t') width += TAB_WIDTH;
+					else break;
+				}
+				return ' '.repeat(Math.max(0, width - minIndent)) + line.slice(i);
+			}).join('\n');
+		}
+
 		function doStaticHighlight(element, customOptions) {
 			customOptions ||= {};
 			let options = reveal.getConfig().highlighting;
@@ -50,6 +82,8 @@ const RevealHighlightAce = {
 			let trim = customOptions.trim !== undefined ? customOptions.trim : (
 				element.hasAttribute( 'data-trim' ) || options.trim
 			);
+			let dedent = element.hasAttribute( 'data-dedent' ) ||  options.dedent;
+
 			if(element.dataset.reserveLines){
 				trim = false;
 				let reservedLines = parseInt(element.dataset.reserveLines);
@@ -58,6 +92,10 @@ const RevealHighlightAce = {
 					additionalText += '\n';
 				element.textContent += additionalText;
 			}
+
+			if(dedent)
+				element.textContent = dedentString(element.textContent);
+
 			let showGutter =
 				element.hasAttribute('data-line-numbers')
 				|| (customOptions.showGutter !== undefined ? customOptions.showGutter : options.showGutter);
@@ -70,7 +108,7 @@ const RevealHighlightAce = {
 				showGutter: showGutter,
 				fadeFoldWidgets: false,
 				showFoldWidgets: false,
-				wrap: true,
+				wrap: true, /* indentedSoftWrap: true does not work in static highlight mode */
 				showPrintMargin: false,
 				maxLines: Infinity,
 				trim: trim
@@ -108,6 +146,26 @@ const RevealHighlightAce = {
 		function attachAce(codeElement, customOptions) {
 			let aceTheme = 'ace/theme/' + (codeElement.hasAttribute('data-theme') ? codeElement.getAttribute('data-theme') : options.theme);
 			let aceMode = 'ace/mode/' + (codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language);
+			let trim = options.trim !== undefined ? options.trim : (
+				codeElement.hasAttribute( 'data-trim' ) || options.trim
+			);
+			let dedent = codeElement.hasAttribute( 'data-dedent' ) ||  options.dedent;
+
+			if(codeElement.dataset.reserveLines){
+				trim = false;
+				let reservedLines = parseInt(codeElement.dataset.reserveLines);
+				let additionalText = '';
+				for(let existingLines = codeElement.textContent.split('\n').length; existingLines < reservedLines; ++existingLines)
+					additionalText += '\n';
+				element.textContent += additionalText;
+			}
+
+			if(dedent)
+				codeElement.textContent = dedentString(codeElement.textContent);
+
+			if(trim) {
+				codeElement.textContent = codeElement.textContent.trim();
+			}
 
 			codeElement.setAttribute('data-raw-code', codeElement.textContent);
 			doStaticHighlight(codeElement, customOptions);
@@ -116,7 +174,7 @@ const RevealHighlightAce = {
 				codeElement.contentEditable = 'false';
 
 				codeElement.onclick = function (event) {
-					if( options.mouseclickModifierKey && !event[options.mouseclickModifierKey+'Key']) {
+					if(options.mouseclickModifierKey && !event[options.mouseclickModifierKey+'Key']) {
 						return;
 					}
 					let editor = null;
@@ -149,20 +207,21 @@ const RevealHighlightAce = {
 					reveal.aceEditorActive = true;
 
 					let sourceCode = codeElement.hasAttribute('data-raw-code') ? codeElement.getAttribute('data-raw-code') : codeElement.textContent;
-					if(codeElement.hasAttribute( 'data-trim' ))
-						sourceCode = sourceCode.trim();
-
 					editor.setValue(sourceCode);
 
 					editor.setOptions({
 						theme: aceTheme,
 						mode: aceMode,
 						wrap: true,
+						indentedSoftWrap: true,
 						showGutter: true,
 						fadeFoldWidgets: false,
 						showFoldWidgets: false,
 						showPrintMargin: false,
 						highlightActiveLine: true,
+						// readOnly: true,
+						// highlightActiveLine: false,
+						// highlightGutterLine: false,
 						fontSize: parseFloat(window.getComputedStyle(codeElement).fontSize) * scale || options.fontSize
 					});
 					let fontSize = codeElement['data-ace-font-size'] || options.editorDefaultFontSize;
@@ -170,6 +229,9 @@ const RevealHighlightAce = {
 						editor.setOptions({fontSize: fontSize});
 
 					editor.originalCodeElement = codeElement;
+
+					editor.getSession().setOption("indentedSoftWrap", true);
+
 					editor.focus();
 					if(options.closeEditorOnBlur)
 						editor.on('blur', function(){destroyEditor(editor)});

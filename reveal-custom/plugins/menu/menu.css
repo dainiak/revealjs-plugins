@@ -1,345 +1,227 @@
-.rmenu-wrapper {
-	font-family: "Source Sans Pro", Helvetica, sans-serif;
+/* Font setup */
+.slide-menu-wrapper {
+    font-family: 'Source Sans Pro', Helvetica, sans-serif;
 }
 
-.rmenu-wrapper .rmenu {
-	background-color: #333;
-	z-index: 200;
-	position: absolute;
-	top: 0;
-	width: 300px;
-	height: 100%;
-	/*overflow-y: scroll;*/
-	transition: transform 0.3s;
-  	font-size: 16px;
-  	font-weight: normal;
+/* Main Menu Container */
+.slide-menu-wrapper .slide-menu {
+    background-color: #333;
+    z-index: 200;
+    position: fixed;
+    top: 0;
+    width: 300px;
+    height: 100%;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    font-size: 16px;
+    font-weight: normal;
+    /* Ensure shadow separates menu from slides */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-.rmenu-wrapper .rmenu.rmenu--wide {
-	width: 500px;
+/* Sizing Modifiers */
+.slide-menu-wrapper .slide-menu.slide-menu--wide {
+    width: 500px;
 }
 
-.rmenu-wrapper .rmenu.rmenu--third {
-	width: 33%;
+.slide-menu-wrapper .slide-menu.slide-menu--third {
+    width: 33%;
 }
 
-.rmenu-wrapper .rmenu.rmenu--half {
-	width: 50%;
+.slide-menu-wrapper .slide-menu.slide-menu--half {
+    width: 50%;
 }
 
-.rmenu-wrapper .rmenu.rmenu--full {
-	width: 95%;
+.slide-menu-wrapper .slide-menu.slide-menu--full {
+    width: 100%;
 }
 
-/*
- * Slides menu
+/* * SLIDES LIST & ICONS
  */
 
-.rmenu-wrapper .rmenu-items {
-	margin: 0;
-	padding: 0;
-	width: 100%;
-	border-bottom: solid 1px #555;
-}
-
-.rmenu-wrapper .rmenu-item, 
-.rmenu-wrapper .rmenu-item-vertical {
-	display: block;
-	text-align: left;
-	padding: 10px 18px;
-	color: #aaa;
-	cursor: pointer;
-}
-
-.rmenu-wrapper .rmenu-item-vertical {
-	padding-left: 30px;
-}
-
-.rmenu-wrapper .rmenu--wide .rmenu-item-vertical,
-.rmenu-wrapper .rmenu--third .rmenu-item-vertical,
-.rmenu-wrapper .rmenu--half .rmenu-item-vertical,
-.rmenu-wrapper .rmenu--full .rmenu-item-vertical,
-.rmenu-wrapper .rmenu--custom .rmenu-item-vertical {
-	padding-left: 50px;
-}
-
-.rmenu-wrapper .rmenu-item {
-  border-top: solid 1px #555;
-}
-
-.rmenu-wrapper .active-menu-panel li.selected {
-	background-color: #222;
-	color: white;
-}
-
-.rmenu-wrapper .active-menu-panel li.active {
-	color: #eee;
-}
-
-.rmenu-wrapper .rmenu-item.no-title .rmenu-item-title, 
-.rmenu-wrapper .rmenu-item-vertical.no-title .rmenu-item-title {
-	font-style: italic;
-}
-
-.rmenu-wrapper .rmenu-item-number {
-	color: #999;
-	padding-right:6px;
-}
-
-.rmenu-wrapper .rmenu-item i.far,
-.rmenu-wrapper .rmenu-item i.fas,
-.rmenu-wrapper .rmenu-item-vertical i.far,
-.rmenu-wrapper .rmenu-item-vertical i.fas,
-.rmenu-wrapper .rmenu-item svg.svg-inline--fa,
-.rmenu-wrapper .rmenu-item-vertical svg.svg-inline--fa {
-	padding-right: 12px;
-	display: none;
-}
-
-.rmenu-wrapper .rmenu-item.past i.fas.past,
-.rmenu-wrapper .rmenu-item-vertical.past i.fas.past,
-.rmenu-wrapper .rmenu-item.active i.fas.active,
-.rmenu-wrapper .rmenu-item-vertical.active i.fas.active,
-.rmenu-wrapper .rmenu-item.future i.far.future,
-.rmenu-wrapper .rmenu-item-vertical.future i.far.future,
-.rmenu-wrapper .rmenu-item.past svg.svg-inline--fa.past,
-.rmenu-wrapper .rmenu-item-vertical.past svg.svg-inline--fa.past,
-.rmenu-wrapper .rmenu-item.active svg.svg-inline--fa.active,
-.rmenu-wrapper .rmenu-item-vertical.active svg.svg-inline--fa.active,
-.rmenu-wrapper .rmenu-item.future svg.svg-inline--fa.future,
-.rmenu-wrapper .rmenu-item-vertical.future svg.svg-inline--fa.future {
-	display: inline-block;
-}
-
-.rmenu-wrapper .rmenu-item.past i.fas.past,
-.rmenu-wrapper .rmenu-item-vertical.past i.fas.past,
-.rmenu-wrapper .rmenu-item.future i.far.future,
-.rmenu-wrapper .rmenu-item-vertical.future i.far.future,
-.rmenu-wrapper .rmenu-item.past svg.svg-inline--fa.past,
-.rmenu-wrapper .rmenu-item-vertical.past svg.svg-inline--fa.past,
-.rmenu-wrapper .rmenu-item.future svg.svg-inline--fa.future,
-.rmenu-wrapper .rmenu-item-vertical.future svg.svg-inline--fa.future {
-	opacity: 0.4;
-}
-
-.rmenu-wrapper .rmenu-item.active i.fas.active,
-.rmenu-wrapper .rmenu-item-vertical.active i.fas.active,
-.rmenu-wrapper .rmenu-item.active svg.svg-inline--fa.active,
-.rmenu-wrapper .rmenu-item-vertical.active svg.svg-inline--fa.active {
-	opacity: 0.8;	
-}
-
-.rmenu-wrapper .rmenu--left {
-  left: 0;
-  -webkit-transform: translateX(-100%);
-  -ms-transform: translateX(-100%);
-  transform: translateX(-100%);
-}
-
-.rmenu-wrapper .rmenu--left.active {
-  -webkit-transform: translateX(0);
-  -ms-transform: translateX(0);
-  transform: translateX(0);
-}
-
-.rmenu-wrapper .rmenu--right {
-  right: 0;
-  -webkit-transform: translateX(100%);
-  -ms-transform: translateX(100%);
-  transform: translateX(100%);
-}
-
-.rmenu-wrapper .rmenu--right.active {
-  -webkit-transform: translateX(0);
-  -ms-transform: translateX(0);
-  transform: translateX(0);
-}
-
-.rmenu-wrapper {
-	transition: transform 0.3s;
-}
-
-
-/*
- * Toolbar
- */
-.rmenu-wrapper .rmenu-toolbar {
- 	height: 60px;
- 	width: 100%;
- 	font-size: 12px;
-    display: table;
-    table-layout: fixed; /* ensures equal width */
+.slide-menu-wrapper .slide-menu-items {
     margin: 0;
     padding: 0;
-	border-bottom: solid 2px #666;
+    width: 100%;
+    border-bottom: solid 1px #555;
 }
 
-.rmenu-wrapper .rmenu-toolbar > li {
-    display: table-cell;
- 	line-height: 150%;
-    text-align: center;
-    vertical-align: middle;
+.slide-menu-wrapper .slide-menu-item,
+.slide-menu-wrapper .slide-menu-item-vertical {
+    display: flex; /* Use flexbox for better alignment */
+    align-items: center;
+    text-align: left;
+    padding: 10px 18px;
+    color: #aaa;
     cursor: pointer;
-	color: #aaa;
-	border-radius: 3px;
-	padding-top: 16px;
+    border-top: solid 1px #555;
 }
 
-.rmenu-wrapper .rmenu-toolbar > li.toolbar-panel-button i,
-.rmenu-wrapper .rmenu-toolbar > li.toolbar-panel-button svg.svg-inline--fa {
-	font-size: 1.7em;
+.slide-menu-wrapper .slide-menu-item-vertical {
+    padding-left: 30px;
 }
 
-.rmenu-wrapper .rmenu-toolbar > li.toolbar-panel-button span.rmenu-toolbar-label {
-	visibility: hidden;
+/* Base state: HIDE ALL ICONS by default */
+.slide-menu-wrapper .slide-menu-item i,
+.slide-menu-wrapper .slide-menu-item-vertical i {
+    display: none;
+    width: 20px;
+    margin-right: 10px;
+    text-align: center;
 }
 
-.rmenu-wrapper .rmenu-toolbar > li.active-toolbar-button {
- 	color: white;
- 	text-shadow: 0 1px black;	
+/* Show 'past' icon ONLY when parent has .past class */
+.slide-menu-wrapper .slide-menu-item.past i.past,
+.slide-menu-wrapper .slide-menu-item-vertical.past i.past {
+    display: inline-block;
+    opacity: 0.5;
 }
 
-.rmenu-toolbar > li.toolbar-panel-button:hover {
-	color: white;
+/* Show 'active' icon ONLY when parent has .active class */
+.slide-menu-wrapper .slide-menu-item.active i.active,
+.slide-menu-wrapper .slide-menu-item-vertical.active i.active {
+    display: inline-block;
+    opacity: 1;
+    color: #42affa; /* Blue highlight for current slide */
 }
 
-.rmenu-toolbar > li.toolbar-panel-button:hover span.rmenu-toolbar-label,
-.rmenu-wrapper .rmenu-toolbar > li.active-toolbar-button span.rmenu-toolbar-label {
-	visibility: visible;
+/* Show 'future' icon ONLY when parent has .future class */
+.slide-menu-wrapper .slide-menu-item.future i.future,
+.slide-menu-wrapper .slide-menu-item-vertical.future i.future {
+    display: inline-block;
+    opacity: 0.3;
+}
+
+/* Active Menu Selection (Keyboard navigation highlight) */
+.slide-menu-wrapper .active-menu-panel li.selected {
+    background-color: #222;
+    color: white;
+}
+
+/* * TRANSITIONS (Open/Close)
+ */
+.slide-menu-wrapper .slide-menu--left {
+    left: 0;
+    transform: translateX(-100%);
+}
+
+.slide-menu-wrapper .slide-menu--left.active {
+    transform: translateX(0);
+}
+
+.slide-menu-wrapper .slide-menu--right {
+    right: 0;
+    transform: translateX(100%);
+}
+
+.slide-menu-wrapper .slide-menu--right.active {
+    transform: translateX(0);
 }
 
 /*
- * Panels
+ * TOOLBAR
  */
-.rmenu-wrapper .rmenu-panel {
-	position: absolute;
-	width: 100%;
-	visibility: hidden;
-	height: calc(100% - 60px);
-	overflow-x: hidden;
-	overflow-y: auto;
-	color: #AAA;
+.slide-menu-wrapper .slide-menu-toolbar {
+    height: 60px;
+    width: 100%;
+    font-size: 12px;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    border-bottom: solid 2px #666;
 }
 
-.rmenu-wrapper .rmenu-panel.active-menu-panel {
-	visibility: visible;
+.slide-menu-wrapper .slide-menu-toolbar > li {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: #aaa;
 }
 
-.rmenu-wrapper .rmenu-panel h1,
-.rmenu-wrapper .rmenu-panel h2,
-.rmenu-wrapper .rmenu-panel h3,
-.rmenu-wrapper .rmenu-panel h4,
-.rmenu-wrapper .rmenu-panel h5,
-.rmenu-wrapper .rmenu-panel h6 {
-	margin: 20px 0 10px 0;
-	color: #FFF;
-	line-height: 1.2;
-	letter-spacing: normal;
-	text-shadow: none;
+.slide-menu-wrapper .slide-menu-toolbar > li:hover {
+    color: white;
 }
 
-.rmenu-wrapper .rmenu-panel h1 {
-	font-size: 1.6em;
-}
-.rmenu-wrapper .rmenu-panel h2 {
-	font-size: 1.4em;
-}
-.rmenu-wrapper .rmenu-panel h3 {
-	font-size: 1.3em;
-}
-.rmenu-wrapper .rmenu-panel h4 {
-	font-size: 1.1em;
-}
-.rmenu-wrapper .rmenu-panel h5 {
-	font-size: 1em;
-}
-.rmenu-wrapper .rmenu-panel h6 {
-	font-size: 0.9em;
+.slide-menu-wrapper .slide-menu-toolbar > li.active-toolbar-button {
+    color: white;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.05); /* Slight background highlight */
 }
 
-.rmenu-wrapper .rmenu-panel p {
-	margin: 10px 0 5px 0;
-}
-
-.rmenu-wrapper .rmenu-panel a {
-	color: #CCC;
-	text-decoration: underline;
-}
-
-.rmenu-wrapper .rmenu-panel a:hover {
-	color: white;
-}
-
-.rmenu-wrapper .rmenu-item a {
-	text-decoration: none;
-}
-
-.rmenu-wrapper .rmenu-custom-panel {
-	width: calc(100% - 20px);
-	padding-left: 10px;
-	padding-right: 10px;
-}
-
-.rmenu-wrapper .rmenu-custom-panel .rmenu-items {
-	width: calc(100% + 20px);
-	margin-left: -10px;
-	margin-right: 10px;
-}
-
- 
-/*
- * Theme and Transitions buttons
- */
-
-.rmenu-wrapper div[data-panel="Themes"] li,
-.rmenu-wrapper div[data-panel="Transitions"] li {
-	display: block;
-	text-align: left;
-	cursor: pointer;
-	color: #848484;
+.slide-menu-wrapper .slide-menu-toolbar > li i {
+    font-size: 1.5em;
+    margin-bottom: 5px;
 }
 
 /*
- * Menu controls
+ * PANELS
  */
-.reveal .rmenu-button {
-	position: absolute;
-	left: 30px;
-	bottom: 30px;
-	z-index: 30;
-	font-size: 24px;
+.slide-menu-wrapper .slide-menu-panel {
+    display: none;
+    height: calc(100% - 60px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 20px;
+    color: #aaa;
+}
+
+.slide-menu-wrapper .slide-menu-panel.active-menu-panel {
+    display: block;
+}
+
+/* Headers inside panels */
+.slide-menu-wrapper .slide-menu-panel h1,
+.slide-menu-wrapper .slide-menu-panel h2,
+.slide-menu-wrapper .slide-menu-panel h3 {
+    color: #fff;
+    margin-top: 0;
 }
 
 /*
- * Menu overlay
+ * MENU BUTTON (Hamburger)
  */
-
-.rmenu-wrapper .rmenu-overlay {
-  position: absolute;
-  z-index: 199;
-  top: 0;
-  left: 0;
-  overflow: hidden;
-  width: 0;
-  height: 0;
-  background-color: #000;
-  opacity: 0;
-  transition: opacity 0.3s, width 0s 0.3s, height 0s 0.3s;
+.reveal .slide-menu-button {
+    position: fixed;
+    left: 30px;
+    bottom: 30px;
+    z-index: 30;
+    font-size: 24px;
 }
 
-.rmenu-wrapper .rmenu-overlay.active {
-  width: 100%;
-  height: 100%;
-  opacity: 0.7;
-  transition: opacity 0.3s;
+.reveal .slide-menu-button a {
+    color: white;
+    text-shadow: 0 0 2px black;
 }
 
 /*
- * Hide menu for pdf printing
+ * OVERLAY
  */
-body.print-pdf .rmenu-wrapper .rmenu,
-body.print-pdf .reveal .rmenu-button,
-body.print-pdf .rmenu-wrapper .rmenu-overlay
-{
-	display: none;
+.slide-menu-wrapper .slide-menu-overlay {
+    position: fixed;
+    z-index: 199;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.slide-menu-wrapper .slide-menu-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/*
+ * PRINT STYLES
+ */
+body.print-pdf .slide-menu-wrapper .slide-menu,
+body.print-pdf .reveal .slide-menu-button,
+body.print-pdf .slide-menu-wrapper .slide-menu-overlay {
+    display: none !important;
 }
