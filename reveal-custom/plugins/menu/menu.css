@@ -225,3 +225,23 @@ body.print-pdf .reveal .slide-menu-button,
 body.print-pdf .slide-menu-wrapper .slide-menu-overlay {
     display: none !important;
 }
+
+
+/* * SCROLLBAR STYLING
+ * Matches the dark #333 theme with #555 accents
+ */
+
+/* 1. Standard Syntax (Firefox) */
+.slide-menu-wrapper .slide-menu,
+.slide-menu-wrapper .slide-menu-panel {
+    scrollbar-width: thin;
+    scrollbar-color: #666 #333; /* Thumb color | Track color */
+}
+
+/* 2. Webkit Syntax (Chrome, Edge, Safari) */
+
+/* The Scrollbar Container */
+.slide-menu-wrapper .slide-menu::-webkit-scrollbar,
+.slide-menu-wrapper .slide-menu-panel::-webkit-scrollbar {
+    width: 8px; /* Slimmer than the default system scrollbar */
+}
