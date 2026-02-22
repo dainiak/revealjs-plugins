@@ -10,8 +10,8 @@
 const RevealMath = {
     id: 'math',
     renderer: 'mathjax',
-    init: (reveal) => {
-        let mathjaxVersion = '4.1.0';
+    init: async (reveal) => {
+        let mathjaxVersion = '4.1.1';
         let options = reveal.getConfig().math || {};
         options = {
             renderer: options.renderer || 'svg',
@@ -59,6 +59,10 @@ const RevealMath = {
             preamble: options.preamble || false
         };
 
+        // Promise that resolves when MathJax is fully ready and math is typeset
+        let resolveMathReady;
+        const mathReady = new Promise((resolve) => { resolveMathReady = resolve; });
+
         window.MathJax = {
             options: {
                 renderActions: {
@@ -89,6 +93,7 @@ const RevealMath = {
                     await window.MathJax.startup.defaultReady();
                     await window.MathJax.startup.document.outputJax.font.loadDynamicFiles();
                     await reveal.typesetMath();
+                    resolveMathReady();
                 }
             },
             svg: {
@@ -367,7 +372,7 @@ const RevealMath = {
                             s = s.substring(0, Math.max(s.indexOf(' '), s.length));
                             fragment.classList.add('fragment');
                             fragment.setAttribute('data-fragment-index', s);
-                        } 
+                        }
                 }
             }
 
@@ -376,11 +381,13 @@ const RevealMath = {
 
         reveal.typesetMath = typesetMath;
 
+        // Load MathJax script
         let mathjaxScript = document.createElement('script');
         mathjaxScript.src = options.mathjaxUrl;
         mathjaxScript.async = true;
         document.head.appendChild(mathjaxScript);
 
-        return true;
+        // Wait for MathJax to fully load, initialize, and typeset all math
+        await mathReady;
     }
 };

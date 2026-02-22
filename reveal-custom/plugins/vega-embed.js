@@ -9,7 +9,7 @@
 
 const RevealVega = {
     id: 'vega',
-    init: (reveal) => {
+    init: async (reveal) => {
         let options = reveal.getConfig().vega || {};
         options = {
             chartSrcAttribute: options.chartSrcAttribute || 'data-vega',
@@ -82,116 +82,57 @@ const RevealVega = {
                 + ');</scr' + 'ipt></body>';
         });
 
-        function loadScript(params, extraCallback) {
-			if(params.condition !== undefined
-				&& !(params.condition === true || typeof params.condition == 'function' && params.condition.call())) {
-				return extraCallback ? extraCallback.call() : false;
-			}
+        function loadScript(params) {
+            return new Promise((resolve) => {
+                if(params.condition !== undefined
+                    && !(params.condition === true || typeof params.condition == 'function' && params.condition.call())) {
+                    return resolve();
+                }
 
-			if( params.type === undefined )
-				params.type = (params.url && params.url.match(/\.css[^.]*$/)) ? 'text/css' : 'text/javascript';
-
-			let script;
-
-			if( params.type === 'text/css' ){
-				if( params.content ){
-					script = document.createElement('style');
-					script.textContent = params.content;
-				}
-				else {
-					script = document.createElement('link');
-					script.rel = 'stylesheet';
-					script.type = 'text/css';
-					script.href = params.url;
-				}
-			}
-			else {
-				script = document.createElement('script');
-				script.type = params.type || 'text/javascript';
-				if( params.content )
-					script.textContent = params.content;
-				else
-					script.src = params.url;
-			}
-
-			if(params.content){
-				document.querySelector('head').appendChild(script);
-				if(params.callback)
-					params.callback.call();
-				if(extraCallback)
-					extraCallback.call();
-			}
-			else {
-				script.onload = function(){
-					if(params.callback)
-						params.callback.call();
-					if(extraCallback)
-						extraCallback.call();
-				};
-
-				document.querySelector( 'head' ).appendChild(script);
-			}
-		}
-
-		function loadScripts(scripts, callback) {
-			if(!scripts || scripts.length === 0) {
-				if (typeof callback === 'function') {
-					if(reveal.isReady()) {
-						callback.call();
-						callback = null;
-					}
-					else {
-						reveal.addEventListener('ready', function () {
-							callback.call();
-							callback = null;
-						});
-					}
-				}
-				return;
-			}
-
-			let script = scripts.splice(0, 1)[0];
-			loadScript(script, function () {
-				loadScripts(scripts, callback);
-			});
-		}
-
-        let vegaDivs = reveal.getSlidesElement().querySelectorAll('div[' + options.chartSrcAttribute + ']');
-        if(vegaDivs.length) {
-            loadScripts(scriptsToLoad, function () {
-                vegaDivs.forEach(function(vegaDivElement){
-                    window.vegaEmbed(
-                        vegaDivElement,
-                        vegaDivElement.getAttribute(options.chartSrcAttribute),
-                        options.vegaOptions
-                    ).then(function(result) {
-						const containerDiv = result.view._el;
-
-						const newWidth = vegaDivElement.dataset.overrideWidth;
-						const newHeight = vegaDivElement.dataset.overrideHeight;
-						if(newWidth || newHeight) {
-							const svgElement = containerDiv.querySelector('svg');
-							if(svgElement) {
-								if(newWidth)
-									svgElement.width.baseVal.value = newWidth;
-								if (newHeight)
-									svgElement.height.baseVal.value = newHeight;
-							}
-							else {
-								const canvasElement = containerDiv.querySelector('canvas');
-								if(canvasElement) {
-									if (newWidth)
-										canvasElement.style.width = newWidth + "px";
-									if (newHeight)
-										canvasElement.style.height = newHeight + "px";
-								}
-							}
-						}
-					})
-                });
+                let script = document.createElement('script');
+                script.type = params.type || 'text/javascript';
+                script.src = params.url;
+                script.onload = resolve;
+                document.querySelector('head').appendChild(script);
             });
         }
 
-        return true;
+        let vegaDivs = reveal.getSlidesElement().querySelectorAll('div[' + options.chartSrcAttribute + ']');
+        if(vegaDivs.length) {
+            // vega-lite depends on vega, vega-embed depends on both — must load sequentially
+            for (const s of scriptsToLoad)
+                await loadScript(s);
+
+            vegaDivs.forEach(function(vegaDivElement){
+                window.vegaEmbed(
+                    vegaDivElement,
+                    vegaDivElement.getAttribute(options.chartSrcAttribute),
+                    options.vegaOptions
+                ).then(function(result) {
+                    const containerDiv = result.view._el;
+
+                    const newWidth = vegaDivElement.dataset.overrideWidth;
+                    const newHeight = vegaDivElement.dataset.overrideHeight;
+                    if(newWidth || newHeight) {
+                        const svgElement = containerDiv.querySelector('svg');
+                        if(svgElement) {
+                            if(newWidth)
+                                svgElement.width.baseVal.value = newWidth;
+                            if (newHeight)
+                                svgElement.height.baseVal.value = newHeight;
+                        }
+                        else {
+                            const canvasElement = containerDiv.querySelector('canvas');
+                            if(canvasElement) {
+                                if (newWidth)
+                                    canvasElement.style.width = newWidth + "px";
+                                if (newHeight)
+                                    canvasElement.style.height = newHeight + "px";
+                            }
+                        }
+                    }
+                })
+            });
+        }
     }
 };

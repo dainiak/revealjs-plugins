@@ -10,7 +10,7 @@
 
 const RevealHighlightAce = {
 	id: 'highlight-ace',
-	init: (reveal) => {
+	init: async (reveal) => {
 		let aceVersion = '1.43.2';
 		let options = reveal.getConfig().highlighting || {};
 		options = {
@@ -248,39 +248,35 @@ const RevealHighlightAce = {
 
 		reveal.highlightBlockWithAce = attachAce;
 
-		function loadScript( url, callback ) {
-			let head = document.querySelector( 'head' );
-			let script = document.createElement( 'script' );
-			script.type = 'text/javascript';
-			script.src = url;
-
-			script.onload = function() {
-				callback.call();
-				callback = null;
-			};
-
-			head.appendChild( script );
+		function loadScript(url) {
+			return new Promise((resolve) => {
+				let script = document.createElement('script');
+				script.type = 'text/javascript';
+				script.src = url;
+				script.onload = resolve;
+				document.querySelector('head').appendChild(script);
+			});
 		}
 
-		loadScript(options.aceMainUrl, function(){ loadScript(options.aceStaticHighlighterUrl, function(){
-			window.ace.config.set('basePath', options.aceBasePath);
+		// ACE static highlighter depends on ACE core — must load sequentially
+		await loadScript(options.aceMainUrl);
+		await loadScript(options.aceStaticHighlighterUrl);
 
-			window.ace.require('ace/commands/default_commands').commands.push({
-				name: 'Return to slideshow discarding changes',
-				bindKey: 'Esc',
-				exec: destroyEditor
-			});
+		window.ace.config.set('basePath', options.aceBasePath);
 
-			window.ace.require('ace/commands/default_commands').commands.push({
-				name: 'Return to slideshow saving changes',
-				bindKey: 'Ctrl+Enter',
-				exec: destroyEditorSavingChanges
-			});
+		window.ace.require('ace/commands/default_commands').commands.push({
+			name: 'Return to slideshow discarding changes',
+			bindKey: 'Esc',
+			exec: destroyEditor
+		});
 
-			for(let node of reveal.getSlidesElement().querySelectorAll(options.selector))
-				attachAce(node);
-		})});
+		window.ace.require('ace/commands/default_commands').commands.push({
+			name: 'Return to slideshow saving changes',
+			bindKey: 'Ctrl+Enter',
+			exec: destroyEditorSavingChanges
+		});
 
-		return true;
+		for(let node of reveal.getSlidesElement().querySelectorAll(options.selector))
+			attachAce(node);
 	}
 };

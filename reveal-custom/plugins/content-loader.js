@@ -13,25 +13,24 @@
   Released under the MIT license
 
   Load external files into a reveal.js presentation.
- 
+
   This is a reveal.js plugin to load external html files. It replaces the
   content of any element with a data-inner-html='file.ext#cssselector' with the contents
   part of file.ext specified by the selector. If you use
   data-outer-html='file.ext#selector' the container element itself will get
   replaced.
- 
+
   Relative paths in 'src' attributes in the loaded fragments will get prefixed
   with the path.
  */
 
 const RevealContentLoader = {
     id: 'contentloader',
-    init: (reveal) => {
+    init: async (reveal) => {
         let pdfjsVersion = '5.4.149';
 
         let options = reveal.getConfig().contentLoader || {};
         options = {
-            async: !!options.async,
             mapAttributes: (options.mapAttributes instanceof Array) ? options.mapAttributes : ['src', 'data-background-image', 'data-background-iframe', 'data-src'],
             inherit: {
                 attributes: (options.inherit || {}).attributes !== false,
@@ -110,9 +109,11 @@ const RevealContentLoader = {
         }
 
 
-        function attachLoadedNodes(targetNode, loadedNodes, path, replacementType) {
+        async function attachLoadedNodes(targetNode, loadedNodes, path, replacementType) {
             targetNode.innerHTML = '';
             let prependPath = (src, path) => path && src && src.startsWith('.') ? (path + '/' + src) : src;
+
+            let recursiveLoadPromises = [];
 
             for (let node of loadedNodes) {
                 if (node instanceof Element)
@@ -152,21 +153,18 @@ const RevealContentLoader = {
                 else
                     targetNode.appendChild(node);
 
-                if (options.async) {
-                    reveal.sync();
-                    reveal.setState(reveal.getState());
-                }
-
                 if (node instanceof Element)
-                    loadExternalElementsInside(node, path);
+                    recursiveLoadPromises.push(loadExternalElementsInside(node, path));
             }
 
             if (replacementType.startsWith('outer'))
                 targetNode.parentNode.removeChild(targetNode);
+
+            await Promise.all(recursiveLoadPromises);
         }
 
 
-        function loadExternalNode(targetNode, path) {
+        async function loadExternalNode(targetNode, path) {
             let url = targetNode.getAttribute('data-inner-html') || targetNode.getAttribute('data-outer-html') || targetNode.getAttribute('data-inner-text') || targetNode.getAttribute('data-outer-text');
             let replacementType;
             for (replacementType of ['inner-html', 'inner-text', 'outer-html', 'outer-text'])
@@ -194,7 +192,7 @@ const RevealContentLoader = {
                 } catch (e) {
                     console.warn(`RevealContentLoader error: found neither a valid url nor parseable action, error while action parsing: ${e}`);
                 }
-                attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
+                await attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
                 return;
             }
 
@@ -209,50 +207,40 @@ const RevealContentLoader = {
 
             url = (path ? path + '/' : '') + url;
 
-            let xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function (xhr, targetNode, url, selector, replacementType) {
-                return function () {
-                    if (xhr.readyState !== 4)
-                        return;
-
-                    if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 0 && xhr.responseText !== ''))
-                        return console.warn(
-                            `RevealContentLoader: The attempt to fetch ${url} failed with HTTP status ${xhr.status}.`
-                        );
-
-                    let path = url.substring(0, url.lastIndexOf('/'));
-                    let loadedNodes;
-
-                    if (replacementType.endsWith('text')) {
-                        loadedNodes = [document.createTextNode(xhr.responseText)];
-                    }
-                    else {
-                        let html = (new DOMParser).parseFromString(xhr.responseText, 'text/html');
-                        if (!html)
-                            return console.warn(`RevealContentLoader: Could not parse HTML ${url}`);
-
-                        loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
-                    }
-
-                    attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
-                };
-            }(xhr, targetNode, url, selector, replacementType);
-
-            xhr.open('GET', url, options.async);
             try {
-                xhr.send();
+                const response = await fetch(url);
+                if (!response.ok)
+                    throw new Error(`HTTP ${response.status}`);
+                const responseText = await response.text();
+
+                let path = url.substring(0, url.lastIndexOf('/'));
+                let loadedNodes;
+
+                if (replacementType.endsWith('text')) {
+                    loadedNodes = [document.createTextNode(responseText)];
+                }
+                else {
+                    let html = (new DOMParser).parseFromString(responseText, 'text/html');
+                    if (!html)
+                        return console.warn(`RevealContentLoader: Could not parse HTML ${url}`);
+
+                    loadedNodes = selector ? html.querySelectorAll(selector) : html.querySelector('body').childNodes;
+                }
+
+                await attachLoadedNodes(targetNode, loadedNodes, path, replacementType);
             } catch (e) {
-                console.warn(`RevealContentLoader: Failed to get the file ${url}\nException: ${e}`);
+                console.warn(`RevealContentLoader: Failed to fetch ${url}: ${e}`);
             }
         }
 
-        function loadExternalElementsInside(container, path) {
+        async function loadExternalElementsInside(container, path) {
             path = path || '';
             if (container instanceof Element && (container.hasAttribute('data-inner-html') || container.hasAttribute('data-outer-html') || container.hasAttribute('data-inner-text') || container.hasAttribute('data-outer-text')))
-                loadExternalNode(container, path);
-            else
-                for (let node of container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text],[data-outer-text]'))
-                    loadExternalNode(node, path);
+                await loadExternalNode(container, path);
+            else {
+                const nodes = [...container.querySelectorAll('[data-inner-html],[data-outer-html],[data-inner-text],[data-outer-text]')];
+                await Promise.all(nodes.map(node => loadExternalNode(node, path)));
+            }
         }
 
         function performActions(rootElement) {
@@ -375,10 +363,10 @@ const RevealContentLoader = {
         */
 
         let revealViewport = reveal.getViewportElement();
-        loadExternalElementsInside(revealViewport);
+        await loadExternalElementsInside(revealViewport);
         performActions(revealViewport);
 
-        if (options.pdf.enabled && revealViewport.querySelectorAll('canvas[data-pdf]')) {
+        if (options.pdf.enabled && revealViewport.querySelectorAll('canvas[data-pdf]').length > 0) {
             let head = document.querySelector('head');
             let script = document.createElement('script');
             script.type = 'module';
