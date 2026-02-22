@@ -14,7 +14,7 @@
 
 const RevealInking = {
     id: 'inking',
-    init: (reveal) => {
+    init: async (reveal) => {
         let options = reveal.getConfig().inking || {};
 
         options.canvasAboveControls = !!(options.canvasAboveControls);
@@ -125,7 +125,7 @@ const RevealInking = {
                 condition: !window.fabric
             },
             {
-                url: 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-svg.js',
+                url: 'https://cdn.jsdelivr.net/npm/mathjax@4.1.1/tex-svg.js',
                 condition: needToLoadOwnMath
             }
         ];
@@ -270,9 +270,12 @@ const RevealInking = {
             let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
             let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
             let bottomPadding = 0;
-            let controlsComputerStyle = window.getComputedStyle(document.querySelector('.controls'));
-            if (options.canvasAboveControls)
+            let controlsEl = document.querySelector('.controls');
+            let controlsComputerStyle = null;
+            if (options.canvasAboveControls && controlsEl) {
+                controlsComputerStyle = window.getComputedStyle(controlsEl);
                 bottomPadding = parseInt(controlsComputerStyle.height) + parseInt(controlsComputerStyle.bottom);
+            }
 
             if(canvas)
                 canvas.dispose();
@@ -289,7 +292,10 @@ const RevealInking = {
             canvasElement.style.top = '0px';
             canvasElement.style.width = '100%';
             canvasElement.style.bottom = bottomPadding.toString() + 'px';
-            canvasElement.style.zIndex = controlsComputerStyle.zIndex;
+            if (controlsComputerStyle)
+                canvasElement.style.zIndex = controlsComputerStyle.zIndex;
+            else
+                canvasElement.style.zIndex = '120';
 
             canvas = new window.fabric.Canvas(canvasElement, {
                 perPixelTargetFind: true,
@@ -307,16 +313,7 @@ const RevealInking = {
 
             canvas.freeDrawingBrush = new window.fabric.PencilBrush(canvas);
             canvas.freeDrawingBrush.width = 2;
-
-            if(options.ink.shadow)
-                canvas.freeDrawingBrush.shadow = new window.fabric.Shadow({
-                    blur: 10,
-                    offsetX: 1,
-                    offsetY: 1,
-                    color: options.ink.shadow
-                })
-            else
-                canvas.freeDrawingBrush.shadow = null;
+            canvas.freeDrawingBrush.shadow = null;
 
             canvas.targetFindTolerance = 3;
         }
@@ -670,6 +667,16 @@ const RevealInking = {
                 if(!isMathImage(opt.target))
                     setCanvasObjectDefaults(opt.target)
             });
+
+            if(options.ink.shadow) {
+                let inkShadow = new window.fabric.Shadow({
+                    blur: 10, offsetX: 1, offsetY: 1, color: options.ink.shadow
+                });
+                canvas.on('path:created', function (opt) {
+                    opt.path.set('shadow', inkShadow);
+                    canvas.requestRenderAll();
+                });
+            }
 
             canvas.on('selection:cleared', function () {
                 if(!currentMathImage)
@@ -1033,117 +1040,91 @@ const RevealInking = {
             loadCanvasFromMathEnrichedJSON(savedCanvasContent);
         }///loadPredefinedCanvasContent
 
-        function loadScript(params, extraCallback) {
-            if(params.condition !== undefined
-                && !(params.condition === true || typeof params.condition == 'function' && params.condition.call())) {
-                return extraCallback ? extraCallback.call() : false;
-            }
+        function loadScript(params) {
+            return new Promise((resolve) => {
+                if(params.condition !== undefined
+                    && !(params.condition === true || typeof params.condition == 'function' && params.condition.call())) {
+                    return resolve();
+                }
 
-            if(params.type === undefined)
-                params.type = (params.url && params.url.match(/\.css[^.]*$/)) ? 'text/css' : 'text/javascript';
+                if(params.type === undefined)
+                    params.type = (params.url && params.url.match(/\.css[^.]*$/)) ? 'text/css' : 'text/javascript';
 
-            let script;
+                let element;
 
-            if( params.type === 'text/css' ){
-                if(params.content){
-                    script = document.createElement('style');
-                    script.textContent = params.content;
+                if( params.type === 'text/css' ){
+                    if(params.content){
+                        element = document.createElement('style');
+                        element.textContent = params.content;
+                    }
+                    else {
+                        element = document.createElement('link');
+                        element.rel = 'stylesheet';
+                        element.type = 'text/css';
+                        element.href = params.url;
+                    }
                 }
                 else {
-                    script = document.createElement('link');
-                    script.rel = 'stylesheet';
-                    script.type = 'text/css';
-                    script.href = params.url;
+                    element = document.createElement('script');
+                    element.type = params.type || 'text/javascript';
+                    if(params.content)
+                        element.textContent = params.content;
+                    else
+                        element.src = params.url;
                 }
-            }
-            else {
-                script = document.createElement('script');
-                script.type = params.type || 'text/javascript';
-                if(params.content) {
-                    script.textContent = params.content;
+
+                if(params.content){
+                    document.querySelector('head').appendChild(element);
+                    resolve();
                 }
-                else
-                    script.src = params.url;
-            }
-
-            if(params.content){
-                document.querySelector('head').appendChild( script );
-                if(params.callback)
-                    params.callback.call();
-
-                if(extraCallback)
-                    extraCallback.call();
-            }
-            else {
-                script.onload = function(){
-                    if(params.callback)
-                        params.callback.call();
-                    if(extraCallback)
-                        extraCallback.call();
-                };
-
-                document.querySelector( 'head' ).appendChild( script );
-            }
-        }///loadScript
-
-        function loadScripts( scripts, callback ) {
-            if(!scripts || scripts.length === 0) {
-                if (typeof callback !== 'function')
-                    return;
-                if(reveal.isReady()) {
-                    callback.call();
-                    callback = null;
+                else {
+                    element.onload = resolve;
+                    document.querySelector('head').appendChild(element);
                 }
-                else
-                    reveal.addEventListener('ready', function () {
-                        callback.call();
-                        callback = null;
-                    });
-
-                return;
-            }
-
-            let script = scripts.splice(0, 1)[0];
-            loadScript(script, function () {
-                loadScripts(scripts, callback);
             });
         }
 
-        loadScripts(scriptsToLoad, function () {
-            window.addEventListener('load', function() {
-                // This is important for MathJax equations to serialize well into fabric.js
-                window.fabric.config.NUM_FRACTION_DIGITS = 5;
+        // Load CSS (inline), fabric.js, and MathJax in parallel (all independent)
+        await Promise.all(scriptsToLoad.map(s => loadScript(s)));
 
+        // Set up canvas after all page resources have loaded
+        function setupInkingCanvas() {
+            // This is important for MathJax equations to serialize well into fabric.js
+            window.fabric.config.NUM_FRACTION_DIGITS = 5;
+
+            resetMainCanvasDomNode();
+            addInkingControls();
+            toggleColorChoosers(false);
+            loadPredefinedCanvasContent();
+
+            let slide = reveal.getCurrentSlide();
+            if(slide?.dataset?.inkingCanvasContent){
+                setTimeout(function(){
+                    loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
+                }, parseInt(window.getComputedStyle(slide).transitionDuration) || 800);
+            }
+
+            addDocumentEventListeners();
+            addCanvasEventListeners();
+            addRevealEventListeners();
+            addInkingControlsEventListeners();
+
+            window.addEventListener('resize', function () {
+                let isVisible = isCanvasVisible();
+                destroySpotlight();
+                leaveDeletionMode();
+                let serializedCanvas = getMathEnrichedCanvasObject();
                 resetMainCanvasDomNode();
-                addInkingControls();
-                toggleColorChoosers(false);
-                loadPredefinedCanvasContent();
-
-                let slide = reveal.getCurrentSlide();
-                if(slide.dataset.inkingCanvasContent){
-                    setTimeout(function(){
-                        loadCanvasFromMathEnrichedJSON(slide.dataset.inkingCanvasContent);
-                    }, parseInt(window.getComputedStyle(slide).transitionDuration) || 800);
-                }
-
-                addDocumentEventListeners();
+                loadCanvasFromMathEnrichedObject(serializedCanvas);
                 addCanvasEventListeners();
-                addRevealEventListeners();
-                addInkingControlsEventListeners();
-
-                window.addEventListener('resize', function () {
-                    let isVisible = isCanvasVisible();
-                    destroySpotlight();
-                    leaveDeletionMode();
-                    let serializedCanvas = getMathEnrichedCanvasObject();
-                    resetMainCanvasDomNode();
-                    loadCanvasFromMathEnrichedObject(serializedCanvas);
-                    addCanvasEventListeners();
-                    toggleCanvas(isVisible);
-                });
+                toggleCanvas(isVisible);
             });
-        });
+        }
 
-        return true;
+        if (document.readyState === 'complete') {
+            setupInkingCanvas();
+        } else {
+            window.addEventListener('load', setupInkingCanvas);
+        }
     }
 };

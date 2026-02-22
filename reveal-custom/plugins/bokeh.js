@@ -1,14 +1,10 @@
 /*
     Plugin for embedding interactive Bokeh charts in reveal.js presentations.
-    GitHub: https://github.com/dainiak/revealjs-plugins/
-
-    Author: Alex Dainiak
-    Web: www.dainiak.com
-    Email: dainiak@gmail.com
+    Supports auto-sizing containers (width: 100%, height: 100%).
  */
 const RevealBokeh = {
     id: 'bokeh',
-    init: (reveal) => {
+    init: async (reveal) => {
         let options = reveal.getConfig().bokeh || {};
         options = {
             chartSrcAttribute: options.chartSrcAttribute || 'data-bokeh',
@@ -18,39 +14,19 @@ const RevealBokeh = {
             }
         };
 
-        let scriptsToLoad = [
-            {
-                url: options.urls.bokeh,
-                condition: !window.Bokeh && !document.querySelector('script[src="' + options.urls.bokeh + '"]')
-            }
-        ];
-
-        function loadScript(params, extraCallback) {
-            if (params.condition !== undefined
-                && !(params.condition === true || typeof params.condition == 'function' && params.condition.call())) {
-                return extraCallback ? extraCallback.call() : false;
-            }
-
-            let script = document.createElement('script');
-            script.type = params.type || 'text/javascript';
-            script.src = params.url;
-            script.onload = function () {
-                if (params.callback) params.callback.call();
-                if (extraCallback) extraCallback.call();
-            };
-            document.querySelector('head').appendChild(script);
-        }
-
-        function loadScripts(scripts, callback) {
-            if (!scripts || scripts.length === 0) {
-                if (typeof callback === 'function') {
-                    if (reveal.isReady()) { callback.call(); }
-                    else { reveal.addEventListener('ready', () => callback.call()); }
+        function loadScript(params) {
+            return new Promise((resolve) => {
+                if (params.condition !== undefined
+                    && !(params.condition === true || typeof params.condition == 'function' && params.condition.call())) {
+                    return resolve();
                 }
-                return;
-            }
-            let script = scripts.splice(0, 1)[0];
-            loadScript(script, function () { loadScripts(scripts, callback); });
+
+                let script = document.createElement('script');
+                script.type = params.type || 'text/javascript';
+                script.src = params.url;
+                script.onload = resolve;
+                document.querySelector('head').appendChild(script);
+            });
         }
 
         function fixBokehItem(item) {
@@ -94,29 +70,30 @@ const RevealBokeh = {
         // 2. Handle DIV embeds (Direct Mode)
         let bokehDivs = reveal.getSlidesElement().querySelectorAll('div[' + options.chartSrcAttribute + ']');
         if (bokehDivs.length) {
-            loadScripts(scriptsToLoad, function () {
-                bokehDivs.forEach(function (element) {
-                    const url = element.getAttribute(options.chartSrcAttribute);
+            await loadScript({
+                url: options.urls.bokeh,
+                condition: !window.Bokeh && !document.querySelector('script[src="' + options.urls.bokeh + '"]')
+            });
 
-                    if (!element.id) element.id = "bokeh-plot-" + Math.random().toString(36).substr(2, 9);
+            bokehDivs.forEach(function (element) {
+                const url = element.getAttribute(options.chartSrcAttribute);
 
-                    // FORCE CSS: Ensure the container is big enough for "stretch_both" to work
-                    element.style.width = "100%";
-                    element.style.height = "100%";
-                    // If using Reveal's r-stretch, it handles height, but we ensure display is block
-                    element.style.display = "block";
+                if (!element.id) element.id = "bokeh-plot-" + Math.random().toString(36).substr(2, 9);
 
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(item => {
-                            const fixedItem = fixBokehItem(item);
-                            Bokeh.embed.embed_item(fixedItem, element.id);
-                        })
-                        .catch(err => console.error("Error loading Bokeh plot:", err));
-                });
+                // FORCE CSS: Ensure the container is big enough for "stretch_both" to work
+                element.style.width = "100%";
+                element.style.height = "100%";
+                // If using Reveal's r-stretch, it handles height, but we ensure display is block
+                element.style.display = "block";
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(item => {
+                        const fixedItem = fixBokehItem(item);
+                        Bokeh.embed.embed_item(fixedItem, element.id);
+                    })
+                    .catch(err => console.error("Error loading Bokeh plot:", err));
             });
         }
-
-        return true;
     }
 };
