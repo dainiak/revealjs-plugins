@@ -132,6 +132,16 @@
             },
             actions: [
                 {
+                    selector: '[class*="fragidx-"]',
+                    init: e => {
+                        const match = (e.getAttribute('class') || '').match(/fragidx-(\d+)/);
+                        if (match) {
+                            e.classList.add('fragment');
+                            e.setAttribute('data-fragment-index', match[1]);
+                        }
+                    }
+                },
+                {
                     selector: '.auto-fragmentize',
                     init: e => e.childNodes.forEach(c => c.classList && c.classList.add('fragment'))
                 }, {
