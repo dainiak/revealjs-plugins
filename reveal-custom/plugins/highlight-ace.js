@@ -43,6 +43,222 @@ const RevealHighlightAce = {
 
 		let aceStaticStyle = null;
 
+		// Inject CSS for line highlighting
+		let highlightStyle = document.createElement('style');
+		highlightStyle.textContent = `
+			.ace_static_highlight.ace-has-line-highlights .ace_line {
+				opacity: 0.3;
+				transition: opacity 0.3s ease;
+			}
+			.ace_static_highlight.ace-has-line-highlights .ace_line.ace-highlight-line {
+				opacity: 1;
+			}
+			.ace_static_highlight.ace-has-line-highlights .ace_gutter-cell {
+				opacity: 0.3;
+				transition: opacity 0.3s ease;
+			}
+			.ace_static_highlight.ace-has-line-highlights .ace_gutter-cell.ace-highlight-line {
+				opacity: 1;
+			}
+		`;
+		document.head.appendChild(highlightStyle);
+
+		function parseLineNumberRanges(str) {
+			if (!str || !str.trim()) return [];
+			return str.split('|').map(group => {
+				let fragmentIndex = null;
+				const atMatch = group.match(/@(\d+)\s*$/);
+				if (atMatch) {
+					fragmentIndex = parseInt(atMatch[1]);
+					group = group.slice(0, atMatch.index);
+				}
+				const ranges = group.split(',').map(range => {
+					const parts = range.trim().split('-');
+					const start = parseInt(parts[0]);
+					const end = parts.length > 1 ? parseInt(parts[1]) : start;
+					return { start, end };
+				});
+				return { ranges, fragmentIndex };
+			});
+		}
+
+		function applyLineHighlightGroup(codeElement, ranges) {
+			const aceContainer = codeElement.querySelector('.ace_static_highlight') || codeElement;
+			const lines = aceContainer.querySelectorAll('.ace_line');
+			const gutterCells = aceContainer.querySelectorAll('.ace_gutter-cell');
+			const hasHighlight = ranges && ranges.length > 0;
+
+			aceContainer.classList.toggle('ace-has-line-highlights', hasHighlight);
+
+			lines.forEach((line, i) => {
+				const lineNum = i + 1;
+				let highlighted = false;
+				if (ranges) {
+					for (const range of ranges) {
+						if (lineNum >= range.start && lineNum <= range.end) {
+							highlighted = true;
+							break;
+						}
+					}
+				}
+				line.classList.toggle('ace-highlight-line', highlighted);
+			});
+
+			gutterCells.forEach((cell, i) => {
+				const lineNum = i + 1;
+				let highlighted = false;
+				if (ranges) {
+					for (const range of ranges) {
+						if (lineNum >= range.start && lineNum <= range.end) {
+							highlighted = true;
+							break;
+						}
+					}
+				}
+				cell.classList.toggle('ace-highlight-line', highlighted);
+			});
+
+			// Scroll highlighted lines into view within the code block
+			if (hasHighlight) {
+				const highlighted = aceContainer.querySelectorAll('.ace_line.ace-highlight-line');
+				if (highlighted.length > 0) {
+					const scrollParent = codeElement;
+					const first = highlighted[0];
+					const last = highlighted[highlighted.length - 1];
+					const groupTop = first.offsetTop;
+					const groupBottom = last.offsetTop + last.offsetHeight;
+					const groupHeight = groupBottom - groupTop;
+					const visibleTop = scrollParent.scrollTop;
+					const visibleHeight = scrollParent.clientHeight;
+					if (groupTop < visibleTop || groupBottom > visibleTop + visibleHeight) {
+						let targetTop;
+						if (groupHeight <= visibleHeight) {
+							// Center the group vertically
+							targetTop = groupTop - (visibleHeight - groupHeight) / 2;
+						} else {
+							// Group taller than viewport: align first line to top
+							targetTop = groupTop;
+						}
+						scrollParent.scrollTo({
+							top: Math.max(0, targetTop),
+							behavior: 'smooth'
+						});
+					}
+				}
+			}
+		}
+
+		function setupLineHighlights(codeElement) {
+			const lineNumbersAttr = codeElement.getAttribute('data-line-numbers');
+			if (lineNumbersAttr === null || lineNumbersAttr === '') return;
+
+			const groups = parseLineNumberRanges(lineNumbersAttr);
+			if (groups.length === 0) return;
+
+			if (groups.length === 1 && groups[0].fragmentIndex === null) {
+				applyLineHighlightGroup(codeElement, groups[0].ranges);
+				return;
+			}
+
+			// Multiple groups: create fragment triggers for step-through
+			const slide = codeElement.closest('section');
+			const pre = codeElement.closest('pre') || codeElement;
+
+			const hasExplicitIndices = groups.some(g => g.fragmentIndex !== null);
+
+			if (hasExplicitIndices) {
+				// Explicit @indices: piggyback on existing slide fragments.
+				// For indices with no matching fragment already on the slide, create hidden triggers.
+				const indexToRanges = new Map();
+				for (const group of groups)
+					indexToRanges.set(group.fragmentIndex, group.ranges);
+
+				const existingIndices = new Set();
+				for (const frag of slide.querySelectorAll('.fragment[data-fragment-index]')) {
+					existingIndices.add(parseInt(frag.getAttribute('data-fragment-index')));
+				}
+
+				let insertAfter = pre;
+				for (const [idx] of indexToRanges) {
+					if (existingIndices.has(idx)) continue;
+					const trigger = document.createElement('span');
+					trigger.className = 'fragment';
+					trigger.setAttribute('data-fragment-index', String(idx));
+					trigger.style.display = 'none';
+					insertAfter.parentNode.insertBefore(trigger, insertAfter.nextSibling);
+					insertAfter = trigger;
+				}
+
+				reveal.addEventListener('fragmentshown', function (event) {
+					for (const fragment of event.fragments) {
+						if (!slide.contains(fragment)) continue;
+						const idx = parseInt(fragment.getAttribute('data-fragment-index'));
+						if (indexToRanges.has(idx))
+							applyLineHighlightGroup(codeElement, indexToRanges.get(idx));
+					}
+				});
+
+				reveal.addEventListener('fragmenthidden', function (event) {
+					for (const fragment of event.fragments) {
+						if (!slide.contains(fragment)) continue;
+						const idx = parseInt(fragment.getAttribute('data-fragment-index'));
+						if (!indexToRanges.has(idx)) continue;
+						// Find the highest still-visible index in our map
+						let prevRanges = null;
+						for (const f of slide.querySelectorAll('.fragment.visible')) {
+							const fIdx = parseInt(f.getAttribute('data-fragment-index'));
+							if (indexToRanges.has(fIdx) && f !== fragment)
+								prevRanges = indexToRanges.get(fIdx);
+						}
+						applyLineHighlightGroup(codeElement, prevRanges);
+					}
+				});
+			} else {
+				// Auto-assigned indices: create hidden fragment triggers
+				let maxFragmentIndex = -1;
+				for (const frag of slide.querySelectorAll('.fragment[data-fragment-index]')) {
+					const idx = parseInt(frag.getAttribute('data-fragment-index'));
+					if (!isNaN(idx) && idx > maxFragmentIndex)
+						maxFragmentIndex = idx;
+				}
+				let autoIndex = maxFragmentIndex + 1;
+
+				const fragments = [];
+				let insertAfter = pre;
+
+				for (let i = 0; i < groups.length; i++) {
+					const trigger = document.createElement('span');
+					trigger.className = 'fragment';
+					trigger.setAttribute('data-fragment-index', String(autoIndex++));
+					trigger.style.display = 'none';
+					trigger._aceLineRanges = groups[i].ranges;
+					trigger._aceCodeElement = codeElement;
+					insertAfter.parentNode.insertBefore(trigger, insertAfter.nextSibling);
+					insertAfter = trigger;
+					fragments.push(trigger);
+				}
+
+				reveal.addEventListener('fragmentshown', function (event) {
+					for (const fragment of event.fragments) {
+						if (fragment._aceCodeElement === codeElement)
+							applyLineHighlightGroup(codeElement, fragment._aceLineRanges);
+					}
+				});
+
+				reveal.addEventListener('fragmenthidden', function (event) {
+					for (const fragment of event.fragments) {
+						if (fragment._aceCodeElement !== codeElement) continue;
+						let prevGroup = null;
+						for (const f of fragments) {
+							if (f.classList.contains('visible') && f !== fragment)
+								prevGroup = f._aceLineRanges;
+						}
+						applyLineHighlightGroup(codeElement, prevGroup);
+					}
+				});
+			}
+		}
+
 		function dedentString(str) {
 			const TAB_WIDTH = 4;
 			const lines = str.split(/\r?\n/);
@@ -169,6 +385,7 @@ const RevealHighlightAce = {
 
 			codeElement.setAttribute('data-raw-code', codeElement.textContent);
 			doStaticHighlight(codeElement, customOptions);
+			setupLineHighlights(codeElement);
 
 			if(codeElement.contentEditable && codeElement.contentEditable !== 'inherit') {
 				codeElement.contentEditable = 'false';
@@ -278,5 +495,28 @@ const RevealHighlightAce = {
 
 		for(let node of reveal.getSlidesElement().querySelectorAll(options.selector))
 			attachAce(node);
+
+		for(let scriptEl of reveal.getSlidesElement().querySelectorAll('script[data-highlight]')) {
+			let language = options.language;
+			let type = scriptEl.getAttribute('type') || '';
+			if(type.startsWith('text/'))
+				language = type.substring(5);
+
+			let pre = document.createElement('pre');
+			let code = document.createElement('code');
+
+			for(let attr of scriptEl.attributes) {
+				if(attr.name !== 'type' && attr.name !== 'data-highlight')
+					code.setAttribute(attr.name, attr.value);
+			}
+
+			if(!code.hasAttribute('data-language'))
+				code.setAttribute('data-language', language);
+
+			code.textContent = scriptEl.textContent;
+			pre.appendChild(code);
+			scriptEl.parentNode.replaceChild(pre, scriptEl);
+			attachAce(code);
+		}
 	}
 };

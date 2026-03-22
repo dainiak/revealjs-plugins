@@ -28,7 +28,7 @@ const RevealMermaid = {
     id: 'mermaid',
     init: async (reveal) => {
         const katexVersion = '0.16.27';
-        const mermaidVersion = '11.12.2';
+        const mermaidVersion = '11.12.3';
         let options = reveal.getConfig().mermaid || {};
         options = {
             mathInLabels: options.mathInLabels !== false,
@@ -199,7 +199,28 @@ const RevealMermaid = {
             if(!mermaidContainer.id)
                 mermaidContainer.id = `mermaid-${Math.floor(Math.random() * 1000000)}`;
 
-            let graphDefinition = mermaidContainer.querySelector(options.selectors.script).innerHTML;
+            let graphDefinition;
+            const mermaidAttrValue = mermaidContainer.getAttribute('data-mermaid');
+            if(mermaidAttrValue && mermaidAttrValue.trim() !== '') {
+                try {
+                    const response = await fetch(mermaidAttrValue.trim());
+                    if(!response.ok)
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    graphDefinition = await response.text();
+                } catch(error) {
+                    console.warn(`Mermaid Plugin: Failed to fetch diagram from "${mermaidAttrValue}":`, error);
+                    mermaidContainer.remove();
+                    return;
+                }
+            } else {
+                const scriptEl = mermaidContainer.querySelector(options.selectors.script);
+                if(!scriptEl) {
+                    console.warn('Mermaid Plugin: No script element or data-mermaid path found in container', mermaidContainer);
+                    mermaidContainer.remove();
+                    return;
+                }
+                graphDefinition = scriptEl.innerHTML;
+            }
             let renderRules = [];
 
             // 1. Extract Custom CSS Logic
@@ -228,12 +249,21 @@ const RevealMermaid = {
 
             // 3. Render Mermaid
             try {
-                const isParseable = await window.mermaid.parse(graphDefinition, {suppressErrors: false});
+                await window.mermaid.parse(graphDefinition, {suppressErrors: false});
             } catch (error) {
                 console.warn(`Mermaid diagram failed to parse:\n\n${graphDefinition}\n\nError: `, error);
+                mermaidContainer.remove();
+                return;
             }
 
-            const { svg } = await window.mermaid.render(mermaidContainer.id, graphDefinition);
+            let svg;
+            try {
+                ({ svg } = await window.mermaid.render(mermaidContainer.id, graphDefinition));
+            } catch (error) {
+                console.warn(`Mermaid diagram failed to render:\n\n${graphDefinition}\n\nError: `, error);
+                mermaidContainer.remove();
+                return;
+            }
             newDiv.outerHTML = svg;
             const svgElement = parent.querySelector(`#${mermaidContainer.id}`);
 
@@ -352,21 +382,16 @@ const RevealMermaid = {
             if(options.css.enabled && options.css.cssIndices) {
                 const cssSelector = '[class*="' + options.css.indexClassPrefix + '"]';
                 const fragmentsWithCssIndex = svgElement.querySelectorAll(cssSelector);
-                if(fragmentsWithCssIndex.length > 0 && options.css.cssIndices || options.css.resetIndicesAfterTypeset)
-                    for(let fragment of svgElement.querySelectorAll('.fragment[data-fragment-index]'))
-                        fragment.removeAttribute('data-fragment-index');
 
-                if(options.css.cssIndices)
-                    for (let fragment of fragmentsWithCssIndex) {
-                        let s = fragment.getAttribute('class');
-                        s = s.substring(
-                            s.indexOf(options.css.indexClassPrefix) + options.css.indexClassPrefix.length
-                        );
-                        s = s.substring(0, Math.max(s.indexOf(' '), s.length));
-                        fragment.classList.add('fragment');
-                        fragment.setAttribute('data-fragment-index', s);
-                    }
-
+                for (let fragment of fragmentsWithCssIndex) {
+                    let s = fragment.getAttribute('class');
+                    s = s.substring(
+                        s.indexOf(options.css.indexClassPrefix) + options.css.indexClassPrefix.length
+                    );
+                    s = s.substring(0, Math.max(s.indexOf(' '), s.length));
+                    fragment.classList.add('fragment');
+                    fragment.setAttribute('data-fragment-index', s);
+                }
             }
 
             if(hasStretchClass)

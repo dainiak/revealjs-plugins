@@ -121,7 +121,7 @@ const RevealInking = {
                     + '.ink-serializecanvas:before {content: "\u2B07"} ',
                 type: 'text/css'
             }, {
-                url: 'https://cdn.jsdelivr.net/npm/fabric@7/dist/index.min.js',
+                url: 'https://cdn.jsdelivr.net/npm/fabric@7.2.0/dist/index.min.js',
                 condition: !window.fabric
             },
             {

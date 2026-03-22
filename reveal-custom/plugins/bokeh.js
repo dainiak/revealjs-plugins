@@ -10,7 +10,7 @@ const RevealBokeh = {
             chartSrcAttribute: options.chartSrcAttribute || 'data-bokeh',
             scrolling: options.scrolling || 'no',
             urls: {
-                bokeh: options.urls && options.urls.bokeh || 'https://cdn.bokeh.org/bokeh/release/bokeh-3.8.2.min.js',
+                bokeh: options.urls && options.urls.bokeh || 'https://cdn.bokeh.org/bokeh/release/bokeh-3.9.0.min.js',
             }
         };
 

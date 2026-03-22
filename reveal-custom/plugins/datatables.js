@@ -10,8 +10,8 @@ const RevealDataTables = {
         // Default URLs for jQuery and DataTables
         const defaultUrls = {
             jquery: 'https://code.jquery.com/jquery-4.0.0.min.js',
-            dtCss: 'https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css',
-            dtJs: 'https://cdn.datatables.net/2.3.6/js/dataTables.min.js'
+            dtCss: 'https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css',
+            dtJs: 'https://cdn.datatables.net/2.3.7/js/dataTables.min.js'
         };
 
         options.urls = Object.assign({}, defaultUrls, options.urls || {});
