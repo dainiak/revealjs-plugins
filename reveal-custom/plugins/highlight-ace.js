@@ -27,7 +27,8 @@ const RevealHighlightAce = {
 			fontSize: '20px',
 			showGutter: options.showGutter !== false,
 			trim: options.trim !== false,
-			dedent: options.dedent !== false
+			dedent: options.dedent !== false,
+			customModes: options.customModes || []
 		};
 
 		if((options.theme || 'auto') === 'auto') {
@@ -46,19 +47,16 @@ const RevealHighlightAce = {
 		// Inject CSS for line highlighting
 		let highlightStyle = document.createElement('style');
 		highlightStyle.textContent = `
-			.ace_static_highlight.ace-has-line-highlights .ace_line {
+			.ace_static_highlight.ace-has-line-highlights > .ace_line {
 				opacity: 0.3;
 				transition: opacity 0.3s ease;
 			}
-			.ace_static_highlight.ace-has-line-highlights .ace_line.ace-highlight-line {
+			.ace_static_highlight.ace-has-line-highlights > .ace_line.ace-highlight-line {
 				opacity: 1;
 			}
-			.ace_static_highlight.ace-has-line-highlights .ace_gutter-cell {
-				opacity: 0.3;
-				transition: opacity 0.3s ease;
-			}
-			.ace_static_highlight.ace-has-line-highlights .ace_gutter-cell.ace-highlight-line {
-				opacity: 1;
+			.ace_static_highlight span.ace_line {
+				text-indent: initial !important;
+				padding-left: initial !important;
 			}
 		`;
 		document.head.appendChild(highlightStyle);
@@ -82,45 +80,33 @@ const RevealHighlightAce = {
 			});
 		}
 
+		function isLineInRanges(lineNum, ranges) {
+			if (!ranges) return false;
+			for (const range of ranges) {
+				if (lineNum >= range.start && lineNum <= range.end)
+					return true;
+			}
+			return false;
+		}
+
 		function applyLineHighlightGroup(codeElement, ranges) {
 			const aceContainer = codeElement.querySelector('.ace_static_highlight') || codeElement;
-			const lines = aceContainer.querySelectorAll('.ace_line');
-			const gutterCells = aceContainer.querySelectorAll('.ace_gutter-cell');
 			const hasHighlight = ranges && ranges.length > 0;
 
 			aceContainer.classList.toggle('ace-has-line-highlights', hasHighlight);
 
+			// Use :scope > to select only direct-child .ace_line divs,
+			// excluding nested spans that happen to have ace_line class
+			// (e.g. comment.line tokens become <span class="ace_comment ace_line">).
+			const lines = aceContainer.querySelectorAll(':scope > .ace_line');
 			lines.forEach((line, i) => {
-				const lineNum = i + 1;
-				let highlighted = false;
-				if (ranges) {
-					for (const range of ranges) {
-						if (lineNum >= range.start && lineNum <= range.end) {
-							highlighted = true;
-							break;
-						}
-					}
-				}
-				line.classList.toggle('ace-highlight-line', highlighted);
+				line.classList.toggle('ace-highlight-line', isLineInRanges(i + 1, ranges));
 			});
 
-			gutterCells.forEach((cell, i) => {
-				const lineNum = i + 1;
-				let highlighted = false;
-				if (ranges) {
-					for (const range of ranges) {
-						if (lineNum >= range.start && lineNum <= range.end) {
-							highlighted = true;
-							break;
-						}
-					}
-				}
-				cell.classList.toggle('ace-highlight-line', highlighted);
-			});
 
 			// Scroll highlighted lines into view within the code block
 			if (hasHighlight) {
-				const highlighted = aceContainer.querySelectorAll('.ace_line.ace-highlight-line');
+				const highlighted = aceContainer.querySelectorAll(':scope > .ace_line.ace-highlight-line');
 				if (highlighted.length > 0) {
 					const scrollParent = codeElement;
 					const first = highlighted[0];
@@ -318,7 +304,7 @@ const RevealHighlightAce = {
 
 			let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
 			highlight(element, {
-				mode: 'ace/mode/' + aceMode,
+				mode: resolveAceMode(aceMode),
 				theme: 'ace/theme/' + aceTheme,
 				startLineNumber: 1,
 				showGutter: showGutter,
@@ -359,9 +345,19 @@ const RevealHighlightAce = {
 			destroyEditor(editor, true);
 		}
 
+		function resolveAceMode(modeName) {
+			let modePath = 'ace/mode/' + modeName;
+			try {
+				let ModeModule = window.ace.require(modePath);
+				if (ModeModule && ModeModule.Mode) return new ModeModule.Mode();
+			} catch(e) {}
+			return modePath;
+		}
+
 		function attachAce(codeElement, customOptions) {
 			let aceTheme = 'ace/theme/' + (codeElement.hasAttribute('data-theme') ? codeElement.getAttribute('data-theme') : options.theme);
-			let aceMode = 'ace/mode/' + (codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language);
+			let aceModeName = codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language;
+			let aceMode = resolveAceMode(aceModeName);
 			let trim = options.trim !== undefined ? options.trim : (
 				codeElement.hasAttribute( 'data-trim' ) || options.trim
 			);
@@ -480,6 +476,15 @@ const RevealHighlightAce = {
 		await loadScript(options.aceStaticHighlighterUrl);
 
 		window.ace.config.set('basePath', options.aceBasePath);
+
+		// Register custom modes: each entry can be a URL (string) or a function(ace)
+		for (let mode of options.customModes) {
+			if (typeof mode === 'string') {
+				await loadScript(mode);
+			} else if (typeof mode === 'function') {
+				mode(window.ace);
+			}
+		}
 
 		window.ace.require('ace/commands/default_commands').commands.push({
 			name: 'Return to slideshow discarding changes',
