@@ -1,220 +1,220 @@
 /* Font setup */
 .slide-menu-wrapper {
-    font-family: 'Source Sans Pro', Helvetica, sans-serif;
+	font-family: "Source Sans Pro", Helvetica, sans-serif;
 }
 
 /* Main Menu Container */
 .slide-menu-wrapper .slide-menu {
-    background-color: #333;
-    z-index: 200;
-    position: fixed;
-    top: 0;
-    width: 300px;
-    height: 100%;
-    overflow-y: hidden;
-    transition: transform 0.3s ease;
-    font-size: 16px;
-    font-weight: normal;
-    /* Ensure shadow separates menu from slides */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	background-color: #333;
+	z-index: 200;
+	position: fixed;
+	top: 0;
+	width: 300px;
+	height: 100%;
+	overflow-y: hidden;
+	transition: transform 0.3s ease;
+	font-size: 16px;
+	font-weight: normal;
+	/* Ensure shadow separates menu from slides */
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Sizing Modifiers */
 .slide-menu-wrapper .slide-menu.slide-menu--wide {
-    width: 500px;
+	width: 500px;
 }
 
 .slide-menu-wrapper .slide-menu.slide-menu--third {
-    width: 33%;
+	width: 33%;
 }
 
 .slide-menu-wrapper .slide-menu.slide-menu--half {
-    width: 50%;
+	width: 50%;
 }
 
 .slide-menu-wrapper .slide-menu.slide-menu--full {
-    width: 100%;
+	width: 100%;
 }
 
 /* * SLIDES LIST & ICONS
  */
 
 .slide-menu-wrapper .slide-menu-items {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    border-bottom: solid 1px #555;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	border-bottom: solid 1px #555;
 }
 
 .slide-menu-wrapper .slide-menu-item,
 .slide-menu-wrapper .slide-menu-item-vertical {
-    display: flex; /* Use flexbox for better alignment */
-    align-items: center;
-    text-align: left;
-    padding: 10px 18px;
-    color: #aaa;
-    cursor: pointer;
-    border-top: solid 1px #555;
+	display: flex; /* Use flexbox for better alignment */
+	align-items: center;
+	text-align: left;
+	padding: 10px 18px;
+	color: #aaa;
+	cursor: pointer;
+	border-top: solid 1px #555;
 }
 
 .slide-menu-wrapper .slide-menu-item-vertical {
-    padding-left: 30px;
+	padding-left: 30px;
 }
 
 /* Base state: HIDE ALL ICONS by default */
 .slide-menu-wrapper .slide-menu-item i,
 .slide-menu-wrapper .slide-menu-item-vertical i {
-    display: none;
-    width: 20px;
-    margin-right: 10px;
-    text-align: center;
+	display: none;
+	width: 20px;
+	margin-right: 10px;
+	text-align: center;
 }
 
 /* Show 'past' icon ONLY when parent has .past class */
 .slide-menu-wrapper .slide-menu-item.past i.past,
 .slide-menu-wrapper .slide-menu-item-vertical.past i.past {
-    display: inline-block;
-    opacity: 0.5;
+	display: inline-block;
+	opacity: 0.5;
 }
 
 /* Show 'active' icon ONLY when parent has .active class */
 .slide-menu-wrapper .slide-menu-item.active i.active,
 .slide-menu-wrapper .slide-menu-item-vertical.active i.active {
-    display: inline-block;
-    opacity: 1;
-    color: #42affa; /* Blue highlight for current slide */
+	display: inline-block;
+	opacity: 1;
+	color: #42affa; /* Blue highlight for current slide */
 }
 
 /* Show 'future' icon ONLY when parent has .future class */
 .slide-menu-wrapper .slide-menu-item.future i.future,
 .slide-menu-wrapper .slide-menu-item-vertical.future i.future {
-    display: inline-block;
-    opacity: 0.3;
+	display: inline-block;
+	opacity: 0.3;
 }
 
 /* Active Menu Selection (Keyboard navigation highlight) */
 .slide-menu-wrapper .active-menu-panel li.selected {
-    background-color: #222;
-    color: white;
+	background-color: #222;
+	color: white;
 }
 
 /* * TRANSITIONS (Open/Close)
  */
 .slide-menu-wrapper .slide-menu--left {
-    left: 0;
-    transform: translateX(-100%);
+	left: 0;
+	transform: translateX(-100%);
 }
 
 .slide-menu-wrapper .slide-menu--left.active {
-    transform: translateX(0);
+	transform: translateX(0);
 }
 
 .slide-menu-wrapper .slide-menu--right {
-    right: 0;
-    transform: translateX(100%);
+	right: 0;
+	transform: translateX(100%);
 }
 
 .slide-menu-wrapper .slide-menu--right.active {
-    transform: translateX(0);
+	transform: translateX(0);
 }
 
 /*
  * TOOLBAR
  */
 .slide-menu-wrapper .slide-menu-toolbar {
-    height: 60px;
-    width: 100%;
-    font-size: 12px;
-    display: flex;
-    margin: 0;
-    padding: 0;
-    border-bottom: solid 2px #666;
+	height: 60px;
+	width: 100%;
+	font-size: 12px;
+	display: flex;
+	margin: 0;
+	padding: 0;
+	border-bottom: solid 2px #666;
 }
 
 .slide-menu-wrapper .slide-menu-toolbar > li {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    color: #aaa;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	color: #aaa;
 }
 
 .slide-menu-wrapper .slide-menu-toolbar > li:hover {
-    color: white;
+	color: white;
 }
 
 .slide-menu-wrapper .slide-menu-toolbar > li.active-toolbar-button {
-    color: white;
-    text-decoration: none;
-    background: rgba(255, 255, 255, 0.05); /* Slight background highlight */
+	color: white;
+	text-decoration: none;
+	background: rgba(255, 255, 255, 0.05); /* Slight background highlight */
 }
 
 .slide-menu-wrapper .slide-menu-toolbar > li i {
-    font-size: 1.5em;
-    margin-bottom: 5px;
+	font-size: 1.5em;
+	margin-bottom: 5px;
 }
 
 /*
  * PANELS
  */
 .slide-menu-wrapper .slide-menu-panel {
-    display: none;
-    height: calc(100% - 100px);
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: 20px;
-    color: #aaa;
+	display: none;
+	height: calc(100% - 100px);
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 20px;
+	color: #aaa;
 }
 
 .slide-menu-wrapper .slide-menu-panel.active-menu-panel {
-    display: block;
+	display: block;
 }
 
 /* Headers inside panels */
 .slide-menu-wrapper .slide-menu-panel h1,
 .slide-menu-wrapper .slide-menu-panel h2,
 .slide-menu-wrapper .slide-menu-panel h3 {
-    color: #fff;
-    margin-top: 0;
+	color: #fff;
+	margin-top: 0;
 }
 
 /*
  * MENU BUTTON (Hamburger)
  */
 .reveal .slide-menu-button {
-    position: fixed;
-    left: 30px;
-    bottom: 30px;
-    z-index: 30;
-    font-size: 24px;
+	position: fixed;
+	left: 30px;
+	bottom: 30px;
+	z-index: 30;
+	font-size: 24px;
 }
 
 .reveal .slide-menu-button a {
-    color: white;
-    text-shadow: 0 0 2px black;
+	color: white;
+	text-shadow: 0 0 2px black;
 }
 
 /*
  * OVERLAY
  */
 .slide-menu-wrapper .slide-menu-overlay {
-    position: fixed;
-    z-index: 199;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+	position: fixed;
+	z-index: 199;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
 }
 
 .slide-menu-wrapper .slide-menu-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
+	opacity: 1;
+	pointer-events: auto;
 }
 
 /*
@@ -223,9 +223,8 @@
 body.print-pdf .slide-menu-wrapper .slide-menu,
 body.print-pdf .reveal .slide-menu-button,
 body.print-pdf .slide-menu-wrapper .slide-menu-overlay {
-    display: none !important;
+	display: none !important;
 }
-
 
 /* * SCROLLBAR STYLING
  * Matches the dark #333 theme with #555 accents
@@ -234,8 +233,8 @@ body.print-pdf .slide-menu-wrapper .slide-menu-overlay {
 /* 1. Standard Syntax (Firefox) */
 .slide-menu-wrapper .slide-menu,
 .slide-menu-wrapper .slide-menu-panel {
-    scrollbar-width: thin;
-    scrollbar-color: #666 #333; /* Thumb color | Track color */
+	scrollbar-width: thin;
+	scrollbar-color: #666 #333; /* Thumb color | Track color */
 }
 
 /* 2. Webkit Syntax (Chrome, Edge, Safari) */
@@ -243,5 +242,5 @@ body.print-pdf .slide-menu-wrapper .slide-menu-overlay {
 /* The Scrollbar Container */
 .slide-menu-wrapper .slide-menu::-webkit-scrollbar,
 .slide-menu-wrapper .slide-menu-panel::-webkit-scrollbar {
-    width: 8px; /* Slimmer than the default system scrollbar */
+	width: 8px; /* Slimmer than the default system scrollbar */
 }

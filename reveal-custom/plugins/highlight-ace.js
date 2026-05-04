@@ -9,34 +9,40 @@
  */
 
 const RevealHighlightAce = {
-	id: 'highlight-ace',
+	id: "highlight-ace",
 	init: async (reveal) => {
-		let aceVersion = '1.43.2';
+		let aceVersion = "1.43.3";
 		let options = reveal.getConfig().highlighting || {};
 		options = {
-			theme: options.theme || 'auto',
-			language: options.language || 'python',
+			theme: options.theme || "auto",
+			language: options.language || "python",
 			aceMainUrl: options.aceMainUrl || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/ace.min.js`,
 			aceBasePath: options.aceBasePath || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/`,
-			aceStaticHighlighterUrl: options.aceStaticHighlighterUrl || `https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/ext-static_highlight.min.js`,
+			aceStaticHighlighterUrl:
+				options.aceStaticHighlighterUrl ||
+				`https://cdnjs.cloudflare.com/ajax/libs/ace/${aceVersion}/ext-static_highlight.min.js`,
 			editorInPlace: options.editorInPlace !== false,
 			closeEditorOnBlur: options.closeEditorOnBlur,
 			mouseclickModifierKey: options.mouseclickModifierKey,
 			editorDefaultFontSize: options.editorDefaultFontSize,
-			selector: options.selector || 'pre code',
-			fontSize: '20px',
+			selector: options.selector || "pre code",
+			fontSize: "20px",
 			showGutter: options.showGutter !== false,
 			trim: options.trim !== false,
 			dedent: options.dedent !== false,
-			customModes: options.customModes || []
+			lineAnchors: options.lineAnchors !== false,
+			relativeIndexing: options.relativeIndexing === true,
+			customModes: options.customModes || [],
 		};
 
-		if((options.theme || 'auto') === 'auto') {
-			options.theme = 'chrome';
-			if(document.querySelector(
-				'[href*="black.css"],[href*="league.css"],[href*="night.css"],[href*="moon.css"],[href*="dracula.css"],[href*="blood.css"]'
-			)) {
-				options.theme = 'monokai';
+		if ((options.theme || "auto") === "auto") {
+			options.theme = "chrome";
+			if (
+				document.querySelector(
+					'[href*="black.css"],[href*="league.css"],[href*="night.css"],[href*="moon.css"],[href*="dracula.css"],[href*="blood.css"]',
+				)
+			) {
+				options.theme = "monokai";
 			}
 		}
 
@@ -45,7 +51,7 @@ const RevealHighlightAce = {
 		let aceStaticStyle = null;
 
 		// Inject CSS for line highlighting
-		let highlightStyle = document.createElement('style');
+		let highlightStyle = document.createElement("style");
 		highlightStyle.textContent = `
 			.ace_static_highlight.ace-has-line-highlights > .ace_line {
 				opacity: 0.3;
@@ -61,52 +67,89 @@ const RevealHighlightAce = {
 		`;
 		document.head.appendChild(highlightStyle);
 
+		function resolveBoolAttr(el, attrName, defaultValue) {
+			// Local override for a boolean attribute: missing → fall back to global
+			// default; present with value "false" → off; otherwise (empty, "true",
+			// any other value) → on.
+			if (!el.hasAttribute(attrName)) return defaultValue;
+			return el.getAttribute(attrName) !== "false";
+		}
+
+		// Parse an anchor body into a list of structured tokens. Grammar:
+		//   token := "!" | K | K..M | K+ | K-     (K, M ∈ ℕ)
+		//   body  := token ("," token)*
+		// Range form is `K..M` (mermaid-aligned). Bare `K-` is sticky-to. There
+		// is no `K-M` legacy form — `-` is exclusively the sticky-to suffix in
+		// anchor bodies. (Note: `data-line-numbers="1-4|5-8"` line ranges before
+		// the `@` separator still use `-`; that's a different syntactic position.)
+		function parseAnchorTokens(str) {
+			const tokens = [];
+			for (const part of str.split(",")) {
+				const t = part.trim();
+				if (!t) continue;
+				if (t === "!") {
+					tokens.push({ type: "base" });
+					continue;
+				}
+				let m;
+				if ((m = t.match(/^(\d+)\+$/))) {
+					tokens.push({ type: "from", start: parseInt(m[1]) });
+				} else if ((m = t.match(/^(\d+)-$/))) {
+					tokens.push({ type: "to", end: parseInt(m[1]) });
+				} else if ((m = t.match(/^(\d+)\.\.(\d+)$/))) {
+					tokens.push({ type: "range", start: parseInt(m[1]), end: parseInt(m[2]) });
+				} else if ((m = t.match(/^(\d+)$/))) {
+					tokens.push({ type: "index", value: parseInt(m[1]) });
+				}
+			}
+			return tokens;
+		}
+
 		function parseLineNumberRanges(str) {
 			if (!str || !str.trim()) return [];
-			return str.split('|').map(group => {
-				let fragmentIndex = null;
-				const atMatch = group.match(/@(\d+)\s*$/);
+			return str.split("|").map((group) => {
+				let tokens = null;
+				const atMatch = group.match(/@([!\d,\-+.]+)\s*$/);
 				if (atMatch) {
-					fragmentIndex = parseInt(atMatch[1]);
+					const parsed = parseAnchorTokens(atMatch[1]);
+					if (parsed.length > 0) tokens = parsed;
 					group = group.slice(0, atMatch.index);
 				}
-				const ranges = group.split(',').map(range => {
-					const parts = range.trim().split('-');
+				const ranges = group.split(",").map((range) => {
+					const parts = range.trim().split("-");
 					const start = parseInt(parts[0]);
 					const end = parts.length > 1 ? parseInt(parts[1]) : start;
 					return { start, end };
 				});
-				return { ranges, fragmentIndex };
+				return { ranges, tokens };
 			});
 		}
 
 		function isLineInRanges(lineNum, ranges) {
 			if (!ranges) return false;
 			for (const range of ranges) {
-				if (lineNum >= range.start && lineNum <= range.end)
-					return true;
+				if (lineNum >= range.start && lineNum <= range.end) return true;
 			}
 			return false;
 		}
 
 		function applyLineHighlightGroup(codeElement, ranges) {
-			const aceContainer = codeElement.querySelector('.ace_static_highlight') || codeElement;
+			const aceContainer = codeElement.querySelector(".ace_static_highlight") || codeElement;
 			const hasHighlight = ranges && ranges.length > 0;
 
-			aceContainer.classList.toggle('ace-has-line-highlights', hasHighlight);
+			aceContainer.classList.toggle("ace-has-line-highlights", hasHighlight);
 
 			// Use :scope > to select only direct-child .ace_line divs,
 			// excluding nested spans that happen to have ace_line class
 			// (e.g. comment.line tokens become <span class="ace_comment ace_line">).
-			const lines = aceContainer.querySelectorAll(':scope > .ace_line');
+			const lines = aceContainer.querySelectorAll(":scope > .ace_line");
 			lines.forEach((line, i) => {
-				line.classList.toggle('ace-highlight-line', isLineInRanges(i + 1, ranges));
+				line.classList.toggle("ace-highlight-line", isLineInRanges(i + 1, ranges));
 			});
-
 
 			// Scroll highlighted lines into view within the code block
 			if (hasHighlight) {
-				const highlighted = aceContainer.querySelectorAll(':scope > .ace_line.ace-highlight-line');
+				const highlighted = aceContainer.querySelectorAll(":scope > .ace_line.ace-highlight-line");
 				if (highlighted.length > 0) {
 					const scrollParent = codeElement;
 					const first = highlighted[0];
@@ -127,122 +170,261 @@ const RevealHighlightAce = {
 						}
 						scrollParent.scrollTo({
 							top: Math.max(0, targetTop),
-							behavior: 'smooth'
+							behavior: "smooth",
 						});
 					}
 				}
 			}
 		}
 
+		// Single pair of listeners shared by all code blocks; per-fragment state lives in WeakMaps.
+		const fragmentToInfo = new WeakMap();
+		const codeToFragments = new WeakMap();
+		// Slide-load highlight (from `@!` and `@K-` tokens). When all registered
+		// fragments are hidden, `fragmenthidden` falls back to this set.
+		const baseRangesByCode = new WeakMap();
+
+		function registerFragment(fragment, codeElement, ranges) {
+			fragmentToInfo.set(fragment, { codeElement, ranges });
+			let list = codeToFragments.get(codeElement);
+			if (!list) {
+				list = [];
+				codeToFragments.set(codeElement, list);
+			}
+			if (!list.includes(fragment)) list.push(fragment);
+		}
+
+		reveal.addEventListener("fragmentshown", function (event) {
+			for (const fragment of event.fragments) {
+				const info = fragmentToInfo.get(fragment);
+				if (info) applyLineHighlightGroup(info.codeElement, info.ranges);
+			}
+		});
+
+		reveal.addEventListener("fragmenthidden", function (event) {
+			for (const fragment of event.fragments) {
+				const info = fragmentToInfo.get(fragment);
+				if (!info) continue;
+				const siblings = codeToFragments.get(info.codeElement) || [];
+				let prevRanges = null;
+				for (const f of siblings) {
+					if (f !== fragment && f.classList.contains("visible")) prevRanges = fragmentToInfo.get(f).ranges;
+				}
+				if (prevRanges === null) prevRanges = baseRangesByCode.get(info.codeElement) || null;
+				applyLineHighlightGroup(info.codeElement, prevRanges);
+			}
+		});
+
 		function setupLineHighlights(codeElement) {
-			const lineNumbersAttr = codeElement.getAttribute('data-line-numbers');
-			if (lineNumbersAttr === null || lineNumbersAttr === '') return;
+			const lineNumbersAttr = codeElement.getAttribute("data-line-numbers");
+			if (lineNumbersAttr === null || lineNumbersAttr === "") return;
 
 			const groups = parseLineNumberRanges(lineNumbersAttr);
 			if (groups.length === 0) return;
 
-			if (groups.length === 1 && groups[0].fragmentIndex === null) {
+			if (groups.length === 1 && !groups[0].tokens) {
 				applyLineHighlightGroup(codeElement, groups[0].ranges);
 				return;
 			}
 
 			// Multiple groups: create fragment triggers for step-through
-			const slide = codeElement.closest('section');
-			const pre = codeElement.closest('pre') || codeElement;
+			const slide = codeElement.closest("section");
+			const pre = codeElement.closest("pre") || codeElement;
 
-			const hasExplicitIndices = groups.some(g => g.fragmentIndex !== null);
+			// First pass: each token contributes either to a specific fragment
+			// index (`K`, `K-M`), to base / slide-load state (`!`, `K-`), or to
+			// its lower bound (`K+` first-pass entry only). Open-ended forms
+			// (`K+`, `K-`) are deferred for a second pass that piggybacks on
+			// indices where other anchors already require a trigger — so a `K+`
+			// or `K-` does not synthesize hidden triggers between K and the
+			// next existing index.
+			const indexToRanges = new Map();
+			let baseRanges = null;
+			const fromTokens = [];
+			const toTokens = [];
+			let unanchoredGroups = 0;
 
-			if (hasExplicitIndices) {
-				// Explicit @indices: piggyback on existing slide fragments.
-				// For indices with no matching fragment already on the slide, create hidden triggers.
-				const indexToRanges = new Map();
-				for (const group of groups)
-					indexToRanges.set(group.fragmentIndex, group.ranges);
-
-				const existingIndices = new Set();
-				for (const frag of slide.querySelectorAll('.fragment[data-fragment-index]')) {
-					existingIndices.add(parseInt(frag.getAttribute('data-fragment-index')));
-				}
-
-				let insertAfter = pre;
-				for (const [idx] of indexToRanges) {
-					if (existingIndices.has(idx)) continue;
-					const trigger = document.createElement('span');
-					trigger.className = 'fragment';
-					trigger.setAttribute('data-fragment-index', String(idx));
-					trigger.style.display = 'none';
-					insertAfter.parentNode.insertBefore(trigger, insertAfter.nextSibling);
-					insertAfter = trigger;
-				}
-
-				reveal.addEventListener('fragmentshown', function (event) {
-					for (const fragment of event.fragments) {
-						if (!slide.contains(fragment)) continue;
-						const idx = parseInt(fragment.getAttribute('data-fragment-index'));
-						if (indexToRanges.has(idx))
-							applyLineHighlightGroup(codeElement, indexToRanges.get(idx));
-					}
-				});
-
-				reveal.addEventListener('fragmenthidden', function (event) {
-					for (const fragment of event.fragments) {
-						if (!slide.contains(fragment)) continue;
-						const idx = parseInt(fragment.getAttribute('data-fragment-index'));
-						if (!indexToRanges.has(idx)) continue;
-						// Find the highest still-visible index in our map
-						let prevRanges = null;
-						for (const f of slide.querySelectorAll('.fragment.visible')) {
-							const fIdx = parseInt(f.getAttribute('data-fragment-index'));
-							if (indexToRanges.has(fIdx) && f !== fragment)
-								prevRanges = indexToRanges.get(fIdx);
-						}
-						applyLineHighlightGroup(codeElement, prevRanges);
-					}
-				});
-			} else {
-				// Auto-assigned indices: create hidden fragment triggers
-				let maxFragmentIndex = -1;
-				for (const frag of slide.querySelectorAll('.fragment[data-fragment-index]')) {
-					const idx = parseInt(frag.getAttribute('data-fragment-index'));
-					if (!isNaN(idx) && idx > maxFragmentIndex)
-						maxFragmentIndex = idx;
-				}
-				let autoIndex = maxFragmentIndex + 1;
-
-				const fragments = [];
-				let insertAfter = pre;
-
-				for (let i = 0; i < groups.length; i++) {
-					const trigger = document.createElement('span');
-					trigger.className = 'fragment';
-					trigger.setAttribute('data-fragment-index', String(autoIndex++));
-					trigger.style.display = 'none';
-					trigger._aceLineRanges = groups[i].ranges;
-					trigger._aceCodeElement = codeElement;
-					insertAfter.parentNode.insertBefore(trigger, insertAfter.nextSibling);
-					insertAfter = trigger;
-					fragments.push(trigger);
-				}
-
-				reveal.addEventListener('fragmentshown', function (event) {
-					for (const fragment of event.fragments) {
-						if (fragment._aceCodeElement === codeElement)
-							applyLineHighlightGroup(codeElement, fragment._aceLineRanges);
-					}
-				});
-
-				reveal.addEventListener('fragmenthidden', function (event) {
-					for (const fragment of event.fragments) {
-						if (fragment._aceCodeElement !== codeElement) continue;
-						let prevGroup = null;
-						for (const f of fragments) {
-							if (f.classList.contains('visible') && f !== fragment)
-								prevGroup = f._aceLineRanges;
-						}
-						applyLineHighlightGroup(codeElement, prevGroup);
-					}
-				});
+			function addToIndex(idx, ranges) {
+				if (!indexToRanges.has(idx)) indexToRanges.set(idx, []);
+				const bucket = indexToRanges.get(idx);
+				for (const r of ranges) bucket.push(r);
 			}
+
+			for (const g of groups) {
+				if (!g.tokens) {
+					unanchoredGroups++;
+					continue;
+				}
+				let baseHere = false;
+				for (const t of g.tokens) {
+					switch (t.type) {
+						case "base":
+							baseHere = true;
+							break;
+						case "index":
+							addToIndex(t.value, g.ranges);
+							break;
+						case "range":
+							for (let i = t.start; i <= t.end; i++) addToIndex(i, g.ranges);
+							break;
+						case "from":
+							fromTokens.push({ ranges: g.ranges, start: t.start });
+							addToIndex(t.start, g.ranges);
+							break;
+						case "to":
+							baseHere = true;
+							toTokens.push({ ranges: g.ranges, end: t.end });
+							break;
+					}
+				}
+				if (baseHere) {
+					if (!baseRanges) baseRanges = [];
+					for (const r of g.ranges) baseRanges.push(r);
+				}
+			}
+
+			// Off-trigger for `K-`: empty group at K+1 forces the highlight to
+			// clear when the user clicks past the sticky-to range. If a group
+			// already exists at K+1 from another anchor, no action — its own
+			// ranges naturally exclude the sticky-to lines (which we add only
+			// to indices ≤ K in the second pass below).
+			for (const t of toTokens) {
+				const off = t.end + 1;
+				if (!indexToRanges.has(off)) indexToRanges.set(off, []);
+			}
+
+			// Second pass for `K+` and `K-`: contribute the line to other
+			// existing trigger indices in the open period, so the highlight
+			// stays active when those triggers fire. Snapshot the keys first
+			// since we don't add new ones here.
+			for (const t of fromTokens) {
+				for (const idx of [...indexToRanges.keys()]) {
+					if (idx > t.start) {
+						const bucket = indexToRanges.get(idx);
+						for (const r of t.ranges) bucket.push(r);
+					}
+				}
+			}
+			for (const t of toTokens) {
+				for (const idx of [...indexToRanges.keys()]) {
+					if (idx <= t.end) {
+						const bucket = indexToRanges.get(idx);
+						for (const r of t.ranges) bucket.push(r);
+					}
+				}
+			}
+
+			if (baseRanges) {
+				baseRangesByCode.set(codeElement, baseRanges);
+				applyLineHighlightGroup(codeElement, baseRanges);
+			}
+
+			if (indexToRanges.size > 0) {
+				// Explicit indices: piggyback on existing slide fragments where
+				// available, otherwise insert a hidden trigger.
+				const existingByIndex = new Map();
+				for (const frag of slide.querySelectorAll(".fragment[data-fragment-index]")) {
+					const idx = parseInt(frag.getAttribute("data-fragment-index"));
+					if (!existingByIndex.has(idx)) existingByIndex.set(idx, []);
+					existingByIndex.get(idx).push(frag);
+				}
+
+				const sortedIndices = [...indexToRanges.keys()].sort((a, b) => a - b);
+				let insertAfter = pre;
+				for (const idx of sortedIndices) {
+					const ranges = indexToRanges.get(idx);
+					const existing = existingByIndex.get(idx);
+					if (existing) {
+						for (const frag of existing) registerFragment(frag, codeElement, ranges);
+					} else {
+						const trigger = document.createElement("span");
+						trigger.className = "fragment";
+						trigger.setAttribute("data-fragment-index", String(idx));
+						trigger.style.display = "none";
+						insertAfter.parentNode.insertBefore(trigger, insertAfter.nextSibling);
+						insertAfter = trigger;
+						registerFragment(trigger, codeElement, ranges);
+					}
+				}
+			} else if (unanchoredGroups > 0) {
+				// Legacy `data-line-numbers="A|B"` (no anchors): insert triggers
+				// without data-fragment-index so reveal.js sort() places them
+				// in DOM order alongside other unindexed fragments on the slide.
+				let insertAfter = pre;
+				for (const g of groups) {
+					if (g.tokens) continue;
+					const trigger = document.createElement("span");
+					trigger.className = "fragment";
+					trigger.style.display = "none";
+					insertAfter.parentNode.insertBefore(trigger, insertAfter.nextSibling);
+					insertAfter = trigger;
+					registerFragment(trigger, codeElement, g.ranges);
+				}
+			}
+		}
+
+		// Strip trailing anchor comments like `# @1`, `// @2,4..6`, `-- @3` and
+		// build a `data-line-numbers` spec carrying anchor markers. Anchor body
+		// grammar (K, M ∈ ℕ):
+		//   token := "!" | K | K..M | K+ | K-
+		//   body  := token ("," token)*
+		// Token semantics:
+		//   K     highlighted at fragment K (transient: stays until the next
+		//         code-block trigger that excludes the line)
+		//   K..M  highlighted at fragments K..M (closed range, no off-fade)
+		//   K+    sticky-from K — stays from K through any later code-block
+		//         triggers (open-ended, no off-fade)
+		//   K-    sticky-to K — on at slide load and through fragment K, off at
+		//         K+1 (an off-trigger is inserted at K+1 if no other anchor lives
+		//         there; this may add one click)
+		//   !     on at slide load only; cleared by the first code-block fragment
+		// Lines consisting only of an anchor are dropped. Anchors bind to literal
+		// `data-fragment-index` values. The grammar mirrors the mermaid directive
+		// DSL's range syntax (see `mermaid-directives.md`).
+		// Supported comment prefixes: # // -- ; % (covers the languages used in this repo).
+		function extractLineAnchors(codeText) {
+			const ANCHOR_RE =
+				/[ \t]*(?:#|\/\/|--|;|%)[ \t]*@((?:!|\d+(?:\+|-|\.\.\d+)?)(?:,(?:!|\d+(?:\+|-|\.\.\d+)?))*)[ \t]*$/;
+			const lines = codeText.split("\n");
+			const cleaned = [];
+			const order = [];
+			const linesByGroup = new Map();
+
+			for (const rawLine of lines) {
+				const m = rawLine.match(ANCHOR_RE);
+				if (!m) {
+					cleaned.push(rawLine);
+					continue;
+				}
+				const id = m[1];
+				const stripped = rawLine.slice(0, m.index);
+				if (!/\S/.test(stripped)) continue; // drop anchor-only lines
+				cleaned.push(stripped);
+				if (!linesByGroup.has(id)) {
+					order.push(id);
+					linesByGroup.set(id, []);
+				}
+				linesByGroup.get(id).push(cleaned.length);
+			}
+
+			const groupSpecs = order.map((id) => {
+				const nums = linesByGroup.get(id);
+				const ranges = [];
+				let start = nums[0],
+					prev = nums[0];
+				for (let i = 1; i < nums.length; i++) {
+					if (nums[i] === prev + 1) {
+						prev = nums[i];
+					} else {
+						ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+						start = prev = nums[i];
+					}
+				}
+				ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+				return ranges.join(",") + "@" + id;
+			});
+
+			return { code: cleaned.join("\n"), spec: groupSpecs.join("|") };
 		}
 
 		function dedentString(str) {
@@ -254,8 +436,8 @@ const RevealHighlightAce = {
 				if (!line.trim()) continue;
 				let width = 0;
 				for (const char of line) {
-					if (char === ' ') width++;
-					else if (char === '\t') width += TAB_WIDTH;
+					if (char === " ") width++;
+					else if (char === "\t") width += TAB_WIDTH;
 					else break;
 				}
 				if (width < minIndent) minIndent = width;
@@ -263,163 +445,196 @@ const RevealHighlightAce = {
 
 			if (minIndent === Infinity) minIndent = 0;
 
-			return lines.map(line => {
-				let width = 0, i = 0;
-				for (; i < line.length; i++) {
-					if (width >= minIndent) break;
-					const char = line[i];
-					if (char === ' ') width++;
-					else if (char === '\t') width += TAB_WIDTH;
-					else break;
-				}
-				return ' '.repeat(Math.max(0, width - minIndent)) + line.slice(i);
-			}).join('\n');
+			return lines
+				.map((line) => {
+					let width = 0,
+						i = 0;
+					for (; i < line.length; i++) {
+						if (width >= minIndent) break;
+						const char = line[i];
+						if (char === " ") width++;
+						else if (char === "\t") width += TAB_WIDTH;
+						else break;
+					}
+					return " ".repeat(Math.max(0, width - minIndent)) + line.slice(i);
+				})
+				.join("\n");
 		}
 
 		function doStaticHighlight(element, customOptions) {
 			customOptions ||= {};
 			let options = reveal.getConfig().highlighting;
-			let aceTheme = customOptions.theme || (element.hasAttribute('data-theme') ? element.getAttribute('data-theme') : options.theme);
-			let aceMode = customOptions.language || (element.hasAttribute('data-language') ? element.getAttribute('data-language') : options.language);
-			let trim = customOptions.trim !== undefined ? customOptions.trim : (
-				element.hasAttribute( 'data-trim' ) || options.trim
-			);
-			let dedent = element.hasAttribute( 'data-dedent' ) ||  options.dedent;
+			let aceTheme =
+				customOptions.theme ||
+				(element.hasAttribute("data-theme") ? element.getAttribute("data-theme") : options.theme);
+			let aceMode =
+				customOptions.language ||
+				(element.hasAttribute("data-language") ? element.getAttribute("data-language") : options.language);
+			let trim =
+				customOptions.trim !== undefined ? customOptions.trim : element.hasAttribute("data-trim") || options.trim;
+			let dedent = resolveBoolAttr(element, "data-dedent", options.dedent);
 
-			if(element.dataset.reserveLines){
+			if (element.dataset.reserveLines) {
 				trim = false;
 				let reservedLines = parseInt(element.dataset.reserveLines);
-				let additionalText = '';
-				for(let existingLines = element.textContent.split('\n').length; existingLines < reservedLines; ++existingLines)
-					additionalText += '\n';
+				let additionalText = "";
+				for (let existingLines = element.textContent.split("\n").length; existingLines < reservedLines; ++existingLines)
+					additionalText += "\n";
 				element.textContent += additionalText;
 			}
 
-			if(dedent)
-				element.textContent = dedentString(element.textContent);
+			if (dedent) element.textContent = dedentString(element.textContent);
 
 			let showGutter =
-				element.hasAttribute('data-line-numbers')
-				|| (customOptions.showGutter !== undefined ? customOptions.showGutter : options.showGutter);
+				element.hasAttribute("data-line-numbers") ||
+				(customOptions.showGutter !== undefined ? customOptions.showGutter : options.showGutter);
 
-			let highlight = window.ace && window.ace.require('ace/ext/static_highlight');
-			highlight(element, {
-				mode: resolveAceMode(aceMode),
-				theme: 'ace/theme/' + aceTheme,
-				startLineNumber: 1,
-				showGutter: showGutter,
-				fadeFoldWidgets: false,
-				showFoldWidgets: false,
-				wrap: true, /* indentedSoftWrap: true does not work in static highlight mode */
-				showPrintMargin: false,
-				maxLines: Infinity,
-				trim: trim
-			}, function () {
-				if(!aceStaticStyle) {
-					aceStaticStyle = document.querySelector('style#ace_highlight');
-					aceStaticStyle.innerHTML = aceStaticStyle.innerHTML.replace(/\bfont-size:[^;]+;/, '');
-				}
-			});
+			let highlight = window.ace && window.ace.require("ace/ext/static_highlight");
+			highlight(
+				element,
+				{
+					mode: resolveAceMode(aceMode),
+					theme: "ace/theme/" + aceTheme,
+					startLineNumber: 1,
+					showGutter: showGutter,
+					fadeFoldWidgets: false,
+					showFoldWidgets: false,
+					wrap: true /* indentedSoftWrap: true does not work in static highlight mode */,
+					showPrintMargin: false,
+					maxLines: Infinity,
+					trim: trim,
+				},
+				function () {
+					if (!aceStaticStyle) {
+						aceStaticStyle = document.querySelector("style#ace_highlight");
+						aceStaticStyle.innerHTML = aceStaticStyle.innerHTML.replace(/\bfont-size:[^;]+;/, "");
+					}
+				},
+			);
 		}
 
 		function destroyEditor(editor, changesSaved) {
-			editor.container.style.transition = '0.4s ease';
-			editor.container.style.opacity = '0';
+			editor.container.style.transition = "0.4s ease";
+			editor.container.style.opacity = "0";
 			setTimeout(function () {
-				if(editor.container.parentNode){
+				if (editor.container.parentNode) {
 					editor.container.parentNode.removeChild(editor.container);
 				}
 				editor.destroy();
 				reveal.aceEditorActive = false;
-				if(changesSaved)
-					editor.originalCodeElement.dispatchEvent(new Event('codeupdated'));
+				if (changesSaved) editor.originalCodeElement.dispatchEvent(new Event("codeupdated"));
 			}, 400);
 		}
 
 		function destroyEditorSavingChanges(editor) {
 			let codeElement = editor.originalCodeElement;
 			codeElement.textContent = editor.getValue();
-			codeElement.setAttribute('data-raw-code', editor.getValue());
+			codeElement.setAttribute("data-raw-code", editor.getValue());
 			doStaticHighlight(codeElement);
 			reveal.layout();
 			destroyEditor(editor, true);
 		}
 
 		function resolveAceMode(modeName) {
-			let modePath = 'ace/mode/' + modeName;
+			let modePath = "ace/mode/" + modeName;
 			try {
 				let ModeModule = window.ace.require(modePath);
 				if (ModeModule && ModeModule.Mode) return new ModeModule.Mode();
-			} catch(e) {}
+			} catch (e) {}
 			return modePath;
 		}
 
 		function attachAce(codeElement, customOptions) {
-			let aceTheme = 'ace/theme/' + (codeElement.hasAttribute('data-theme') ? codeElement.getAttribute('data-theme') : options.theme);
-			let aceModeName = codeElement.hasAttribute('data-language') ? codeElement.getAttribute('data-language') : options.language;
+			let aceTheme =
+				"ace/theme/" +
+				(codeElement.hasAttribute("data-theme") ? codeElement.getAttribute("data-theme") : options.theme);
+			let aceModeName = codeElement.hasAttribute("data-language")
+				? codeElement.getAttribute("data-language")
+				: options.language;
 			let aceMode = resolveAceMode(aceModeName);
-			let trim = options.trim !== undefined ? options.trim : (
-				codeElement.hasAttribute( 'data-trim' ) || options.trim
-			);
-			let dedent = codeElement.hasAttribute( 'data-dedent' ) ||  options.dedent;
+			let trim = options.trim !== undefined ? options.trim : codeElement.hasAttribute("data-trim") || options.trim;
+			let dedent = resolveBoolAttr(codeElement, "data-dedent", options.dedent);
 
-			if(codeElement.dataset.reserveLines){
+			if (codeElement.dataset.reserveLines) {
 				trim = false;
 				let reservedLines = parseInt(codeElement.dataset.reserveLines);
-				let additionalText = '';
-				for(let existingLines = codeElement.textContent.split('\n').length; existingLines < reservedLines; ++existingLines)
-					additionalText += '\n';
+				let additionalText = "";
+				for (
+					let existingLines = codeElement.textContent.split("\n").length;
+					existingLines < reservedLines;
+					++existingLines
+				)
+					additionalText += "\n";
 				codeElement.textContent += additionalText;
 			}
 
-			if(dedent)
-				codeElement.textContent = dedentString(codeElement.textContent);
+			if (dedent) codeElement.textContent = dedentString(codeElement.textContent);
 
-			if(trim) {
+			if (trim) {
 				codeElement.textContent = codeElement.textContent.trim();
 			}
 
-			codeElement.setAttribute('data-raw-code', codeElement.textContent);
+			if (resolveBoolAttr(codeElement, "data-line-anchors", options.lineAnchors)) {
+				const result = extractLineAnchors(codeElement.textContent);
+				codeElement.textContent = result.code;
+				if (result.spec) {
+					let spec = result.spec;
+					if (resolveBoolAttr(codeElement, "data-relative-indexing", options.relativeIndexing)) {
+						// Strip anchor markers so triggers fall into the implicit-ordering
+						// branch (no `data-fragment-index`, sorted by DOM position
+						// alongside other unindexed siblings). New tokens (`!`, `K+`, `K-`)
+						// lose their semantics here — relative-indexing only carries
+						// ordering, not absolute step positions or slide-load state.
+						spec = spec.replace(/@[!\d,\-+.]+/g, "");
+					}
+					codeElement.setAttribute("data-line-numbers", spec);
+				}
+			}
+
+			codeElement.setAttribute("data-raw-code", codeElement.textContent);
 			doStaticHighlight(codeElement, customOptions);
 			setupLineHighlights(codeElement);
 
-			if(codeElement.contentEditable && codeElement.contentEditable !== 'inherit') {
-				codeElement.contentEditable = 'false';
+			if (codeElement.contentEditable && codeElement.contentEditable !== "inherit") {
+				codeElement.contentEditable = "false";
 
 				codeElement.onclick = function (event) {
-					if(options.mouseclickModifierKey && !event[options.mouseclickModifierKey+'Key']) {
+					if (options.mouseclickModifierKey && !event[options.mouseclickModifierKey + "Key"]) {
 						return;
 					}
 					let editor = null;
-					let editorDiv = document.createElement('div');
-					editorDiv.style.position = 'fixed';
-					editorDiv.style.opacity = '0';
+					let editorDiv = document.createElement("div");
+					editorDiv.style.position = "fixed";
+					editorDiv.style.opacity = "0";
 
-					let isFullscreen = codeElement.hasAttribute('data-editor-fullscreen') ||
-						(!codeElement.hasAttribute('data-editor-in-place') && !options.editorInPlace);
+					let isFullscreen =
+						codeElement.hasAttribute("data-editor-fullscreen") ||
+						(!codeElement.hasAttribute("data-editor-in-place") && !options.editorInPlace);
 
 					let codeElementStyle = window.getComputedStyle(codeElement);
 
 					let rect = codeElement.getBoundingClientRect();
 					let padding = {};
-					for(let s of ['left', 'right', 'top', 'bottom'])
-						padding[s] = parseFloat(codeElementStyle.getPropertyValue('padding-'+s))
+					for (let s of ["left", "right", "top", "bottom"])
+						padding[s] = parseFloat(codeElementStyle.getPropertyValue("padding-" + s));
 
 					let scale = reveal.getScale();
 
-					editorDiv.style.height = isFullscreen ? '100%' : (rect.height - padding.top - padding.bottom) + 'px';
-					editorDiv.style.width = isFullscreen ? '100%' : (rect.width - padding.left - padding.right) + 'px';
-					editorDiv.style.top = isFullscreen ? '0px' : (rect.top + padding.top) + 'px';
-					editorDiv.style.left = isFullscreen ? '0px' : (rect.left + padding.left) + 'px';
+					editorDiv.style.height = isFullscreen ? "100%" : rect.height - padding.top - padding.bottom + "px";
+					editorDiv.style.width = isFullscreen ? "100%" : rect.width - padding.left - padding.right + "px";
+					editorDiv.style.top = isFullscreen ? "0px" : rect.top + padding.top + "px";
+					editorDiv.style.left = isFullscreen ? "0px" : rect.left + padding.left + "px";
 					let revealViewport = reveal.getViewportElement();
-					editorDiv.style.zIndex = window.getComputedStyle(revealViewport.querySelector('.controls')).zIndex;
+					editorDiv.style.zIndex = window.getComputedStyle(revealViewport.querySelector(".controls")).zIndex;
 					revealViewport.appendChild(editorDiv);
 
 					editor = window.ace.edit(editorDiv);
 					editor.commands.removeCommands(["gotoline", "find"]);
 					reveal.aceEditorActive = true;
 
-					let sourceCode = codeElement.hasAttribute('data-raw-code') ? codeElement.getAttribute('data-raw-code') : codeElement.textContent;
+					let sourceCode = codeElement.hasAttribute("data-raw-code")
+						? codeElement.getAttribute("data-raw-code")
+						: codeElement.textContent;
 					editor.setValue(sourceCode);
 
 					editor.setOptions({
@@ -435,27 +650,32 @@ const RevealHighlightAce = {
 						// readOnly: true,
 						// highlightActiveLine: false,
 						// highlightGutterLine: false,
-						fontSize: parseFloat(window.getComputedStyle(codeElement).fontSize) * scale || options.fontSize
+						fontSize: parseFloat(window.getComputedStyle(codeElement).fontSize) * scale || options.fontSize,
 					});
-					let fontSize = codeElement['data-ace-font-size'] || options.editorDefaultFontSize;
-					if(fontSize)
-						editor.setOptions({fontSize: fontSize});
+					let fontSize = codeElement["data-ace-font-size"] || options.editorDefaultFontSize;
+					if (fontSize) editor.setOptions({ fontSize: fontSize });
 
 					editor.originalCodeElement = codeElement;
 
 					editor.getSession().setOption("indentedSoftWrap", true);
 
 					editor.focus();
-					if(options.closeEditorOnBlur)
-						editor.on('blur', function(){destroyEditor(editor)});
+					if (options.closeEditorOnBlur)
+						editor.on("blur", function () {
+							destroyEditor(editor);
+						});
 
-					reveal.addEventListener('slidechanged', function(){destroyEditor(editor)});
-					reveal.addEventListener('overviewshown', function(){destroyEditor(editor)});
+					reveal.addEventListener("slidechanged", function () {
+						destroyEditor(editor);
+					});
+					reveal.addEventListener("overviewshown", function () {
+						destroyEditor(editor);
+					});
 					editor.resize();
 					editor.gotoLine(1);
-					editorDiv.style.transition = '0.5s ease';
-					editorDiv.style.opacity = '1';
-				}
+					editorDiv.style.transition = "0.5s ease";
+					editorDiv.style.opacity = "1";
+				};
 			}
 		}
 
@@ -463,11 +683,11 @@ const RevealHighlightAce = {
 
 		function loadScript(url) {
 			return new Promise((resolve) => {
-				let script = document.createElement('script');
-				script.type = 'text/javascript';
+				let script = document.createElement("script");
+				script.type = "text/javascript";
 				script.src = url;
 				script.onload = resolve;
-				document.querySelector('head').appendChild(script);
+				document.querySelector("head").appendChild(script);
 			});
 		}
 
@@ -475,53 +695,49 @@ const RevealHighlightAce = {
 		await loadScript(options.aceMainUrl);
 		await loadScript(options.aceStaticHighlighterUrl);
 
-		window.ace.config.set('basePath', options.aceBasePath);
+		window.ace.config.set("basePath", options.aceBasePath);
 
 		// Register custom modes: each entry can be a URL (string) or a function(ace)
 		for (let mode of options.customModes) {
-			if (typeof mode === 'string') {
+			if (typeof mode === "string") {
 				await loadScript(mode);
-			} else if (typeof mode === 'function') {
+			} else if (typeof mode === "function") {
 				mode(window.ace);
 			}
 		}
 
-		window.ace.require('ace/commands/default_commands').commands.push({
-			name: 'Return to slideshow discarding changes',
-			bindKey: 'Esc',
-			exec: destroyEditor
+		window.ace.require("ace/commands/default_commands").commands.push({
+			name: "Return to slideshow discarding changes",
+			bindKey: "Esc",
+			exec: destroyEditor,
 		});
 
-		window.ace.require('ace/commands/default_commands').commands.push({
-			name: 'Return to slideshow saving changes',
-			bindKey: 'Ctrl+Enter',
-			exec: destroyEditorSavingChanges
+		window.ace.require("ace/commands/default_commands").commands.push({
+			name: "Return to slideshow saving changes",
+			bindKey: "Ctrl+Enter",
+			exec: destroyEditorSavingChanges,
 		});
 
-		for(let node of reveal.getSlidesElement().querySelectorAll(options.selector))
-			attachAce(node);
+		for (let node of reveal.getSlidesElement().querySelectorAll(options.selector)) attachAce(node);
 
-		for(let scriptEl of reveal.getSlidesElement().querySelectorAll('script[data-highlight]')) {
+		for (let scriptEl of reveal.getSlidesElement().querySelectorAll("script[data-highlight]")) {
 			let language = options.language;
-			let type = scriptEl.getAttribute('type') || '';
-			if(type.startsWith('text/'))
-				language = type.substring(5);
+			let type = scriptEl.getAttribute("type") || "";
+			if (type.startsWith("text/")) language = type.substring(5);
 
-			let pre = document.createElement('pre');
-			let code = document.createElement('code');
+			let pre = document.createElement("pre");
+			let code = document.createElement("code");
 
-			for(let attr of scriptEl.attributes) {
-				if(attr.name !== 'type' && attr.name !== 'data-highlight')
-					code.setAttribute(attr.name, attr.value);
+			for (let attr of scriptEl.attributes) {
+				if (attr.name !== "type" && attr.name !== "data-highlight") code.setAttribute(attr.name, attr.value);
 			}
 
-			if(!code.hasAttribute('data-language'))
-				code.setAttribute('data-language', language);
+			if (!code.hasAttribute("data-language")) code.setAttribute("data-language", language);
 
 			code.textContent = scriptEl.textContent;
 			pre.appendChild(code);
 			scriptEl.parentNode.replaceChild(pre, scriptEl);
 			attachAce(code);
 		}
-	}
+	},
 };

@@ -1,0 +1,16 @@
+[
+    { "day": "01", "value": 12 },
+    { "day": "02", "value": 14 },
+    { "day": "03", "value": 13 },
+    { "day": "04", "value": 22 },
+    { "day": "05", "value": 28 },
+    { "day": "06", "value": 31 },
+    { "day": "07", "value": 27 },
+    { "day": "08", "value": 24 },
+    { "day": "09", "value": 18 },
+    { "day": "10", "value": 26 },
+    { "day": "11", "value": 33 },
+    { "day": "12", "value": 38 },
+    { "day": "13", "value": 41 },
+    { "day": "14", "value": 47 }
+]

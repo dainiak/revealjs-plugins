@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>RevealMermaid plugin demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5em;
+                align-items: start;
+            }
+            .reveal .two-col-narrow {
+                display: grid;
+                grid-template-columns: 3fr 2fr;
+                gap: 1.5em;
+                align-items: start;
+            }
+            .reveal .two-col ul,
+            .reveal .two-col-narrow ul {
+                font-size: 0.7em;
+            }
+            .reveal pre {
+                width: 95%;
+                font-size: 0.5em;
+            }
+            .reveal pre code {
+                padding: 0.4em 0.6em;
+            }
+            .reveal .footnote {
+                font-size: 0.55em;
+                opacity: 0.7;
+                margin-top: 0.6em;
+            }
+            .reveal kbd {
+                background: #444;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+
+            /* Slide 13: per-deck recolor demo */
+            section.recolor-demo {
+                --fx-highlight-glow: rgba(0, 200, 130, 0.9);
+                --fx-highlight-width: 4px;
+                --fx-accent-glow: rgba(255, 140, 0, 0.95);
+            }
+            /* Slide 17: per-deck spotlight tweak demo */
+            section.spotlight-demo {
+                --fx-spotlight-glow: rgba(120, 220, 250, 0.95);
+                --fx-spotlight-other-opacity: 0.12;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <!-- ============================================================ -->
+                <section data-menu-title="Title">
+                    <h2>RevealMermaid plugin demo</h2>
+                    <p>Each slide exercises one feature.</p>
+                    <p class="subtitle">
+                        Press <kbd>Space</kbd> / <kbd>→</kbd> to step through fragments. <kbd>Esc</kbd> for slide
+                        overview.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="1. Inline :::fragidx-N">
+                    <h3>1. Inline <code>:::fragidx-N</code> — gradual reveal</h3>
+                    <p class="subtitle">
+                        Nodes appear in stages. Edges auto-propagate to <code>max(srcFragidx, tgtFragidx)</code>.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    U["User: Q1"]:::fragidx-1 --> A[Step A]:::fragidx-1
+                                    A --> B[Step B]:::fragidx-1
+                                    B --> R[Answer]:::fragidx-1
+                                    U2["User: Q2 (follow-up)"]:::fragidx-2 -.->|new call| A
+                                    A -.->|"no memory of Q1"| Lost(("?")):::fragidx-2
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                U[User: Q1]:::fragidx-1 --> A[Step A]:::fragidx-1
+                                A --> B[Step B]:::fragidx-1
+                                B --> R[Answer]:::fragidx-1
+                                U2[Q2 follow-up]:::fragidx-2 -.-> A
+                                A -.-> Lost((?)):::fragidx-2
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="2. Batch class fragidx-N">
+                    <h3>2. Batch via <code>class A,B,C fragidx-N</code></h3>
+                    <p class="subtitle">
+                        Same effect as inline <code>:::</code>, but compact for many nodes at the same step.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart TD
+                                    S([START]) --> N[Reason]
+                                    N -->|tool needed| T[Act]
+                                    T --> O[Observe]
+                                    O --> N
+                                    N -->|done| E([END])
+                                    class S,N fragidx-1
+                                    class T,O fragidx-2
+                                    class E fragidx-3
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart TD
+                                S([START]) --> N[Reason]
+                                N -->|tool needed| T[Act]
+                                T --> O[Observe]
+                                O --> N
+                                N -->|done| E([END])
+                                class S,N fragidx-1
+                                class T,O fragidx-2
+                                class E fragidx-3
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="3. Subgraphs as targets">
+                    <h3>3. Subgraphs as fragment targets</h3>
+                    <p class="subtitle">
+                        Mermaid rejects <code>:::</code> on subgraph lines — use a trailing
+                        <code>class subgraphId fragidx-N</code>.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    subgraph G1["Group 1"]
+                                        A1[A] --> B1[B]
+                                    end
+                                    subgraph G2["Group 2"]
+                                        A2[C] --> B2[D]
+                                    end
+                                    G1 --> G2
+                                    class A1,B1,A2,B2 fragidx-1
+                                    class G1 fragidx-1
+                                    class G2 fragidx-2
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                subgraph G1[Group 1]
+                                    A1[A] --> B1[B]
+                                end
+                                subgraph G2[Group 2]
+                                    A2[C] --> B2[D]
+                                end
+                                G1 --> G2
+                                class A1,B1,A2,B2 fragidx-1
+                                class G1 fragidx-1
+                                class G2 fragidx-2
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="4. Edge resolver cases">
+                    <h3>4. Edge cases the resolver handles</h3>
+                    <p class="subtitle">
+                        Mermaid built-ins (<code>__start__</code>/<code>__end__</code>), underscored IDs, and self-loops
+                        all propagate fragidx correctly.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                graph LR
+                                    __start__([__start__]):::fragidx-1 --> agent[ReAct agent]:::fragidx-1
+                                    agent --> agent
+                                    agent --> tool_node[tool_node]:::fragidx-2
+                                    tool_node --> agent
+                                    agent --> __end__([__end__]):::fragidx-3
+                            </script>
+                        </div>
+                        <ul>
+                            <li class="fragment" data-fragment-index="1">
+                                Step 1 — <code>__start__</code> and <code>agent</code> appear. The arrow between them
+                                follows; the self-loop on <code>agent</code> too.
+                            </li>
+                            <li class="fragment" data-fragment-index="2">
+                                Step 2 — <code>tool_node</code> joins (note the underscored id parses correctly).
+                            </li>
+                            <li class="fragment" data-fragment-index="3">
+                                Step 3 — <code>__end__</code> closes the graph.
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="5. show directive">
+                    <h3>5. <code>%%! show X at N</code> directive</h3>
+                    <p class="subtitle">Equivalent to <code>:::fragidx-N</code>, but reads as narration.</p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    A[Object A] --> B[Object B]
+                                    B --> C[Object C]
+                                    %%! show A at 1
+                                    %%! show B at 2
+                                    %%! show C at 3
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                A[Object A] --> B[Object B]
+                                B --> C[Object C]
+                                %%! show A at 1
+                                %%! show B at 2
+                                %%! show C at 3
+                                %% compiles to:
+                                %%   class A fragidx-1
+                                %%   class B fragidx-2
+                                %%   class C fragidx-3
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="6. highlight (transient)">
+                    <h3>6. <code>%%! highlight X at K</code> — transient by default</h3>
+                    <p class="subtitle">
+                        Diagram is fully visible from slide load. <code>at K</code> with no modifier means "highlighted
+                        only on step K" — a moving spotlight via reveal.js's <code>.current-fragment</code> class. Use
+                        <code>K+</code> for sticky-from, <code>K-</code> for sticky-to, <code>K..M</code> for a range,
+                        <code>start</code> for slide-load. The visual is a soft warm halo (drop-shadow glow) plus a
+                        small stroke-width bump — color-agnostic, so it remains visible regardless of the node's own
+                        fill.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    A[Planner] --> B[Researcher] --> C[Writer] --> D[Reviewer]
+                                    %%! highlight A at 0
+                                    %%! highlight B at 1
+                                    %%! highlight C at 2
+                                    %%! highlight D at 3
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                A[Planner] --> B[Researcher]
+                                B --> C[Writer]
+                                C --> D[Reviewer]
+                                %%! highlight A at 0   %% lit only on first click
+                                %%! highlight B at 1
+                                %%! highlight C at 2
+                                %%! highlight D at 3
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Four highlights, four clicks. No trailing fade-out click — reveal.js's
+                        <code>.current-fragment</code> class drops automatically when the user clicks past, and the next
+                        directive's ON proxy triggers re-evaluation.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="7. highlight on edges">
+                    <h3>7. <code>highlight A->B</code> — edges</h3>
+                    <p class="subtitle">
+                        An edge target highlights both the arrow and its label as a unit. Use <code>(arrow)</code> or
+                        <code>(label)</code> to address them separately.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    Q[query] -->|decompose| P[planner]
+                                    P -->|fan out| R[researcher]
+                                    R -->|aggregate| W[writer]
+                                    %%! highlight Q->P at 1
+                                    %%! highlight P->R(arrow) at 2
+                                    %%! highlight R->W(label) at 3
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                Q[query] -->|decompose| P[planner]
+                                P -->|fan out| R[researcher]
+                                R -->|aggregate| W[writer]
+                                %%! highlight Q->P at 1            %% both arrow + label
+                                %%! highlight P->R(arrow) at 2     %% just the path
+                                %%! highlight R->W(label) at 3     %% just the label
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="8. Multi-edge disambiguation">
+                    <h3>8. Multi-edge disambiguation</h3>
+                    <p class="subtitle">
+                        Two edges between the same pair? Use the source-side arrow form, a label match, or a numeric
+                        index.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    A[input] -->|fast path| B[result]
+                                    A -.->|fallback| B
+                                    %%! highlight A-->B at 1
+                                    %%! highlight A-.->B at 2
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                A[input] -->|fast path| B[result]
+                                A -.->|fallback| B
+                                %%! highlight A-->B at 1   %% solid only
+                                %%! highlight A-.->B at 2  %% dashed only
+
+                                %% also valid:
+                                %%   highlight A-->B[label="fast path"] at 1
+                                %%   highlight A-->B[1] at 2          (numeric index)
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="9. dim and accent">
+                    <h3>9. <code>dim</code> and <code>accent</code></h3>
+                    <p class="subtitle">
+                        <code>dim</code> reduces opacity; <code>accent</code> is a second highlight class with its own
+                        colour. Useful when contrasting two things on the same diagram at once.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart TD
+                                    O[Orchestrator] --> R[Research]
+                                    O --> W[Writing]
+                                    R --> Out[Result]
+                                    W --> Out
+                                    %%! highlight R at 1
+                                    %%! dim W at 1
+                                    %%! highlight W at 2
+                                    %%! dim R at 2
+                                    %%! accent Out at 3
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart TD
+                                O[Orchestrator] --> R[Research]
+                                O --> W[Writing]
+                                R --> Out[Result]
+                                W --> Out
+                                %%! highlight R at 1
+                                %%! dim       W at 1
+                                %%! highlight W at 2
+                                %%! dim       R at 2
+                                %%! accent    Out at 3
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="10. Range modifiers (K, K+, K-, K..M)">
+                    <h3>10. Range modifiers — <code>K</code>, <code>K+</code>, <code>K-</code>, <code>K..M</code></h3>
+                    <p class="subtitle">
+                        Four ways to specify when a highlight is active. The table on the right shows what's lit at each
+                        step — fragments reveal row-by-row as you click.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    A[A] --> B[B] --> C[C] --> D[D]
+                                    %%! highlight A at 2
+                                    %%! highlight B at 2+
+                                    %%! highlight C at 1..3
+                                    %%! highlight D at 3-
+                            </script>
+                        </div>
+                        <table style="font-size: 0.55em; border-collapse: collapse; width: 100%; text-align: center">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #555">
+                                    <th style="text-align: left">step</th>
+                                    <th><code>A: at 2</code></th>
+                                    <th><code>B: at 2+</code></th>
+                                    <th><code>C: at 1..3</code></th>
+                                    <th><code>D: at 3-</code></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td style="text-align: left">load</td><td></td><td></td><td></td><td>●</td></tr>
+                                <tr class="fragment" data-fragment-index="1">
+                                    <td style="text-align: left">1</td><td></td><td></td><td>●</td><td>●</td>
+                                </tr>
+                                <tr class="fragment" data-fragment-index="2">
+                                    <td style="text-align: left">2</td><td>●</td><td>●</td><td>●</td><td>●</td>
+                                </tr>
+                                <tr class="fragment" data-fragment-index="3">
+                                    <td style="text-align: left">3</td><td></td><td>●</td><td>●</td><td>●</td>
+                                </tr>
+                                <tr class="fragment" data-fragment-index="4">
+                                    <td style="text-align: left">4</td><td></td><td>●</td><td></td><td> 
+                                </td></tr>
+                                <tr class="fragment" data-fragment-index="5">
+                                    <td style="text-align: left">5</td><td></td><td>●</td><td></td><td> 
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="footnote">
+                        <code>at K</code> — lit only at step K (transient, the new default). <code>at K+</code> — sticky
+                        from K onward. <code>at K-</code> — on at slide load, fades after K. <code>at K..M</code> —
+                        range, inclusive both ends.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="11. Co-fire with bullets">
+                    <h3>11. Co-firing with bullets — same <code>data-fragment-index</code></h3>
+                    <p class="subtitle">
+                        A directive at step <code>N</code> is a real reveal.js fragment, so it fires together with any
+                        bullet whose <code>data-fragment-index</code> is also <code>N</code>.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart TD
+                                    U[User] --> Reason[Reason about request]
+                                    Reason --> Tool[Call tool]
+                                    Tool --> Observe[Observe result]
+                                    Observe --> Answer[Answer]
+                                    %%! show Reason at 1
+                                    %%! show Tool at 2
+                                    %%! show Observe at 3
+                                    %%! show Answer at 4
+                            </script>
+                        </div>
+                        <ul>
+                            <li class="fragment" data-fragment-index="1">
+                                The agent <strong>reasons</strong> about what to do.
+                            </li>
+                            <li class="fragment" data-fragment-index="2">
+                                It picks a <strong>tool</strong> and calls it.
+                            </li>
+                            <li class="fragment" data-fragment-index="3">
+                                It <strong>observes</strong> the tool's output.
+                            </li>
+                            <li class="fragment" data-fragment-index="4">
+                                It produces the final <strong>answer</strong>.
+                            </li>
+                        </ul>
+                    </div>
+                    <p class="footnote">
+                        Each click reveals one node and one bullet together — they're both fragments at indices 1, 2, 3,
+                        4.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="12. Co-fire with code highlights">
+                    <h3>12. Co-firing with code — diagram + <code>highlight-ace</code></h3>
+                    <p class="subtitle">
+                        Mermaid directives and <code>data-line-anchors</code> share the same
+                        <code>data-fragment-index</code> space, so a node-highlight and a code-line highlight at step
+                        <code>3</code> fire on the same click.
+                    </p>
+                    <div class="two-col-narrow">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart TD
+                                    G[StateGraph] --> AC[add_node]
+                                    AC --> AE[add_edge]
+                                    AE --> CE[add_conditional_edges]
+                                    CE --> CO[compile]
+                                    %%! highlight AC at 1
+                                    %%! highlight AE at 2
+                                    %%! highlight CE at 3
+                                    %%! highlight CO at 4
+                            </script>
+                        </div>
+                        <script data-highlight type="text/python" data-line-anchors>
+                            graph = StateGraph(MessagesState)              # @0
+                            graph.add_node("agent", call_model)            # @1
+                            graph.add_node("tools", tool_node)             # @1
+                            graph.add_edge(START, "agent")                 # @2
+                            graph.add_conditional_edges(                   # @3
+                                "agent", should_continue,                  # @3
+                                {"tools": "tools", END: END}               # @3
+                            )                                              # @3
+                            app = graph.compile()                          # @4
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section class="recolor-demo" data-menu-title="13. Per-deck recolor (CSS vars)">
+                    <h3>13. Recolor per deck via CSS variables</h3>
+                    <p class="subtitle">
+                        This <code>&lt;section&gt;</code> overrides <code>--fx-highlight-glow</code> (green) and
+                        <code>--fx-accent-glow</code> (orange). The plugin's defaults defer to those variables, so the
+                        same directives produce different halo colours per deck.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    A[A] --> B[B] --> C[C]
+                                    %%! highlight A at 1
+                                    %%! highlight B at 2
+                                    %%! accent C at 3
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            section.recolor-demo {
+                                --fx-highlight-glow: rgba(0, 200, 130, 0.9);
+                                --fx-highlight-width: 4px;
+                                --fx-accent-glow:    rgba(255, 140, 0, 0.95);
+                            }
+
+                            %% inside the diagram:
+                            %%! highlight A at 1
+                            %%! highlight B at 2
+                            %%! accent    C at 3
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="14. Synthesis (show + highlight + dim)">
+                    <h3>14. Synthesis — narration with show + highlight + dim</h3>
+                    <p class="subtitle">
+                        Reveal nodes one by one, then call attention back to specific elements. The directive form reads
+                        almost word-for-word as the spoken narration.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart TD
+                                    User[User] --> Plan[Plan]
+                                    Plan --> Search[Search the web]
+                                    Search --> Score[Score sources]
+                                    Score --> Draft[Draft summary]
+                                    Draft --> Review[Review]
+                                    Review --> Final[Final answer]
+                                    %%! show User,Plan at 1
+                                    %%! show Search at 2
+                                    %%! show Score at 3
+                                    %%! show Draft at 4
+                                    %%! show Review,Final at 5
+                                    %%! highlight Score at 6+
+                                    %%! dim User,Plan,Search,Draft,Final at 6+
+                                    %%! highlight Review at 7+
+                            </script>
+                        </div>
+                        <ul>
+                            <li class="fragment" data-fragment-index="1">User asks a question; we plan.</li>
+                            <li class="fragment" data-fragment-index="2">We search the web.</li>
+                            <li class="fragment" data-fragment-index="3">We score sources for trust.</li>
+                            <li class="fragment" data-fragment-index="4">We draft a summary.</li>
+                            <li class="fragment" data-fragment-index="5">We review and produce a final answer.</li>
+                            <li class="fragment" data-fragment-index="6">
+                                The <strong>scoring</strong> step is what protects us from low-quality sources.
+                            </li>
+                            <li class="fragment" data-fragment-index="7">
+                                The <strong>review</strong> step is the second line of defence.
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="15. Mindmap directives">
+                    <h3>15. Mindmap — directives by source label</h3>
+                    <p class="subtitle">
+                        Mindmap nodes have no source-level identifier in the SVG (mermaid emits opaque
+                        <code>node_0</code>, <code>node_1</code>…). Directives address them by the source token or the
+                        camelCased label; edges between named nodes (<code>Frontend-&gt;React</code>) work too.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                mindmap
+                                  root((Software))
+                                    Frontend
+                                      React
+                                      Vue
+                                      Svelte
+                                    Backend
+                                      Python
+                                        Django
+                                        Flask
+                                      Go
+                                      Rust
+                                    Data
+                                      SQL
+                                      NoSQL
+                                %%! show Frontend at 1
+                                %%! show Backend at 2
+                                %%! show Data at 3
+                                %%! highlight Python at 4
+                                %%! accent Frontend->React at 5
+                                %%! highlight Data->NoSQL at 6
+                                %%! dim Data at 7+
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            mindmap
+                              root((Software))
+                                Frontend
+                                  React
+                                  Vue
+                                Backend
+                                  Python
+                                    Django
+                                    Flask
+                                  Go
+                                Data
+                                  SQL
+                                  NoSQL
+                            %%! show Frontend at 1
+                            %%! show Backend  at 2
+                            %%! show Data     at 3
+                            %%! highlight Python at 4
+                            %%! accent    Frontend->React at 5
+                            %%! highlight Data->NoSQL at 6
+                            %%! dim       Data at 7+
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Auto-edge-fragidx still applies: when <code>Frontend</code> appears at step 1, its incident
+                        edges (root→Frontend, Frontend→React, …) appear at step 1 too — without any edge directives.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="16. Timeline structural targets">
+                    <h3>16. Timeline — structural targets</h3>
+                    <p class="subtitle">
+                        Timeline SVGs have <em>no</em> source identifiers at all, so directives use synthetic structural
+                        targets — <code>section:N</code> / <code>s:N</code>, <code>period:N</code> / <code>p:N</code>,
+                        <code>event:N</code> / <code>e:N</code> — with optional slug forms
+                        (<code>section:MainframeEra</code>, <code>event:VacuumTubes</code>).
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                timeline
+                                    title History of Computing
+                                    section Mainframe Era
+                                        1950 : First computers
+                                             : Vacuum tubes
+                                        1960 : Transistors
+                                    section Personal Era
+                                        1977 : Apple II
+                                        1981 : IBM PC
+                                             : MS-DOS
+                                    section Internet Era
+                                        1991 : World Wide Web
+                                        2007 : iPhone
+                                %%! show section:1 at 1
+                                %%! show s:2 at 2
+                                %%! show section:InternetEra at 3
+                                %%! highlight period:1950 at 4
+                                %%! dim event:VacuumTubes at 5
+                                %%! accent p:5 at 6+
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            timeline
+                                section Mainframe Era
+                                    1950 : First computers
+                                         : Vacuum tubes
+                                    1960 : Transistors
+                                section Personal Era
+                                    1977 : Apple II
+                                    1981 : IBM PC : MS-DOS
+                                section Internet Era
+                                    1991 : World Wide Web
+                                    2007 : iPhone
+                            %%! show section:1 at 1
+                            %%! show s:2 at 2
+                            %%! show section:InternetEra at 3
+                            %%! highlight period:1950 at 4
+                            %%! dim       event:VacuumTubes at 5
+                            %%! accent    p:5 at 6+
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        <code>show</code> on a section pulls in all its periods + connecting lines + events — the entire
+                        column appears at once. <code>show</code> on a period pulls in its events. The fx verbs
+                        (<code>highlight</code>/<code>dim</code>/<code>accent</code>) are intentionally narrow: they
+                        touch only the named element.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="17. Gantt directives">
+                    <h3>17. Gantt — task ids, sections, milestones</h3>
+                    <p class="subtitle">
+                        Gantt tasks expose source-level ids (<code>a1</code>, <code>m1</code>) on their rect, so
+                        directives address them directly. <code>task:N</code> indexes by source order;
+                        <code>section:N</code> cascades to all tasks in the section for <code>show</code> /
+                        <code>fragment</code>; <code>milestone:N</code> selects only milestone tasks.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                gantt
+                                    title Project Plan
+                                    dateFormat YYYY-MM-DD
+                                    section Phase 1
+                                        Design  : a1, 2024-01-01, 5d
+                                        Build   : a2, after a1, 3d
+                                    section Phase 2
+                                        Test    : c1, 2024-01-10, 4d
+                                        Release : milestone, m1, 2024-01-15, 0d
+                                        Docs    : c2, after c1, 5d
+                                    %%! show a1 at 1
+                                    %%! show task:2 at 2
+                                    %%! show section:2 at 3
+                                    %%! highlight milestone:1 at 4
+                                    %%! dim a1,a2 at 4+
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            gantt
+                                title Project Plan
+                                dateFormat YYYY-MM-DD
+                                section Phase 1
+                                    Design  : a1, 2024-01-01, 5d
+                                    Build   : a2, after a1, 3d
+                                section Phase 2
+                                    Test    : c1, 2024-01-10, 4d
+                                    Release : milestone, m1, 2024-01-15, 0d
+                                    Docs    : c2, after c1, 5d
+                            %%! show a1 at 1                  %% by source id
+                            %%! show task:2 at 2              %% by index
+                            %%! show section:2 at 3           %% cascade — section + tasks + labels
+                            %%! highlight milestone:1 at 4
+                            %%! dim a1,a2 at 4+               %% Phase 1 fades into background
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Section <code>show</code> pulls in section bars + tasks + task labels — one click reveals the
+                        whole column. The fx verbs (<code>highlight</code>/<code>dim</code>/<code>accent</code>) act
+                        only on the named element, never on descendants.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="18. Sankey directives">
+                    <h3>18. Sankey — bare node names + flow indices</h3>
+                    <p class="subtitle">
+                        Sankey nodes have no source-level ids in the SVG (mermaid emits opaque
+                        <code>node-1</code>, <code>node-2</code>…). Directives address nodes by their source name
+                        directly; flows by index (<code>flow:N</code>) or by edge atom (<code>Source-&gt;Target</code>).
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                sankey-beta
+                                Coal,Electricity,40
+                                Gas,Electricity,30
+                                Solar,Electricity,10
+                                Electricity,Industry,35
+                                Electricity,Homes,25
+                                Electricity,Cars,20
+                                %%! show Coal at 1
+                                %%! show Gas at 1
+                                %%! show Solar at 1
+                                %%! show Electricity at 2
+                                %%! fragment flow:1 at 2
+                                %%! fragment flow:2 at 2
+                                %%! fragment flow:3 at 2
+                                %%! show Industry,Homes,Cars at 3
+                                %%! fragment flow:4 at 3
+                                %%! fragment flow:5 at 3
+                                %%! fragment flow:6 at 3
+                                %%! highlight Electricity->Industry at 4
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            sankey-beta
+                            Coal,Electricity,40
+                            Gas,Electricity,30
+                            Solar,Electricity,10
+                            Electricity,Industry,35
+                            Electricity,Homes,25
+                            Electricity,Cars,20
+
+                            %%! show Coal,Gas,Solar at 1
+                            %%! show Electricity at 2
+                            %%! fragment flow:1,flow:2,flow:3 at 2
+                            %%! show Industry,Homes,Cars at 3
+                            %%! fragment flow:4,flow:5,flow:6 at 3
+                            %%! highlight Electricity->Industry at 4
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Sankey edges (<code>g.link</code>) have no auto-fragidx-propagation in this iteration — pair
+                        each <code>show NodeName</code> with explicit <code>fragment flow:N</code>s for the incoming /
+                        outgoing flows you want to appear at the same step.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="19. GitGraph directives">
+                    <h3>19. GitGraph — commits, branches, tags</h3>
+                    <p class="subtitle">
+                        Commits are addressed by index (<code>commit:N</code>) or by the user-given id
+                        (<code>commit:init</code>). Merges are commits too: <code>merge:N</code> selects only the Nth
+                        merge. Branches index from 1 (the implicit <code>main</code> is <code>branch:1</code>); tags
+                        accept the tag name directly.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                gitGraph
+                                    commit id: "init"
+                                    commit id: "v1"
+                                    branch develop
+                                    checkout develop
+                                    commit id: "feat-a"
+                                    commit id: "feat-b"
+                                    checkout main
+                                    merge develop
+                                    commit id: "v2" tag: "v2.0"
+                                    %%! show commit:init at 1
+                                    %%! show commit:v1 at 2
+                                    %%! show branch:develop at 3
+                                    %%! show commit:feat-a at 3
+                                    %%! show commit:feat-b at 4
+                                    %%! show merge:1 at 5
+                                    %%! show commit:v2 at 6
+                                    %%! highlight tag:v2.0 at 7
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            gitGraph
+                                commit id: "init"
+                                commit id: "v1"
+                                branch develop
+                                checkout develop
+                                commit id: "feat-a"
+                                commit id: "feat-b"
+                                checkout main
+                                merge develop
+                                commit id: "v2" tag: "v2.0"
+                            %%! show commit:init at 1
+                            %%! show commit:v1 at 2
+                            %%! show branch:develop at 3
+                            %%! show commit:feat-a at 3
+                            %%! show commit:feat-b at 4
+                            %%! show merge:1 at 5      %% only merge on this graph
+                            %%! show commit:v2 at 6
+                            %%! highlight tag:v2.0 at 7
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Each <code>commit:N</code> resolves to the outer circle + (for merges) the inner
+                        <code>commit-merge</code> circle + the matching <code>commit-label</code> rect/text — the whole
+                        conceptual unit animates together. Connector arrows are addressable as <code>arrow:N</code> when
+                        you need them on a different step than their endpoints.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="20. spotlight (inverted dim)">
+                    <h3>20. <code>%%! spotlight X at K</code> — inverted-dim model</h3>
+                    <p class="subtitle">
+                        <code>spotlight</code> is the strongest emphasis verb. The target gets an amber halo;
+                        <em>every other</em> first-class graphic in the same SVG fades to ~18% opacity via a
+                        <code>:has()</code>-driven CSS rule. Per-SVG scoped — multi-diagram slides aren't affected by
+                        each other.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    Q[query] --> P[planner]
+                                    P --> R[researcher]
+                                    P --> W[writer]
+                                    R --> A[answer]
+                                    W --> A
+                                    %%! spotlight P at 1
+                                    %%! spotlight R at 2
+                                    %%! spotlight W at 3
+                                    %%! spotlight A at 4
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                Q[query] --> P[planner]
+                                P --> R[researcher]
+                                P --> W[writer]
+                                R --> A[answer]
+                                W --> A
+                                %%! spotlight P at 1   %% planner pops, rest fades
+                                %%! spotlight R at 2   %% researcher pops
+                                %%! spotlight W at 3
+                                %%! spotlight A at 4
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Use sparingly — at most once or twice per deck. Overuse defeats the contrast (when everything is
+                        spotlit, nothing is). For an everyday "look here" cue, <code>highlight</code> is calmer.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section class="spotlight-demo" data-menu-title="21. spotlight (recolored)">
+                    <h3>21. Recoloured spotlight via CSS variables</h3>
+                    <p class="subtitle">
+                        Same as the previous slide, but this <code>&lt;section&gt;</code> overrides
+                        <code>--fx-spotlight-glow</code> (cyan halo) and <code>--fx-spotlight-other-opacity</code> (dim
+                        more aggressively to 12%).
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart TD
+                                    O[Orchestrator] --> R[Research]
+                                    O --> W[Writing]
+                                    R --> Out[Result]
+                                    W --> Out
+                                    %%! spotlight R at 1
+                                    %%! spotlight W at 2
+                                    %%! spotlight Out at 3+
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            section.spotlight-demo {
+                                --fx-spotlight-glow:          rgba(120, 220, 250, 0.95);
+                                --fx-spotlight-other-opacity: 0.12;
+                            }
+
+                            %% inside the diagram:
+                            %%! spotlight R   at 1
+                            %%! spotlight W   at 2
+                            %%! spotlight Out at 3+
+                        </script>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="Out of scope">
+                    <h3>What we did not show</h3>
+                    <ul>
+                        <li>
+                            <code>%%%</code> rules — the lower-level escape hatch for SVG-selector-based class
+                            assignment, attribute setting, and wrapper injection. Useful when mermaid syntax can't reach
+                            (e.g., sequence diagrams, attribute manipulation).
+                        </li>
+                        <li>
+                            Math in node labels — write <code>\(...\)</code> or <code>\[...\]</code> inside any label
+                            and KaTeX renders it.
+                        </li>
+                        <li>
+                            The verifier —
+                            <code>node .claude/scripts/verify-mermaid-rules.js &lt;file&gt; --index=N</code> validates
+                            fragidx propagation and flags would-be dangling arcs.
+                        </li>
+                    </ul>
+                    <p class="subtitle">
+                        See <code>reveal-custom/plugins/mermaid-directives.md</code> for the full grammar.
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/fragment-index.js"></script>
+        <script src="../reveal-custom/plugins/mermaid.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: { theme: "monokai", language: "python", showGutter: false },
+                plugins: [RevealFragmentIndex, RevealMermaid, RevealHighlightAce, RevealMenu],
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

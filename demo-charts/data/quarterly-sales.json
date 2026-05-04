@@ -1,0 +1,10 @@
+[
+    { "quarter": "Q1 2023", "revenue": 142 },
+    { "quarter": "Q2 2023", "revenue": 168 },
+    { "quarter": "Q3 2023", "revenue": 155 },
+    { "quarter": "Q4 2023", "revenue": 192 },
+    { "quarter": "Q1 2024", "revenue": 178 },
+    { "quarter": "Q2 2024", "revenue": 215 },
+    { "quarter": "Q3 2024", "revenue": 198 },
+    { "quarter": "Q4 2024", "revenue": 247 }
+]

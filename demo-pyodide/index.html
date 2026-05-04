@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>RevealPyodide plugin demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal pre {
+                width: 95%;
+                font-size: 0.55em;
+            }
+            .reveal kbd {
+                background: #444;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+            .reveal .footnote {
+                font-size: 0.55em;
+                opacity: 0.7;
+                margin-top: 0.6em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section data-menu-title="Title">
+                    <h2>RevealPyodide plugin demo</h2>
+                    <p>In-browser Python execution &mdash; live editable code blocks on the slides.</p>
+                    <p class="subtitle">
+                        Powered by <a href="https://pyodide.org/">Pyodide</a> running in a Web Worker, with editing
+                        provided by <a href="https://ace.c9.io/">Ace</a> through the
+                        <code>highlight-ace</code> plugin.
+                    </p>
+                </section>
+
+                <section data-menu-title="1. Editable code">
+                    <h3>1. Editable code block</h3>
+                    <p class="subtitle">
+                        Click the code below to enter edit mode. Press <kbd>Esc</kbd> to exit without saving, or
+                        <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to commit your edits.
+                    </p>
+                    <pre><code
+                        data-inner-text="code/example.py"
+                        data-language="python"
+                        contenteditable="true"
+                        data-editor-in-place></code></pre>
+                </section>
+
+                <section data-menu-title="2. Run with deck">
+                    <h3>2. Auto-run on deck load</h3>
+                    <p class="subtitle">
+                        <code>data-run-with-deck</code> runs the block once when the slideshow finishes initializing.
+                        <code>data-output-as-fragment</code> reveals the output on the next click.
+                        <code>data-run-on-edit</code> re-runs on every edit.
+                    </p>
+                    <pre><code
+                        data-inner-text="code/example-autorun.py"
+                        data-language="python"
+                        data-run-with-deck
+                        data-run-on-edit
+                        data-output-as-fragment
+                        contenteditable="true"
+                        data-editor-in-place></code></pre>
+                </section>
+
+                <section data-menu-title="3. Output to another slide">
+                    <h3>3. Send stdout to a target on another slide</h3>
+                    <p class="subtitle">
+                        <code>data-stdout="#someId"</code> writes stdout into a specific element &mdash; here a
+                        <code>&lt;code&gt;</code> on the next slide. Useful for "show the error" / "show the result"
+                        layouts.
+                    </p>
+                    <pre><code
+                        data-stdout="#errOut"
+                        data-language="python"
+                        data-run-on-edit
+                        data-run-with-deck
+                        contenteditable="true"
+                        data-editor-in-place
+                        data-trim>
+# We have an error here:
+for i in range(5, -1, -1):
+    print(1.0 / i)
+</code></pre>
+                    <p>The output / traceback appears on the next slide.</p>
+                </section>
+
+                <section data-menu-title="3b. Output target">
+                    <h3>Output of the previous slide</h3>
+                    <pre><code id="errOut" data-language="text"></code></pre>
+                </section>
+
+                <section data-menu-title="4. Mini playground">
+                    <h3>4. A small playground</h3>
+                    <p class="subtitle">
+                        Edit the snippet, press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> &mdash; the result re-renders inline.
+                    </p>
+                    <pre><code
+                        data-language="python"
+                        data-run-on-edit
+                        data-run-with-deck
+                        data-output-as-fragment
+                        contenteditable="true"
+                        data-editor-in-place
+                        data-trim>
+import math
+print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
+</code></pre>
+                </section>
+
+                <section data-menu-title="Cheatsheet">
+                    <h3>Cheatsheet</h3>
+                    <div style="font-size: 0.7em; text-align: left; max-width: 90%; margin: 0 auto">
+                        <p><strong>Plugin scripts:</strong></p>
+                        <ul>
+                            <li><code>highlight-ace.js</code> &mdash; highlighting + editor</li>
+                            <li><code>pyodide.js</code> &mdash; Python execution</li>
+                        </ul>
+                        <p><strong>Per-block attributes</strong> (on <code>&lt;code&gt;</code>):</p>
+                        <ul>
+                            <li><code>data-language="python"</code> &mdash; required for the worker to pick it up</li>
+                            <li><code>data-run-with-deck</code> &mdash; run once on deck-ready</li>
+                            <li><code>data-run-with-slide</code> &mdash; run on every entry to the slide</li>
+                            <li><code>data-run-on-edit</code> &mdash; re-run on each edit commit</li>
+                            <li><code>data-output-as-fragment</code> &mdash; output appears as a reveal fragment</li>
+                            <li><code>data-stdout="#sel"</code> &mdash; route output into a specific element</li>
+                            <li><code>contenteditable="true"</code> &mdash; let the user edit</li>
+                            <li><code>data-editor-in-place</code> &mdash; overlay the editor instead of full-screen</li>
+                        </ul>
+                        <p><strong>Configuration:</strong></p>
+                        <pre><code data-language="javascript" data-trim>
+Reveal.initialize({
+    pyodide: {
+        // preloadPackages: ['numpy', 'pandas'],
+    },
+});
+                        </code></pre>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/content-loader.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/pyodide.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: {
+                    theme: "monokai",
+                    language: "python",
+                    showGutter: true,
+                    editorInPlace: true,
+                },
+                plugins: [RevealContentLoader, RevealHighlightAce, RevealPyodide, RevealMenu],
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

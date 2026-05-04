@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>RevealContentLoader plugin demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5em;
+                align-items: start;
+            }
+            .reveal pre {
+                width: 95%;
+                font-size: 0.5em;
+            }
+            .reveal .footnote {
+                font-size: 0.55em;
+                opacity: 0.7;
+                margin-top: 0.6em;
+            }
+            .reveal kbd {
+                background: #444;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+            .reveal .swatch {
+                background-color: #2aa198;
+                color: #1c1e20;
+                padding: 0.4em 0.6em;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section data-menu-title="Title">
+                    <h2>RevealContentLoader plugin demo</h2>
+                    <p>Load HTML, text, PDFs, and SVGs from external files into slide containers.</p>
+                    <p class="subtitle">
+                        Press <kbd>Space</kbd> / <kbd>&rarr;</kbd> to step through fragments.
+                    </p>
+                </section>
+
+                <section data-menu-title="1. data-inner-text">
+                    <h3>1. <code>data-inner-text</code> &mdash; load as plain text</h3>
+                    <p class="subtitle">The container's <em>inner</em> content is replaced with the text from the file.</p>
+                    <div class="two-col">
+                        <div class="swatch" data-inner-text="external/external-example.txt">
+                            (Placeholder &mdash; this is replaced at load time.)
+                        </div>
+                        <script data-highlight type="text/html" data-dedent>
+                            <div data-inner-text="external/external-example.txt">
+                                (Placeholder, replaced at load.)
+                            </div>
+                        </script>
+                    </div>
+                </section>
+
+                <section data-menu-title="2. data-outer-text">
+                    <h3>2. <code>data-outer-text</code> &mdash; replace the element itself</h3>
+                    <p class="subtitle">
+                        The container element is itself replaced by a text node. Useful when you need the parent's flow
+                        to absorb the value with no wrapper.
+                    </p>
+                    <div class="two-col">
+                        <div class="swatch" data-outer-text="external/external-example.txt">
+                            (Placeholder &mdash; this whole element is replaced.)
+                        </div>
+                        <script data-highlight type="text/html" data-dedent>
+                            <div data-outer-text="external/external-example.txt">
+                                (Placeholder.)
+                            </div>
+                        </script>
+                    </div>
+                </section>
+
+                <section data-menu-title="3. data-inner-html">
+                    <h3>3. <code>data-inner-html</code> &mdash; load HTML into the container</h3>
+                    <p class="subtitle">Same as <code>data-inner-text</code>, but the file content is parsed as HTML.</p>
+                    <div class="two-col">
+                        <div class="swatch" data-inner-html="external/external-example.txt">
+                            (Placeholder.)
+                        </div>
+                        <script data-highlight type="text/html" data-dedent>
+                            <div data-inner-html="external/external-example.txt">
+                                (Placeholder.)
+                            </div>
+                        </script>
+                    </div>
+                </section>
+
+                <section data-menu-title="4. data-outer-html">
+                    <h3>4. <code>data-outer-html</code> &mdash; replace element with parsed HTML</h3>
+                    <p class="subtitle">
+                        The container is replaced by the loaded fragment. Inline styles can be inherited from the
+                        original container if you wish.
+                    </p>
+                    <div class="two-col">
+                        <div class="swatch" data-outer-html="external/external-example.txt">
+                            (Placeholder &mdash; replaced wholesale.)
+                        </div>
+                        <script data-highlight type="text/html" data-dedent>
+                            <div data-outer-html="external/external-example.txt">
+                                (Placeholder.)
+                            </div>
+                        </script>
+                    </div>
+                </section>
+
+                <section data-menu-title="5. Inline JS generator">
+                    <h3>5. Inline JS content generator</h3>
+                    <p class="subtitle">
+                        A JS function inside an HTML comment generates the content. The function may return text, an
+                        HTML string, a DOM node, or an array of DOM nodes.
+                    </p>
+                    <div data-inner-html><!--
+                        function(e) {
+                            return "<span onclick=\"alert('clicked!')\">"
+                                + [1,2,3,4,5,6,7,8,9].join('</span>+<span onclick=\"alert()\">')
+                                + "</span>=<span>" + 10*9/2 + "</span>"
+                        }
+                    --></div>
+                    <p class="footnote">Click any digit above &mdash; each <code>&lt;span&gt;</code> has its own handler.</p>
+                </section>
+
+                <section data-menu-title="6. Custom action: auto-fragmentize">
+                    <h3>6. Custom action &mdash; <code>.auto-fragmentize</code></h3>
+                    <p class="subtitle">
+                        The plugin runs registered <code>actions</code> on matched selectors. The
+                        <code>auto-fragmentize</code> action below adds <code>class="fragment"</code> to every child of a
+                        matched element.
+                    </p>
+                    <div class="two-col">
+                        <ul class="auto-fragmentize">
+                            <li>One</li>
+                            <li>Two</li>
+                            <li>Three</li>
+                            <li>Four</li>
+                        </ul>
+                        <script data-highlight type="text/javascript" data-dedent>
+                            contentLoader: {
+                                actions: [{
+                                    selector: '.auto-fragmentize',
+                                    init: e => e.childNodes.forEach(
+                                        c => c.classList && c.classList.add('fragment')
+                                    )
+                                }]
+                            }
+                        </script>
+                    </div>
+                </section>
+
+                <section data-menu-title="7. PDF: single page">
+                    <h3>7. PDF embedding &mdash; single page</h3>
+                    <p class="subtitle">
+                        Drop a <code>&lt;canvas data-pdf="file.pdf"&gt;</code> on the slide. PDF.js renders the first
+                        page into the canvas.
+                    </p>
+                    <canvas
+                        class="r-stretch"
+                        data-pdf="img/pdf-example.pdf"
+                        width="600"
+                        height="400"
+                    ></canvas>
+                </section>
+
+                <section data-menu-title="8. PDF: multi-page scroll">
+                    <h3>8. PDF embedding &mdash; multiple pages, scrollable</h3>
+                    <p class="subtitle">
+                        <code>data-pages="1,3;5-7"</code> selects pages by number and range. Stacked vertically inside a
+                        scrollable container.
+                    </p>
+                    <canvas
+                        class="r-stretch"
+                        style="height: 1000px; width: 600px"
+                        data-pdf="img/pdf-example.pdf"
+                        data-pages="1,3;5-7"
+                        width="600"
+                        height="400"
+                    ></canvas>
+                </section>
+
+                <section data-menu-title="9. PDF: pages as fragments">
+                    <h3>9. PDF embedding &mdash; pages as reveal fragments</h3>
+                    <p class="subtitle">
+                        Same selection but the pages animate one-by-one as fragments. <code>r-stack</code> stacks them in
+                        the same place; <code>auto-fragmentize</code> tags every page as a fragment.
+                    </p>
+                    <canvas
+                        class="r-stretch auto-fragmentize r-stack"
+                        style="height: 1000px; width: 600px"
+                        data-pdf="img/pdf-example.pdf"
+                        data-pages="1,3;5-7"
+                        width="600"
+                        height="400"
+                    ></canvas>
+                </section>
+
+                <section data-menu-title="Cheatsheet">
+                    <h3>Cheatsheet &mdash; one attribute at a time</h3>
+                    <div style="font-size: 0.7em; text-align: left; max-width: 90%; margin: 0 auto">
+                        <p><strong>External-content attributes</strong> (use exactly one per element):</p>
+                        <ul>
+                            <li><code>data-inner-text="path"</code> &mdash; replace inner content with text</li>
+                            <li><code>data-outer-text="path"</code> &mdash; replace element with a text node</li>
+                            <li><code>data-inner-html="path"</code> &mdash; replace inner content with parsed HTML</li>
+                            <li><code>data-outer-html="path"</code> &mdash; replace element with parsed HTML</li>
+                            <li><code>data-pdf="file.pdf" data-pages="1,3;5-7"</code> &mdash; embed PDF pages</li>
+                        </ul>
+                        <p><strong>Path with selector:</strong> <code>file.html#cssSelector</code> &mdash; only the matched fragment is loaded.</p>
+                        <p><strong>Inline JS generator:</strong> wrap a function expression in an HTML comment <em>inside</em> a <code>data-inner-html</code> / <code>data-outer-html</code> element with no path attribute value.</p>
+                        <p>
+                            <strong>Custom actions:</strong> register <code>{selector, init}</code> objects under
+                            <code>contentLoader.actions</code> in <code>Reveal.initialize()</code>; <code>init</code> runs on every matching element after content is in place.
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/content-loader.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: { theme: "monokai", showGutter: false },
+                plugins: [RevealContentLoader, RevealHighlightAce, RevealMenu],
+                contentLoader: {
+                    pdf: { enabled: true, preload: true },
+                    actions: [
+                        {
+                            selector: ".auto-fragmentize",
+                            init: (e) =>
+                                e.childNodes.forEach((c) => c.classList && c.classList.add("fragment")),
+                        },
+                    ],
+                },
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

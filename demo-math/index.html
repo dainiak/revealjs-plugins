@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>RevealMath plugin demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/white.css" />
+        <link rel="stylesheet" href="../reveal-custom/css/extras.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal kbd {
+                background: #ddd;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+            .reveal .footnote {
+                font-size: 0.55em;
+                opacity: 0.7;
+                margin-top: 0.6em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <!-- Macros: see RevealMath docs for the difference between preamble and macros options. -->
+                <script type="text/latex" id="mathjaxPreamble">
+                    \DeclareMathOperator{\GCD}{GCD}
+                    \newcommand{\bbF}{\mathbb{F}}
+                    \newcommand{\bbN}{\mathbb{N}}
+                    \newcommand{\bbZ}{\mathbb{Z}}
+                    \newcommand{\bbR}{\mathbb{R}}
+                    \newcommand{\Fstar}{\mathbb{F}^*}
+                    \renewcommand{\emptyset}{\varnothing}
+                    \renewcommand{\epsilon}{\varepsilon}
+                    \newcommand{\card}[1]{\lvert #1 \rvert}
+                </script>
+
+                <section data-menu-title="Title">
+                    <h2>RevealMath plugin demo</h2>
+                    <p>Math typesetting in reveal.js &mdash; MathJax-powered, with native fragment support.</p>
+                    <p class="subtitle">
+                        Two interchangeable plugins ship in this repo: <code>math.js</code> (MathJax, supports SVG math
+                        too) and <code>math-katex.js</code> (KaTeX, faster). This deck uses <code>math.js</code>.
+                    </p>
+                </section>
+
+                <section data-menu-title="1. Definition box">
+                    <h3>1. Inline math + definition box</h3>
+                    <p class="subtitle">
+                        <code>\(...\)</code> for inline math, <code>\[...\]</code> for display math. The
+                        <code>.definition</code>/<code>.theorem</code>/<code>.proposition</code>/<code>.proof</code>
+                        styles are provided by <code>reveal-custom/css/extras.css</code>.
+                    </p>
+                    <div class="definition">
+                        <div class="title">Definition (compact set)</div>
+                        <div class="statement">
+                            A subset of \(\bbR^n\) is called <span class="term">compact</span> if it is
+                            <span class="fragment">closed</span> <span class="fragment">and bounded.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section data-menu-title="2. Fragments inside formulas">
+                    <h3>2. Fragments inside a multiline formula</h3>
+                    <p class="subtitle">
+                        <code>\step</code> / <code>\next</code> / <code>\vstep</code> macros from <code>extras.css</code>
+                        wrap subexpressions in fragment classes &mdash; reveal.js animates parts of a formula on each
+                        click.
+                    </p>
+                    <div class="proposition">
+                        <div class="title">Binomial expansion</div>
+                        <div class="statement">For \(a,b\in\bbR\)<span class="fragment"> and \(n\in\bbN\):</span></div>
+                    </div>
+                    <p class="fragment">
+                        \[\begin{array}{rl}
+                        (a+b)^n &\step{= \underbrace{(a+b)\cdot\dots\cdot(a+b)}_{n\text{ times}}} \\
+                        &\next{= \sum\limits_{\next{k=0}}^\next{n}\next{\binom{n}{k}\, a^k b^{n-k}.}}
+                        \end{array}\]
+                    </p>
+                </section>
+
+                <section data-menu-title="3. Macros / preamble">
+                    <h3>3. Custom macros &mdash; preamble + Reveal config</h3>
+                    <p class="subtitle">
+                        The <code>preamble</code> option points at a <code>&lt;script type="text/latex"&gt;</code> tag
+                        whose body is fed to MathJax once at startup. The <code>macros</code> option provides additional
+                        per-deck shortcuts.
+                    </p>
+                    <ul style="font-size: 0.85em">
+                        <li class="fragment">\(\bbR\), \(\bbZ\), \(\bbN\), \(\bbF\) &mdash; from preamble</li>
+                        <li class="fragment">\(\GCD(a,b)\) &mdash; <code>\DeclareMathOperator</code></li>
+                        <li class="fragment">\(\card{X}\) &mdash; one-arg macro</li>
+                        <li class="fragment">\(\le, \ge\) &mdash; aliased to slanted versions via <code>macros</code></li>
+                    </ul>
+                </section>
+
+                <section data-menu-title="4. Theorem + proof">
+                    <h3>4. Discrete logarithm</h3>
+                    <div class="proposition">
+                        <div class="statement">
+                            <p>
+                                Fix a primitive root \(\alpha\in\Fstar\). For every \(x\in \bbF\setminus\{0\}\) the
+                                <span class="term">discrete logarithm</span> \(\log_\alpha x\) has properties similar to
+                                the ordinary logarithm:
+                            </p>
+                            <ul>
+                                <li class="fragment">
+                                    \(\log_\alpha (xy)=(\log_\alpha x + \log_\alpha y)
+                                    \vstep{?}\next{\bmod \card\Fstar,}\)
+                                </li>
+                                <li class="fragment">\(x^{\log_\alpha y}=y^{\log_\alpha x},\)</li>
+                                <li class="fragment">
+                                    \(\log_\alpha x = (\log_\beta x \cdot \log_\alpha \beta) \bmod\card\Fstar.\)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section data-menu-title="5. Math inside SVG">
+                    <h3>5. Math typeset inside SVG (MathJax only)</h3>
+                    <p class="subtitle">
+                        With <code>math.js</code> + <code>options.svg.enabled = true</code>, formulas <em>inside</em> SVG
+                        files are typeset on-the-fly when the SVG is loaded by the content-loader plugin.
+                    </p>
+                    <svg class="r-stretch" data-outer-html="img/venn-diagram.svg"></svg>
+                </section>
+
+                <section data-menu-title="6. SVG with fragments">
+                    <h3>6. SVG with reveal.js fragments</h3>
+                    <p class="subtitle">
+                        Native fragments work independently of the math typesetting &mdash; they live as
+                        <code>.fragment</code> classes in the SVG source.
+                    </p>
+                    <div
+                        class="r-stretch"
+                        style="transform: scale(0.5)"
+                        data-inner-html="img/absolute-value-composition.svg"
+                    ></div>
+                </section>
+
+                <section data-menu-title="7. fragidx-N shorthand">
+                    <h3>7. <code>fragidx-N</code> shorthand</h3>
+                    <p class="subtitle">
+                        The math plugin contributes a CSS shortcut: <code>class="fragidx-N"</code> is equivalent to
+                        <code>class="fragment" data-fragment-index="N"</code>. Useful when ordering fragments out of DOM
+                        order.
+                    </p>
+                    <ul>
+                        <li class="fragidx-1">one</li>
+                        <li class="fragidx-3">three</li>
+                        <li class="fragidx-2">two</li>
+                        <li class="fragidx-1">one (again)</li>
+                        <li class="fragidx-3">three (again)</li>
+                    </ul>
+                </section>
+
+                <section data-menu-title="Cheatsheet">
+                    <h3>Cheatsheet</h3>
+                    <script data-highlight type="text/javascript" data-dedent>
+                        Reveal.initialize({
+                            plugins: [RevealContentLoader, RevealMath],
+                            math: {
+                                renderer: 'svg',                // 'svg' or 'chtml' for MathJax
+                                svg: {                          // typeset math inside SVG files
+                                    enabled: true,
+                                    mathScale: 0.0015,
+                                    fixedScale: false,
+                                },
+                                fragments: true,                // process \step / \next / \vstep
+                                preamble: '#mathjaxPreamble',   // optional LaTeX preamble
+                                macros: {                       // optional per-deck macros
+                                    le: '\\leqslant',
+                                    ge: '\\geqslant',
+                                    card: ['{\\left\\lvert #1 \\right\\rvert}', 1],
+                                },
+                            },
+                        });
+                    </script>
+                    <p class="footnote">
+                        Swap to <code>math-katex.js</code> for KaTeX-based typesetting. The two plugins are
+                        interchangeable apart from <code>math.js</code>'s SVG-math feature, which only MathJax can render.
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/content-loader.js"></script>
+        <script src="../reveal-custom/plugins/math.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: { theme: "chrome", language: "javascript", showGutter: false },
+                plugins: [RevealContentLoader, RevealMath, RevealHighlightAce, RevealMenu],
+                math: {
+                    renderer: "svg",
+                    svg: {
+                        enabled: true,
+                        mathScale: 0.0015,
+                        fixedScale: false,
+                        escapeClipping: false,
+                        defaultAlignment: "C",
+                    },
+                    fragments: true,
+                    preamble: "#mathjaxPreamble",
+                    macros: {
+                        le: "\\leqslant",
+                        ge: "\\geqslant",
+                        hat: "\\widehat",
+                        divides: "\\mathrel{\\,\\vert\\,}",
+                    },
+                },
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

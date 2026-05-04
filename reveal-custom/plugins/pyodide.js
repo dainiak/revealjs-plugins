@@ -8,119 +8,162 @@
  */
 
 const RevealPyodide = {
-    id: 'pyodide',
-    init: (reveal) => {
-        let pyodideVersion = '0.29.0';
-        let options = reveal.getConfig().pyodide || {};
-        options = {
-            pyodideUrl: options.pyodideUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`,
-            pyodideBaseUrl: options.pyodideBaseUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
-            preloadPackages: options.preloadPackages || []
-        };
+	id: "pyodide",
+	init: (reveal) => {
+		const pyodideVersion = "0.29.0";
+		let options = reveal.getConfig().pyodide || {};
+		options = {
+			pyodideUrl: options.pyodideUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`,
+			pyodideBaseUrl: options.pyodideBaseUrl || `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
+			preloadPackages: options.preloadPackages || [],
+		};
 
-        function loadScript( url, callback ) {
-            let head = document.querySelector( 'head' );
-            let script = document.createElement( 'script' );
-            script.type = 'text/javascript';
-            script.src = url;
+		const workerSource = `
+			let pyodide = null;
+			let stdoutBuffer = "";
 
-            script.onload = function() {
-                callback.call();
-                callback = null;
-            };
+			self.onmessage = async (event) => {
+				const msg = event.data;
+				if (msg.type === "init") {
+					importScripts(msg.pyodideUrl);
+					pyodide = await self.loadPyodide({ indexURL: msg.pyodideBaseUrl });
+					pyodide.setStdout({ batched: (line) => { stdoutBuffer += line + "\\n"; } });
+					pyodide.setStderr({ batched: (line) => { stdoutBuffer += line + "\\n"; } });
+					if (msg.preloadPackages && msg.preloadPackages.length) {
+						await pyodide.loadPackage(msg.preloadPackages);
+					}
+					self.postMessage({ type: "ready" });
+				} else if (msg.type === "run") {
+					stdoutBuffer = "";
+					let result = "";
+					try {
+						await pyodide.loadPackagesFromImports(msg.code);
+						const value = pyodide.runPython(msg.code);
+						if (value !== undefined && value !== null) result = value.toString();
+					} catch (e) {
+						result = e.toString();
+					}
+					const stdout = stdoutBuffer;
+					stdoutBuffer = "";
+					self.postMessage({ type: "result", id: msg.id, stdout, result });
+				}
+			};
+		`;
 
-            head.appendChild( script );
-        }
+		const workerUrl = URL.createObjectURL(new Blob([workerSource], { type: "application/javascript" }));
+		const worker = new Worker(workerUrl);
 
-        loadScript(options.pyodideUrl, async function(){
-            let stdoutBuffer = null;
-            function stdoutWriter(line) {
-                if(stdoutBuffer !== null)
-                    stdoutBuffer += line + '\n';
-                else
-                    console.log(line);
-            }
+		const pendingExecutions = new Map();
+		let nextExecutionId = 0;
 
-            let pyodide = await window.loadPyodide({
-                indexURL : options.pyodideBaseUrl,
-                stdout: stdoutWriter
-            });
+		const workerReady = new Promise((resolve) => {
+			const handler = (event) => {
+				if (event.data.type === "ready") {
+					worker.removeEventListener("message", handler);
+					resolve();
+				}
+			};
+			worker.addEventListener("message", handler);
+		});
 
-            pyodide.loadPackage(options.preloadPackages);
+		worker.addEventListener("message", (event) => {
+			const msg = event.data;
+			if (msg.type !== "result") return;
+			const cb = pendingExecutions.get(msg.id);
+			if (cb) {
+				pendingExecutions.delete(msg.id);
+				cb(msg);
+			}
+		});
 
-            function runPythonCodeInElement(element) {
-                if(!element.hasAttribute('data-language') || element.getAttribute('data-language') !== 'python')
-                    return;
+		worker.postMessage({
+			type: "init",
+			pyodideUrl: options.pyodideUrl,
+			pyodideBaseUrl: options.pyodideBaseUrl,
+			preloadPackages: options.preloadPackages,
+		});
 
-                element.removeAttribute('data-run-with-deck');
-                element.removeAttribute('data-run-with-slide');
+		function runPythonInWorker(code) {
+			return new Promise((resolve) => {
+				const id = nextExecutionId++;
+				pendingExecutions.set(id, resolve);
+				worker.postMessage({ type: "run", id, code });
+			});
+		}
 
-                let out = element.pythonOutputElement;
-                if(!out && element.dataset.stdout) {
-                    out = document.querySelector(element.dataset.stdout);
-                }
-                if(!out) {
-                    let p = element;
-                    while (['pre', 'code'].indexOf(p.parentNode.tagName.toLowerCase()) !== -1) {
-                        p = p.parentNode;
-                    }
+		function runPythonCodeInElement(element) {
+			if (!element.hasAttribute("data-language") || element.getAttribute("data-language") !== "python") return;
 
-                    out = document.createElement('pre');
-                    if (element.hasAttribute('data-output-as-fragment'))
-                        out.classList.add('fragment');
+			element.removeAttribute("data-run-with-deck");
+			element.removeAttribute("data-run-with-slide");
 
-                    p.insertAdjacentElement('afterend', out);
-                    let codeElement = document.createElement('code');
-                    out.appendChild(codeElement);
-                    out = codeElement;
-                    element.pythonOutputElement = out;
-                }
+			let out = element.pythonOutputElement;
+			if (!out && element.dataset.stdout) {
+				out = document.querySelector(element.dataset.stdout);
+			}
+			if (!out) {
+				let p = element;
+				while (["pre", "code"].indexOf(p.parentNode.tagName.toLowerCase()) !== -1) {
+					p = p.parentNode;
+				}
 
-                stdoutBuffer = '';
-                pyodide.loadPackagesFromImports(element.textContent).then(() => {
-                    let executionResult;
-                    try {
-                        pyodide.setStdout({ batched: stdoutWriter });
-                        executionResult = pyodide.runPython(element.textContent) || '';
-                    } catch (e) {
-                        executionResult = e.toString();
-                    }
+				out = document.createElement("pre");
+				if (element.hasAttribute("data-output-as-fragment")) out.classList.add("fragment");
 
-                    let textContent = stdoutBuffer || '';
-                    if(textContent.length && executionResult.length && !textContent.endsWith('\n'))
-                        textContent += '\n';
-                    textContent += executionResult;
-                    stdoutBuffer = null;
+				p.insertAdjacentElement("afterend", out);
+				let codeElement = document.createElement("code");
+				out.appendChild(codeElement);
+				out = codeElement;
+				element.pythonOutputElement = out;
+			}
 
-                    out.textContent = textContent;
+			const code = element.textContent;
+			workerReady
+				.then(() => runPythonInWorker(code))
+				.then(({ stdout, result }) => {
+					let textContent = stdout || "";
+					if (textContent.length && result.length && !textContent.endsWith("\n")) textContent += "\n";
+					textContent += result;
+					out.textContent = textContent;
 
-                    if (Reveal.getPlugin('highlight-ace') && reveal.highlightBlockWithAce) {
-                        reveal.highlightBlockWithAce(out, {theme: element.dataset['theme'], language: 'text', showGutter: false})
-                        element.setAttribute('data-raw-code', element.textContent);
-                    }
-                });
-            }
+					if (Reveal.getPlugin("highlight-ace") && reveal.highlightBlockWithAce) {
+						reveal.highlightBlockWithAce(out, {
+							theme: element.dataset["theme"],
+							language: "text",
+							showGutter: false,
+						});
+						element.setAttribute("data-raw-code", code);
+					}
+				});
+		}
 
-            reveal.runPythonCodeInElement = runPythonCodeInElement;
+		reveal.runPythonCodeInElement = runPythonCodeInElement;
 
-            reveal.on('slidetransitionend', function(event) {
-                event.currentSlide.querySelectorAll('[data-language="python"][data-run-with-slide]').forEach(runPythonCodeInElement);
-            });
+		reveal.on("slidetransitionend", function (event) {
+			event.currentSlide
+				.querySelectorAll('[data-language="python"][data-run-with-slide]')
+				.forEach(runPythonCodeInElement);
+		});
 
-            function runWithDeck(){
-                reveal.getSlidesElement().querySelectorAll('[data-language="python"][data-run-with-deck]').forEach(runPythonCodeInElement);
-                reveal.layout();
-            }
-            if(reveal.isReady())
-                runWithDeck();
-            else
-                reveal.on('ready', runWithDeck);
+		function runWithDeck() {
+			reveal
+				.getSlidesElement()
+				.querySelectorAll('[data-language="python"][data-run-with-deck]')
+				.forEach(runPythonCodeInElement);
+			reveal.layout();
+		}
+		if (reveal.isReady()) runWithDeck();
+		else reveal.on("ready", runWithDeck);
 
-            reveal.getSlidesElement().querySelectorAll('[data-language="python"][data-run-on-edit]').forEach((element)=>{
-                element.addEventListener('codeupdated', () => {runPythonCodeInElement(element)});
-            });
-        });
+		reveal
+			.getSlidesElement()
+			.querySelectorAll('[data-language="python"][data-run-on-edit]')
+			.forEach((element) => {
+				element.addEventListener("codeupdated", () => {
+					runPythonCodeInElement(element);
+				});
+			});
 
-        return true;
-    }
+		return true;
+	},
 };

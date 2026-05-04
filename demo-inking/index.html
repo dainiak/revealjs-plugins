@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>RevealInking plugin demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal kbd {
+                background: #444;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+            .reveal ul.shortcuts li {
+                margin: 0.25em 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section data-menu-title="Title">
+                    <h2>RevealInking plugin demo</h2>
+                    <p>An interactive whiteboard layered on top of any reveal.js slide.</p>
+                    <p class="subtitle">
+                        Powered by <a href="https://github.com/fabricjs/fabric.js">Fabric.js</a> +
+                        <a href="https://www.mathjax.org/">MathJax</a>. Every shortcut below works on every slide of this
+                        deck.
+                    </p>
+                </section>
+
+                <section data-show-inking-canvas data-menu-title="1. Drawing">
+                    <h3>1. Free-hand drawing</h3>
+                    <ul class="shortcuts">
+                        <li><kbd>Ctrl</kbd>+<kbd>LeftClick</kbd>+drag &mdash; draw freely</li>
+                        <li>While drawing, the bottom toolbar lets you choose pen color and width</li>
+                        <li><kbd>Shift</kbd>+<kbd>LeftClick</kbd>+drag &mdash; erase strokes</li>
+                        <li><kbd>Click</kbd>+drag a stroke &mdash; select / move it</li>
+                        <li><kbd>Del</kbd> &mdash; remove selected elements</li>
+                    </ul>
+                </section>
+
+                <section data-show-inking-canvas data-menu-title="2. Math + spotlight">
+                    <h3>2. Math, spotlight, save</h3>
+                    <ul class="shortcuts">
+                        <li><kbd>=</kbd> &mdash; insert a LaTeX formula at the mouse, or edit the selected one</li>
+                        <li><kbd>Alt</kbd>+<kbd>LeftClick</kbd> or <kbd>x</kbd> &mdash; hold for a spotlight</li>
+                        <li><kbd>q</kbd> &mdash; show / hide the canvas</li>
+                        <li><kbd>-</kbd> &mdash; clear the canvas on the current slide</li>
+                        <li><kbd>z</kbd> &mdash; export current slide as SVG, or all slides as JSON for replay later</li>
+                    </ul>
+                </section>
+
+                <section
+                    data-show-inking-canvas
+                    data-inking-canvas-src="img/venn-diagram-unlabeled.svg::img/preload-test.svg"
+                    data-menu-title="3. Preloaded SVG"
+                >
+                    <h3>3. Preloaded SVG content</h3>
+                    <p class="subtitle">
+                        <code>data-inking-canvas-src="a.svg::b.svg"</code> &mdash; load multiple SVGs into the canvas.
+                        Each becomes a movable, resizable group.
+                    </p>
+                </section>
+
+                <section
+                    data-show-inking-canvas
+                    data-inking-canvas-src="img/venn-diagram-unlabeled.svg:split"
+                    data-menu-title="4. SVG: split into pieces"
+                >
+                    <h3>4. SVG split into individual shapes</h3>
+                    <p class="subtitle">
+                        Append <code>:split</code> to a <code>.svg</code> path &mdash; every path inside the SVG becomes
+                        a draggable, recolorable element. Try moving the rings of the Venn diagram.
+                    </p>
+                </section>
+
+                <section
+                    data-show-inking-canvas
+                    data-inking-canvas-src="img/canvas-content-preload.json"
+                    data-menu-title="5. Preloaded JSON state"
+                >
+                    <h3>5. Preloaded canvas state &mdash; replay last lecture</h3>
+                    <p class="subtitle">
+                        JSON exported with <kbd>z</kbd> from another deck can be re-loaded here. Math nodes remain
+                        editable &mdash; click <code>\(e=mc^2\)</code> and press <kbd>=</kbd>, or just double-click it.
+                    </p>
+                </section>
+
+                <section data-show-inking-canvas data-menu-title="6. Math + drawing">
+                    <h3>6. Annotate live</h3>
+                    <p>Use this slide as a chalkboard. Press <kbd>=</kbd> and type, e.g.</p>
+                    <pre style="font-size: 0.6em">\sum_{k=1}^n k = \frac{n(n+1)}{2}</pre>
+                    <p>then drag the rendered formula anywhere on the slide.</p>
+                </section>
+
+                <section data-menu-title="Configuration">
+                    <h3>Configuration cheatsheet</h3>
+                    <script data-highlight type="text/javascript" data-dedent>
+                        Reveal.initialize({
+                            plugins: [RevealMath, RevealInking],
+                            inking: {
+                                controls: {
+                                    opacity: 1,
+                                    colorChoosersAlwaysVisible: false,
+                                },
+                                math: {
+                                    shadow: true,
+                                    color: 'ink',
+                                    displayStyle: true,
+                                    preamble: '',
+                                },
+                                ink: {
+                                    color: ['green', 'red', 'blue', 'lightgrey'],
+                                },
+                            },
+                        });
+                    </script>
+                    <p class="subtitle">
+                        Per-slide: <code>data-show-inking-canvas</code> opens canvas on enter,
+                        <code>data-hide-inking-canvas</code> closes it. Preload via
+                        <code>data-inking-canvas-src="path[:split][::path2]..."</code>.
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/math.js"></script>
+        <script src="../reveal-custom/plugins/inking.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: { theme: "monokai", showGutter: false },
+                plugins: [RevealMath, RevealInking, RevealHighlightAce, RevealMenu],
+                inking: {
+                    controls: { opacity: 1, colorChoosersAlwaysVisible: false },
+                    math: {
+                        shadow: true,
+                        color: "ink",
+                        displayStyle: true,
+                        preamble: "",
+                    },
+                    ink: { color: ["green", "red", "blue", "lightgrey"] },
+                },
+                math: {
+                    renderer: "svg",
+                    fragments: true,
+                },
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

@@ -1,246 +1,129 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alex Dainiak's reveal.js plugin showcase</title>
+    <link rel="stylesheet" href="../reveal/dist/reset.css" />
+    <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+    <link rel="stylesheet" href="../reveal/dist/theme/black.css" id="theme" />
 
-    <title>Demo of Alex Dainiak’s Reveal.js plugins</title>
-
-    <link rel="stylesheet" href="../reveal/dist/reset.css">
-    <link rel="stylesheet" href="../reveal/dist/reveal.css">
-
-    <link rel="stylesheet" href="../reveal/dist/theme/beige.css" id="theme">
-
-    <link rel="stylesheet" href="../reveal-custom/css/extras.css">
-    <link rel="stylesheet" href="css/progress-bar.css">
+    <style>
+        .reveal h2 {
+            margin-bottom: 0.4em;
+        }
+        .reveal h3 {
+            margin-bottom: 0.4em;
+        }
+        .reveal h3 code {
+            font-size: 0.85em;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 0.05em 0.3em;
+            border-radius: 4px;
+        }
+        .reveal .subtitle {
+            font-size: 0.65em;
+            opacity: 0.75;
+            margin-top: -0.3em;
+        }
+        .reveal .footnote {
+            font-size: 0.55em;
+            opacity: 0.7;
+            margin-top: 0.6em;
+        }
+        .reveal kbd {
+            background: #444;
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .reveal .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.4em;
+            align-items: start;
+        }
+        .reveal .two-col-narrow {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 1.4em;
+            align-items: start;
+        }
+        .reveal pre {
+            width: 100%;
+            font-size: 0.46em;
+        }
+        .reveal pre code {
+            padding: 0.4em 0.6em;
+            max-height: 600px;
+        }
+        .reveal table {
+            font-size: 0.65em;
+            margin: 0.4em auto;
+            border-collapse: collapse;
+            min-width: 60%;
+        }
+        .reveal table th,
+        .reveal table td {
+            padding: 0.3em 0.8em;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .reveal table th {
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+        }
+        .reveal a.demo-link {
+            display: inline-block;
+            margin-top: 0.6em;
+            font-size: 0.6em;
+            padding: 0.3em 0.8em;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .reveal a.demo-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .reveal ul.plugin-list {
+            font-size: 0.65em;
+            text-align: left;
+            max-width: 75%;
+            margin: 0 auto;
+        }
+        .reveal ul.plugin-list li {
+            margin: 0.35em 0;
+        }
+        .reveal ul.plugin-list code {
+            font-weight: 600;
+        }
+        .reveal div[data-vega] {
+            background: #fff;
+            border-radius: 4px;
+            padding: 0.4em;
+        }
+    </style>
 </head>
-
-
 <body>
-<div class="reveal"><div class="slides">
-    <section data-menu-title="Title" data-inner-html="sect-title.html"></section>
-    <section data-menu-title="Webcam" data-inner-html="sect-webcam.html"></section>
-    <section data-menu-title="Math" data-inner-html="sect-math.html"></section>
-    <section data-menu-title="Inking" data-inner-html="sect-inking.html"></section>
-    <section data-menu-title="Embedding Vega-Lite Charts" data-inner-html="sect-charts.html"></section>
-    <section data-menu-title="Loading content and executing actions" data-inner-html="sect-external.html"></section>
-    <section data-menu-title="PDF inclusion" data-inner-html="sect-pdf.html"></section>
-    <section data-menu-title="Python code" data-inner-html="sect-python.html"></section>
-    <section data-menu-title="Mermaid diagrams" data-inner-html="sect-mermaid.html"></section>
-    <section data-menu-title="Declarative CSS animation" data-inner-html="sect-animation.html"></section>
-    <section data-menu-title="Summary" data-outer-html="sect-summary.html"></section>
-</div></div>
-
-<div class="loading-overlay">
-    <div class="loading-progress-track"></div>
-    <p class="loading-message">Loading the presentation&hellip; this may take up to 30 seconds</p>
+<div class="reveal">
+    <div class="slides">
+        <section data-menu-title="Moved">
+            <p>The demo has moved <a href="../index.html">here</a></p>
+        </section>
+    </div>
 </div>
 
-
-<!-- Reveal.js and its factory plugins: -->
+<!-- reveal.js + plugins (the gateway deck loads them all) -->
 <script src="../reveal/dist/reveal.js"></script>
-<script src="../reveal/plugin/notes/notes.js"></script>
-
-<!-- Plugin for loading external content, including PDFs: -->
-<script src="../reveal-custom/plugins/content-loader.js"></script>
-
-<!-- Modification of RevealMenu plugin by  Greg Denehy https://github.com/denehyg/reveal.js-menu -->
-<link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css">
-<link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css">
-<script src="../reveal-custom/plugins/menu/menu.js"></script>
-
-<!-- Verticator plugin by Martijn De Jongh (Martino) https://github.com/Martinomagnifico/reveal.js-verticator -->
-<link rel="stylesheet" href="../reveal-custom/plugins/verticator/verticator.css">
-<script src="../reveal-custom/plugins/verticator/verticator.js"></script>
-
-<!-- Use for MathJax-powered math, and also if using inking plugin: -->
-<script src="../reveal-custom/plugins/math.js"></script>
-<!-- Use for KaTeX-powered math: -->
-<!--<script src="../reveal-custom/plugins/math-katex.js"></script>-->
-
-<!-- Vega-embed plugin -->
-<script src="../reveal-custom/plugins/vega-embed.js"></script>
-
-<!-- Code highlighting with editable code blocks. Powered by ACE.js editor -->
-<script src="../reveal-custom/plugins/highlight-ace.js"></script>
-<!-- In-browser code execution. Supports sympy, numpy, pandas. Powered by Pyodide -->
-<script src="../reveal-custom/plugins/pyodide.js"></script>
-
-<!-- Interactive whiteboard on top of the slide deck. Powered by Fabric.js and MathJax. -->
-<script src="../reveal-custom/plugins/inking.js"></script>
-
-<!-- Display the webcam of the presenter along with the slides. -->
-<script src="../reveal-custom/plugins/webcam.js"></script>
-
-<!-- Declarative CSS animation plugin: -->
-<script src="../reveal-custom/plugins/cssanimation.js"></script>
-
-<!-- Modified stock zooming plugin -->
-<script src="../reveal-custom/plugins/zoom.js"></script>
-
-<!-- Modified stock zooming plugin -->
-<script src="../reveal-custom/plugins/mermaid.js"></script>
-
-<!-- MathJax/KaTeX macros that you wish to be available in the slide deck. -->
-<script type="text/latex" id="mathjaxPreamble">
-    \DeclareMathOperator{\GCD}{GCD}
-    \newcommand{\bbF}{\mathbb{F}}
-    \newcommand{\bbN}{\mathbb{N}}
-    \newcommand{\bbP}{\mathbb{P}}
-    \newcommand{\bbQ}{\mathbb{Q}}
-    \newcommand{\bbR}{\mathbb{R}}
-    \newcommand{\bbZ}{\mathbb{Z}}
-    \renewcommand{\emptyset}{\varnothing}
-    \renewcommand{\epsilon}{\varepsilon}
-    \newcommand{\Fstar}{\mathbb{F}^*}
-    \newcommand{\card}[1]{\lvert #1 \rvert}
-    \newcommand{\eqmod}[1]{\overset{#1}{=}}
-    \newcommand{\neqmod}[1]{\overset{\scriptsize{#1}}{\neq}}
-</script>
-
-
 <script>
     Reveal.initialize({
-        plugins: [
-            RevealContentLoader,
-
-            Verticator,
-            RevealMenu,
-
-            RevealWebcam,
-            RevealMath,
-            RevealInking,
-            RevealHighlightAce,
-            RevealPyodide,
-            RevealCSSAnimation,
-            RevealVega,
-            RevealMermaid
-        ],
-        slideNumber: true,
         width: 1280,
         height: 720,
         margin: 0.05,
-        history: true,
-        transition: 'slide',
-        controls: false,
-
-        contentLoader: {
-            mapAttributes: ['data-inking-canvas-src', 'src'],
-            pdf: {
-                enabled: true,
-                preload: true
-            },
-            actions: [
-                {
-                    selector: '[class*="fragidx-"]',
-                    init: e => {
-                        const match = (e.getAttribute('class') || '').match(/fragidx-(\d+)/);
-                        if (match) {
-                            e.classList.add('fragment');
-                            e.setAttribute('data-fragment-index', match[1]);
-                        }
-                    }
-                },
-                {
-                    selector: '.auto-fragmentize',
-                    init: e => e.childNodes.forEach(c => c.classList && c.classList.add('fragment'))
-                }, {
-                    selector: '.random',
-                    init: e => (e.textContent = Math.random())
-                }, {
-                    selector: '.echart'
-                }
-            ]
-        },
-
-        math: {
-            renderer: 'svg', /* 'svg' or 'chtml' for MathJax; makes no difference for KaTeX */
-            svg: {
-                enabled: true,
-                mathScale: 0.0015,
-                fixedScale: false,
-                escapeClipping: false,
-                defaultAlignment: 'C' // L/C/R for horizontal and T/M/B for vertical
-            },
-            fragments: true,
-            preamble: "#mathjaxPreamble", /* Most macros are in the preamble (see above)  */
-            macros: {                     /* But some macros can be provided here as well */
-                zoomable: ["\\class{zoomable}{#1}", 1],
-                floor: ["{\\left\\lfloor #1 \\right\\rfloor}", 1],
-                ceil: ["{\\left\\lceil #1 \\right\\rceil}", 1],
-                le: "\\leqslant",
-                ge: "\\geqslant",
-                hat: "\\widehat",
-                divides: "\\mathrel{\\,\\vert\\,}",
-                notdivides: "\\mathrel{\\,\u2224\\,}",
-                any: "\u25A3",
-                green: ["\\class{green}{#1}", 1],
-                red: ["\\class{red}{#1}", 1]
-            }
-        },
-        inking: {
-            controls: {
-                opacity: 1,
-                colorChoosersAlwaysVisible: false
-            },
-            math: {
-                shadow: true,
-                color: 'ink',
-                displayStyle: true,
-                preamble: '',
-            },
-            ink: {
-                color: ['green', 'red', 'blue', 'lightgrey']
-            }
-        },
-        highlighting: {
-            editorInPlace: true
-        },
-        /*pyodide: {
-            preloadPackages: ['pandas']
-        },*/
-        mermaid: {
-            overflowVisible: '*',
-            // iconPacks: {
-            //     "logos": "https://unpkg.com/@iconify-json/logos@1/icons.json",
-            //     "lucide": "https://unpkg.com/@iconify-json/lucide@1/icons.json"
-            // }
-        },
-        zooming: {
-            explicitZoomables: false,
-        },
-        webcam: {
-            initializeOnLoad: false
-        },
-
-        menu: {
-            openSlideNumber: true,
-            openButton: false,
-            themes: true,
-            themesPath: '../reveal/dist/theme/',
-            transitions: true,
-            titleSelector: 'h1, h2, h3, h4, h5, h6, figcaption, div.theorem > div.title',
-            // autoOpen: true,
-            // sticky: true
-        },
-        vega: {
-            vegaOptions: {
-                mode: 'vega-lite',
-                theme: 'auto',
-                renderer: 'svg',
-                actions: false,
-                tooltip: {
-                    theme: 'fivethirtyeight'
-                }
-            }
-        },
-        verticator: {
-            color: '#000',
-            inversecolor: '#fff',
-            tooltip: true,
-        },
+        transition: "fade",
+        hash: true,
+        slideNumber: true
     });
 </script>
-
 </body>
 </html>

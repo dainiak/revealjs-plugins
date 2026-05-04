@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>RevealInteractiveCharts plugin demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.2em;
+                align-items: start;
+            }
+            .reveal .two-col-narrow {
+                display: grid;
+                grid-template-columns: 3fr 2fr;
+                gap: 1.2em;
+                align-items: start;
+            }
+            .reveal .two-col ul,
+            .reveal .two-col-narrow ul {
+                font-size: 0.7em;
+            }
+            .reveal pre {
+                width: 100%;
+                font-size: 0.42em;
+            }
+            .reveal pre code {
+                padding: 0.4em 0.6em;
+                max-height: 600px;
+            }
+            .reveal .footnote {
+                font-size: 0.55em;
+                opacity: 0.7;
+                margin-top: 0.6em;
+            }
+            .reveal kbd {
+                background: #444;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+            .reveal div[data-vega] {
+                background: #fff;
+                border-radius: 4px;
+                padding: 0.4em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <!-- ============================================================ -->
+                <section data-menu-title="Title">
+                    <h2>RevealInteractiveCharts — scripted chart narration</h2>
+                    <p>
+                        Drive Vega-Lite and Plotly charts from reveal.js fragments — no in-chart clicks during the talk.
+                        Each slide exercises one feature.
+                    </p>
+                    <p class="subtitle">
+                        Press <kbd>Space</kbd> / <kbd>→</kbd> to step through fragments. <kbd>Esc</kbd> for slide
+                        overview.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="1. Inline spec">
+                    <h3>1. Inline spec — no external JSON file</h3>
+                    <p class="subtitle">
+                        <code>&lt;div data-vega&gt;</code> with no value picks up a child
+                        <code>&lt;script type="application/json" class="vega-spec"&gt;</code>. The existing URL form
+                        (<code>data-vega="img/foo.json"</code>) still works unchanged.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 320px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "month": "Jan", "sales": 120 },
+                                            { "month": "Feb", "sales": 145 },
+                                            { "month": "Mar", "sales": 130 },
+                                            { "month": "Apr", "sales": 175 },
+                                            { "month": "May", "sales": 168 },
+                                            { "month": "Jun", "sales": 192 }
+                                        ]
+                                    },
+                                    "mark": { "type": "bar", "color": "#5b9bd5" },
+                                    "encoding": {
+                                        "x": { "field": "month", "type": "ordinal", "sort": null },
+                                        "y": { "field": "sales", "type": "quantitative" }
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <pre><code data-language="html" data-dedent>&lt;div data-vega style="height: 320px"&gt;
+    &lt;script type="application/json" class="vega-spec"&gt;
+        {
+            "$schema": ".../vega-lite/v6.json",
+            "data": {"values": [
+                {"month": "Jan", "sales": 120},
+                ...
+            ]},
+            "mark": "bar",
+            "encoding": {
+                "x": {"field": "month", ...},
+                "y": {"field": "sales", ...}
+            }
+        }
+    &lt;/script&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="2. Highlight one category">
+                    <h3>2. Highlight one category at a time</h3>
+                    <p class="subtitle">
+                        A Vega-Lite <code>param</code> (an array of region names) drives the <code>color</code>/<code
+                            >opacity</code
+                        >
+                        encoding via a vega expression. Each click sets the signal to a different region — focus shifts,
+                        the rest dims.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "region": "North", "month": "Jan", "sales": 120 },
+                                            { "region": "North", "month": "Feb", "sales": 145 },
+                                            { "region": "North", "month": "Mar", "sales": 130 },
+                                            { "region": "South", "month": "Jan", "sales": 95 },
+                                            { "region": "South", "month": "Feb", "sales": 105 },
+                                            { "region": "South", "month": "Mar", "sales": 110 },
+                                            { "region": "East", "month": "Jan", "sales": 140 },
+                                            { "region": "East", "month": "Feb", "sales": 138 },
+                                            { "region": "East", "month": "Mar", "sales": 155 },
+                                            { "region": "West", "month": "Jan", "sales": 80 },
+                                            { "region": "West", "month": "Feb", "sales": 90 },
+                                            { "region": "West", "month": "Mar", "sales": 102 }
+                                        ]
+                                    },
+                                    "params": [{ "name": "active_regions", "value": [] }],
+                                    "mark": { "type": "circle", "size": 250 },
+                                    "encoding": {
+                                        "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar"] },
+                                        "y": { "field": "sales", "type": "quantitative" },
+                                        "color": {
+                                            "field": "region",
+                                            "type": "nominal",
+                                            "legend": {
+                                                "symbolOpacity": {
+                                                    "expr": "length(active_regions) == 0 || indexof(active_regions, datum.value) >= 0 ? 1 : 0.25"
+                                                },
+                                                "labelOpacity": {
+                                                    "expr": "length(active_regions) == 0 || indexof(active_regions, datum.value) >= 0 ? 1 : 0.4"
+                                                }
+                                            }
+                                        },
+                                        "opacity": {
+                                            "condition": {
+                                                "test": "length(active_regions) == 0 || indexof(active_regions, datum.region) >= 0",
+                                                "value": 1.0
+                                            },
+                                            "value": 0.25
+                                        }
+                                    }
+                                }
+                            </script>
+                            <script type="application/json" class="vega-fragments">
+                                [
+                                    { "at": 1, "signals": { "active_regions": ["North"] } },
+                                    { "at": 2, "signals": { "active_regions": ["South"] } },
+                                    { "at": 3, "signals": { "active_regions": ["East"] } },
+                                    { "at": 4, "signals": { "active_regions": ["West"] } },
+                                    { "at": 5, "signals": { "active_regions": [] } }
+                                ]
+                            </script>
+                        </div>
+                        <pre><code data-language="html" data-dedent>"params": [
+    {"name": "active_regions", "value": []}
+],
+"encoding": {
+  "color": {
+    "field": "region", "type": "nominal",
+    "legend": {
+      "symbolOpacity": {"expr":
+        "length(active_regions) == 0
+         || indexof(active_regions, datum.value) >= 0
+         ? 1 : 0.25"}
+    }
+  },
+  "opacity": {
+    "condition": {
+      "test": "length(active_regions) == 0
+               || indexof(active_regions,
+                          datum.region) >= 0",
+      "value": 1.0
+    },
+    "value": 0.25
+  }
+}
+
+&lt;script class="vega-fragments"&gt;
+[
+  {"at": 1, "signals": {"active_regions": ["North"]}},  # @1
+  {"at": 2, "signals": {"active_regions": ["South"]}},  # @2
+  {"at": 3, "signals": {"active_regions": ["East"]}},   # @3
+  {"at": 4, "signals": {"active_regions": ["West"]}},   # @4
+  {"at": 5, "signals": {"active_regions": []}}          # @5
+]
+&lt;/script&gt;</code></pre>
+                    </div>
+                    <p class="footnote">
+                        The <code>length(active_regions) == 0</code> guard means "empty list = highlight everything",
+                        which gives a clean baseline and a clean reset. Five clicks: N, S, E, W, all.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="3. Cumulative subset">
+                    <h3>3. Cumulative subset — building up over clicks</h3>
+                    <p class="subtitle">
+                        Same recipe; the signal grows from <code>[]</code> &rarr; <code>["A"]</code> &rarr;
+                        <code>["A","B"]</code> &rarr; …, narrating "let's add the next one in."
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "team": "A", "wins": 14 },
+                                            { "team": "B", "wins": 11 },
+                                            { "team": "C", "wins": 9 },
+                                            { "team": "D", "wins": 13 },
+                                            { "team": "E", "wins": 7 },
+                                            { "team": "F", "wins": 10 }
+                                        ]
+                                    },
+                                    "params": [{ "name": "shown", "value": [] }],
+                                    "mark": "bar",
+                                    "encoding": {
+                                        "x": { "field": "team", "type": "nominal" },
+                                        "y": { "field": "wins", "type": "quantitative" },
+                                        "color": {
+                                            "field": "team",
+                                            "type": "nominal",
+                                            "scale": { "scheme": "category10" },
+                                            "legend": {
+                                                "symbolOpacity": {
+                                                    "expr": "indexof(shown, datum.value) >= 0 ? 1 : 0.25"
+                                                },
+                                                "labelOpacity": {
+                                                    "expr": "indexof(shown, datum.value) >= 0 ? 1 : 0.4"
+                                                }
+                                            }
+                                        },
+                                        "opacity": {
+                                            "condition": {
+                                                "test": "indexof(shown, datum.team) >= 0",
+                                                "value": 1.0
+                                            },
+                                            "value": 0.25
+                                        }
+                                    }
+                                }
+                            </script>
+                            <script type="application/json" class="vega-fragments">
+                                [
+                                    { "at": 1, "signals": { "shown": ["A"] } },
+                                    { "at": 2, "signals": { "shown": ["A", "B"] } },
+                                    { "at": 3, "signals": { "shown": ["A", "B", "C"] } },
+                                    { "at": 4, "signals": { "shown": ["A", "B", "C", "D"] } },
+                                    { "at": 5, "signals": { "shown": ["A", "B", "C", "D", "E", "F"] } }
+                                ]
+                            </script>
+                        </div>
+                        <pre><code data-language="html" data-dedent>&lt;script class="vega-fragments"&gt;
+[
+  {"at": 1, "signals": {"shown": ["A"]}},                  # @1
+  {"at": 2, "signals": {"shown": ["A", "B"]}},             # @2
+  {"at": 3, "signals": {"shown": ["A", "B", "C"]}},        # @3
+  {"at": 4, "signals": {"shown": ["A", "B", "C", "D"]}},   # @4
+  {"at": 5, "signals": {"shown":                           # @5
+              ["A", "B", "C", "D", "E", "F"]}}             # @5
+]
+&lt;/script&gt;
+
+# State is cumulative: the merge logic re-applies all
+# entries with at &lt;= currentIndex on top of the
+# baseline. Going backwards re-merges with smaller K.</code></pre>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="4. Numeric threshold">
+                    <h3>4. Numeric signal — moving threshold</h3>
+                    <p class="subtitle">
+                        Any vega-lite <code>param</code> works, not just arrays. Here a numeric
+                        <code>threshold</code> drives both a colour split and a dashed reference line — both update on
+                        the same click.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "x": "A", "y": 28 },
+                                            { "x": "B", "y": 55 },
+                                            { "x": "C", "y": 43 },
+                                            { "x": "D", "y": 91 },
+                                            { "x": "E", "y": 12 },
+                                            { "x": "F", "y": 67 },
+                                            { "x": "G", "y": 35 },
+                                            { "x": "H", "y": 78 }
+                                        ]
+                                    },
+                                    "params": [{ "name": "threshold", "value": 0 }],
+                                    "layer": [
+                                        {
+                                            "mark": "bar",
+                                            "encoding": {
+                                                "x": { "field": "x", "type": "nominal" },
+                                                "y": {
+                                                    "field": "y",
+                                                    "type": "quantitative",
+                                                    "scale": { "domain": [0, 100] }
+                                                },
+                                                "color": { "value": "#5b9bd5" },
+                                                "opacity": {
+                                                    "condition": { "test": "datum.y >= threshold", "value": 1.0 },
+                                                    "value": 0.25
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "mark": {
+                                                "type": "rule",
+                                                "color": "#e91e63",
+                                                "strokeWidth": 2,
+                                                "strokeDash": [5, 4]
+                                            },
+                                            "encoding": {
+                                                "y": {
+                                                    "datum": { "expr": "threshold" },
+                                                    "type": "quantitative"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            </script>
+                            <script type="application/json" class="vega-fragments">
+                                [
+                                    { "at": 1, "signals": { "threshold": 30 } },
+                                    { "at": 2, "signals": { "threshold": 50 } },
+                                    { "at": 3, "signals": { "threshold": 75 } },
+                                    { "at": 4, "signals": { "threshold": 0 } }
+                                ]
+                            </script>
+                        </div>
+                        <pre><code data-language="html" data-dedent>"params": [{"name": "threshold", "value": 0}],
+"layer": [
+  {"mark": "bar", "encoding": {
+      "color": {"value": "#5b9bd5"},
+      "opacity": {
+        "condition": {
+          "test": "datum.y &gt;= threshold",
+          "value": 1.0},
+        "value": 0.25}}},
+  {"mark": "rule", "encoding": {
+      "y": {"datum": {"expr": "threshold"}}}}
+]
+
+&lt;script class="vega-fragments"&gt;
+[
+  {"at": 1, "signals": {"threshold": 30}},  # @1
+  {"at": 2, "signals": {"threshold": 50}},  # @2
+  {"at": 3, "signals": {"threshold": 75}},  # @3
+  {"at": 4, "signals": {"threshold": 0}}    # @4
+]
+&lt;/script&gt;</code></pre>
+                    </div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="5. Co-fire with bullets">
+                    <h3>5. Co-firing with bullets — same <code>data-fragment-index</code></h3>
+                    <p class="subtitle">
+                        Each chart fragment is a real reveal.js fragment, so a chart-state change at step
+                        <code>N</code> fires together with any bullet whose <code>data-fragment-index="N"</code>.
+                    </p>
+                    <div class="two-col-narrow">
+                        <div data-vega style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "stage": "Reason", "latency_ms": 320 },
+                                            { "stage": "Tool", "latency_ms": 880 },
+                                            { "stage": "Observe", "latency_ms": 140 },
+                                            { "stage": "Answer", "latency_ms": 410 }
+                                        ]
+                                    },
+                                    "params": [{ "name": "focus", "value": "" }],
+                                    "mark": "bar",
+                                    "encoding": {
+                                        "x": {
+                                            "field": "stage",
+                                            "type": "nominal",
+                                            "sort": ["Reason", "Tool", "Observe", "Answer"]
+                                        },
+                                        "y": { "field": "latency_ms", "type": "quantitative" },
+                                        "color": {
+                                            "field": "stage",
+                                            "type": "nominal",
+                                            "legend": {
+                                                "symbolOpacity": {
+                                                    "expr": "focus == '' || datum.value == focus ? 1 : 0.25"
+                                                },
+                                                "labelOpacity": {
+                                                    "expr": "focus == '' || datum.value == focus ? 1 : 0.4"
+                                                }
+                                            }
+                                        },
+                                        "opacity": {
+                                            "condition": {
+                                                "test": "focus == '' || datum.stage == focus",
+                                                "value": 1.0
+                                            },
+                                            "value": 0.25
+                                        }
+                                    }
+                                }
+                            </script>
+                            <script type="application/json" class="vega-fragments">
+                                [
+                                    { "at": 1, "signals": { "focus": "Reason" } },
+                                    { "at": 2, "signals": { "focus": "Tool" } },
+                                    { "at": 3, "signals": { "focus": "Observe" } },
+                                    { "at": 4, "signals": { "focus": "Answer" } },
+                                    { "at": 5, "signals": { "focus": "" } }
+                                ]
+                            </script>
+                        </div>
+                        <ul>
+                            <li class="fragment" data-fragment-index="1">
+                                The <strong>Reason</strong> step is fast — pure LLM call.
+                            </li>
+                            <li class="fragment" data-fragment-index="2">
+                                <strong>Tool</strong> dominates: a 0.9s external HTTP call.
+                            </li>
+                            <li class="fragment" data-fragment-index="3">
+                                <strong>Observe</strong> is cheap — local parsing.
+                            </li>
+                            <li class="fragment" data-fragment-index="4">
+                                <strong>Answer</strong> goes back through the LLM.
+                            </li>
+                            <li class="fragment" data-fragment-index="5">All four together — the cost profile.</li>
+                        </ul>
+                    </div>
+                    <p class="footnote">
+                        Five clicks. Each one shifts the chart's <code>focus</code> signal AND reveals one bullet —
+                        because they share the same <code>data-fragment-index</code> beat.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="6. usermeta — fragments inside the spec">
+                    <h3>6. <code>usermeta.revealFragments</code> — fragments inside the spec</h3>
+                    <p class="subtitle">
+                        Vega-Lite's <code>usermeta</code> is "metadata the renderer ignores, available to the host app."
+                        Dropping the fragment list there keeps the chart self-contained — no sibling
+                        <code>&lt;script&gt;</code> tag, one JSON file. The plugin checks both places, so the two styles
+                        are interchangeable.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "brand": "Alpha", "share": 28 },
+                                            { "brand": "Beta", "share": 22 },
+                                            { "brand": "Gamma", "share": 19 },
+                                            { "brand": "Delta", "share": 17 },
+                                            { "brand": "Epsilon", "share": 14 }
+                                        ]
+                                    },
+                                    "params": [{ "name": "spotlight", "value": "" }],
+                                    "mark": "bar",
+                                    "encoding": {
+                                        "x": { "field": "brand", "type": "nominal", "sort": null },
+                                        "y": { "field": "share", "type": "quantitative", "title": "share %" },
+                                        "color": { "field": "brand", "type": "nominal", "legend": null },
+                                        "opacity": {
+                                            "condition": {
+                                                "test": "spotlight == '' || datum.brand == spotlight",
+                                                "value": 1.0
+                                            },
+                                            "value": 0.25
+                                        }
+                                    },
+                                    "usermeta": {
+                                        "revealFragments": [
+                                            { "at": 1, "signals": { "spotlight": "Alpha" } },
+                                            { "at": 2, "signals": { "spotlight": "Beta" } },
+                                            { "at": 3, "signals": { "spotlight": "Gamma" } },
+                                            { "at": 4, "signals": { "spotlight": "Delta" } },
+                                            { "at": 5, "signals": { "spotlight": "Epsilon" } },
+                                            { "at": 6, "signals": { "spotlight": "" } }
+                                        ]
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <script data-highlight type="text/json" data-dedent>
+                            {
+                              "$schema": ".../vega-lite/v6.json",
+                              "data": {"values": [...]},
+                              "params": [{"name": "spotlight", "value": ""}],
+                              "mark": "bar",
+                              "encoding": {"...": "..."},
+                              "usermeta": {
+                                "revealFragments": [
+                                  {"at": 1, "signals": {"spotlight": "Alpha"}},    # @1
+                                  {"at": 2, "signals": {"spotlight": "Beta"}},     # @2
+                                  {"at": 3, "signals": {"spotlight": "Gamma"}},    # @3
+                                  {"at": 4, "signals": {"spotlight": "Delta"}},    # @4
+                                  {"at": 5, "signals": {"spotlight": "Epsilon"}},  # @5
+                                  {"at": 6, "signals": {"spotlight": ""}}          # @6
+                                ]
+                              }
+                            }
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Six clicks: each brand spotlit in turn, then a final reset. The whole story lives in one JSON
+                        object — no sibling files, no synchronisation problems.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="7. URL + Altair">
+                    <h3>7. URL spec + Altair — single self-contained file</h3>
+                    <p class="subtitle">
+                        For real lectures the spec usually comes from Altair. With <code>usermeta</code> the fragment
+                        narration lives inside <code>chart.save("img/foo.json")</code>'s output, so the slide markup is
+                        just a single one-line <code>&lt;div&gt;</code>.
+                    </p>
+                    <script data-highlight type="text/python" data-dedent>
+                        import altair as alt
+                        import pandas as pd
+
+                        df = pd.DataFrame({
+                            "Category": list("AABBCCDD"),
+                            "Value":    [10, 12, 18, 22, 8, 9, 30, 32],
+                            "X":        [1, 2, 1, 2, 1, 2, 1, 2],
+                        })
+                        active = alt.param(name="active_cats", value=[])
+                        test = ("length(active_cats) == 0 "
+                                "|| indexof(active_cats, datum.Category) >= 0")
+
+                        (
+                            alt.Chart(df).mark_circle(size=200).encode(
+                                x="X:Q", y="Value:Q",
+                                color=alt.Color("Category:N", legend=alt.Legend(
+                                    symbolOpacity=alt.expr(test),
+                                )),
+                                opacity=alt.condition(test, alt.value(1.0), alt.value(0.25)),
+                            )
+                            .add_params(active)
+                            .properties(usermeta={
+                                "revealFragments": [
+                                    {"at": 1, "signals": {"active_cats": ["A"]}},
+                                    {"at": 2, "signals": {"active_cats": ["A", "B"]}},
+                                    {"at": 3, "signals": {"active_cats": []}},
+                                ],
+                            })
+                            .save("img/sales.json")
+                        )
+                    </script>
+                    <script data-highlight type="text/html" data-dedent>
+                        <div class="r-stretch" data-vega="img/sales.json"></div>
+                    </script>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="8. Plotly — same idea, different backend">
+                    <h3>8. Plotly — same architecture, native API</h3>
+                    <p class="subtitle">
+                        Plotly works the same way as Vega: pre-injected proxies, cumulative-merge state, fragment list
+                        either in a sibling <code>&lt;script class="plotly-fragments"&gt;</code> or in
+                        <code>usermeta.revealFragments</code>. Entries use <code>restyle</code> /
+                        <code>relayout</code> instead of <code>signals</code> — same shape, just Plotly's native API.
+                    </p>
+                    <div class="two-col">
+                        <div data-plotly style="height: 360px">
+                            <script type="application/json" class="plotly-spec">
+                                {
+                                    "data": [
+                                        {
+                                            "type": "bar",
+                                            "name": "North",
+                                            "x": ["Q1", "Q2", "Q3", "Q4"],
+                                            "y": [120, 140, 138, 180],
+                                            "marker": { "color": "#5b9bd5" },
+                                            "opacity": 1
+                                        },
+                                        {
+                                            "type": "bar",
+                                            "name": "South",
+                                            "x": ["Q1", "Q2", "Q3", "Q4"],
+                                            "y": [95, 105, 110, 140],
+                                            "marker": { "color": "#ed7d31" },
+                                            "opacity": 1
+                                        },
+                                        {
+                                            "type": "bar",
+                                            "name": "East",
+                                            "x": ["Q1", "Q2", "Q3", "Q4"],
+                                            "y": [140, 138, 155, 170],
+                                            "marker": { "color": "#70ad47" },
+                                            "opacity": 1
+                                        },
+                                        {
+                                            "type": "bar",
+                                            "name": "West",
+                                            "x": ["Q1", "Q2", "Q3", "Q4"],
+                                            "y": [80, 90, 102, 115],
+                                            "marker": { "color": "#ffc000" },
+                                            "opacity": 1
+                                        }
+                                    ],
+                                    "layout": {
+                                        "barmode": "group",
+                                        "margin": { "t": 20, "r": 20, "b": 40, "l": 50 },
+                                        "showlegend": true,
+                                        "legend": { "orientation": "h", "y": -0.18 }
+                                    },
+                                    "usermeta": {
+                                        "revealFragments": [
+                                            { "at": 1, "restyle": { "opacity": [1, 0.25, 0.25, 0.25] } },
+                                            { "at": 2, "restyle": { "opacity": [0.25, 1, 0.25, 0.25] } },
+                                            { "at": 3, "restyle": { "opacity": [0.25, 0.25, 1, 0.25] } },
+                                            { "at": 4, "restyle": { "opacity": [0.25, 0.25, 0.25, 1] } },
+                                            { "at": 5, "restyle": { "opacity": [1, 1, 1, 1] } }
+                                        ]
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <script data-highlight type="text/json" data-dedent>
+                            {
+                                "data": [
+                                    { "type": "bar", "name": "North", "opacity": 1 },
+                                    { "type": "bar", "name": "South", "opacity": 1 },
+                                    { "type": "bar", "name": "East", "opacity": 1 },
+                                    { "type": "bar", "name": "West", "opacity": 1 }
+                                ],
+                                "layout": { "...": "..." },
+                                "usermeta": {
+                                    "revealFragments": [
+                                        { "at": 1, "restyle": { "opacity": [1, 0.25, 0.25, 0.25] } },  # @1
+                                        { "at": 2, "restyle": { "opacity": [0.25, 1, 0.25, 0.25] } },  # @2
+                                        { "at": 3, "restyle": { "opacity": [0.25, 0.25, 1, 0.25] } },  # @3
+                                        { "at": 4, "restyle": { "opacity": [0.25, 0.25, 0.25, 1] } },  # @4
+                                        { "at": 5, "restyle": { "opacity": [1, 1, 1, 1] } }            # @5
+                                    ]
+                                }
+                            }
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        Trace-level <code>opacity</code> (vs <code>marker.opacity</code>) dims the legend swatch too.
+                        <code>restyle</code> arrays are positional: index <code>i</code> → trace <code>i</code>. For
+                        layout-side gestures (annotations, axis ranges, shapes) use <code>relayout</code> with
+                        dotted-path keys like <code>"shapes[0].y0"</code>.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="9. Decoupled data — attribute">
+                    <h3>9. Decoupled data — sidecar via container attribute</h3>
+                    <p class="subtitle">
+                        For one dataset, drop it into a separate JSON file and reference it via
+                        <code>data-vega-data="..."</code>. The plugin fetches the file once, caches it, and writes
+                        <code>spec.data.values</code> at preInject time — so the inline spec stays slim enough to
+                        hand-edit (or paste into an LLM) while the bulky data lives next door.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega data-vega-data="data/quarterly-sales.json" style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {},
+                                    "mark": { "type": "bar", "color": "#5b9bd5" },
+                                    "encoding": {
+                                        "x": {
+                                            "field": "quarter",
+                                            "type": "ordinal",
+                                            "sort": null,
+                                            "axis": { "labelAngle": -30 }
+                                        },
+                                        "y": {
+                                            "field": "revenue",
+                                            "type": "quantitative",
+                                            "title": "revenue ($M)"
+                                        }
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <pre><code data-language="html" data-dedent>&lt;div data-vega
+     data-vega-data="data/quarterly-sales.json"&gt;
+    &lt;script type="application/json" class="vega-spec"&gt;
+        {
+          "data": {},
+          "mark": "bar",
+          "encoding": {
+            "x": {"field": "quarter", ...},
+            "y": {"field": "revenue", ...}
+          }
+        }
+    &lt;/script&gt;
+&lt;/div&gt;
+
+# data/quarterly-sales.json (separate file):
+# [{"quarter": "Q1 2023", "revenue": 142}, ...]</code></pre>
+                    </div>
+                    <p class="footnote">
+                        Vega-Lite's native <code>{"data": {"url": "..."}}</code> works too, with no plugin involvement —
+                        that's the right choice for vega-only decks. Use the <code>data-*-data</code> attribute when you
+                        want the plugin's per-URL fetch cache (one round-trip even if N charts share the dataset), or
+                        for Plotly where there's no built-in URL mechanism.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="10. Multiple named datasets">
+                    <h3>10. Multiple named datasets via sibling scripts</h3>
+                    <p class="subtitle">
+                        For multi-dataset specs (lookups, layered marks pulling from different sources), sibling
+                        <code>&lt;script class="vega-data" data-name="..." data-src="..."&gt;</code> blocks each
+                        populate one entry of <code>spec.datasets</code>. Inline JSON works too — useful when a small
+                        annotation dataset rides alongside a large time-series.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 360px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": { "name": "trend" },
+                                    "datasets": { "trend": [], "events": [] },
+                                    "layer": [
+                                        {
+                                            "mark": { "type": "line", "color": "#5b9bd5", "strokeWidth": 2.5 },
+                                            "encoding": {
+                                                "x": { "field": "day", "type": "ordinal", "title": "day" },
+                                                "y": {
+                                                    "field": "value",
+                                                    "type": "quantitative",
+                                                    "title": "metric"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "data": { "name": "events" },
+                                            "mark": {
+                                                "type": "rule",
+                                                "color": "#e91e63",
+                                                "strokeWidth": 1.5,
+                                                "strokeDash": [4, 3]
+                                            },
+                                            "encoding": { "x": { "field": "day", "type": "ordinal" } }
+                                        },
+                                        {
+                                            "data": { "name": "events" },
+                                            "mark": {
+                                                "type": "text",
+                                                "color": "#e91e63",
+                                                "fontSize": 11,
+                                                "dy": -150,
+                                                "align": "left",
+                                                "dx": 4
+                                            },
+                                            "encoding": {
+                                                "x": { "field": "day", "type": "ordinal" },
+                                                "text": { "field": "label" }
+                                            }
+                                        }
+                                    ]
+                                }
+                            </script>
+                            <script
+                                type="application/json"
+                                class="vega-data"
+                                data-name="trend"
+                                data-src="data/trend.json">
+                            </script>
+                            <script type="application/json" class="vega-data" data-name="events">
+                                [
+                                    { "day": "04", "label": "launch" },
+                                    { "day": "09", "label": "fix" },
+                                    { "day": "13", "label": "v2" }
+                                ]
+                            </script>
+                        </div>
+                        <pre><code data-language="html" data-dedent>&lt;div data-vega&gt;
+  &lt;script class="vega-spec"&gt;
+    {"data": {"name": "trend"},
+     "datasets": {"trend": [], "events": []},
+     "layer": [
+       {"mark": "line", "encoding": {...}},
+       {"data": {"name": "events"},
+        "mark": "rule", ...},
+       {"data": {"name": "events"},
+        "mark": "text", ...}
+     ]}
+  &lt;/script&gt;
+
+  &lt;script class="vega-data"
+          data-name="trend"
+          data-src="data/trend.json"&gt;&lt;/script&gt;
+
+  &lt;script class="vega-data" data-name="events"&gt;
+    [{"day": "04", "label": "launch"},
+     {"day": "09", "label": "fix"},
+     {"day": "13", "label": "v2"}]
+  &lt;/script&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                    <p class="footnote">
+                        Each named entry is written to <code>spec.datasets[name]</code>; the spec references them by
+                        <code>{"data": {"name": "..."}}</code>. URL entries hit the per-URL cache, so a dataset shared
+                        across multiple charts is fetched once. Plotly works the same way with
+                        <code>plotly-data</code> + a <code>data-path</code> writing into the spec.
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/fragment-index.js"></script>
+        <script src="../reveal-custom/plugins/interactive-charts.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: { theme: "monokai", language: "python", showGutter: false },
+                plugins: [RevealFragmentIndex, RevealInteractiveCharts, RevealHighlightAce, RevealMenu],
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

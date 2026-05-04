@@ -9,215 +9,225 @@
  */
 
 const RevealWebcam = {
-    id: 'webcam',
-    init: (reveal) => {
-        let revealViewport = reveal.getViewportElement();
+	id: "webcam",
+	init: (reveal) => {
+		let revealViewport = reveal.getViewportElement();
 
-        let options = reveal.getConfig().webcam || {};
-        options = {
-            initializeOnLoad: options.initializeOnLoad !== false,
-            keys: {
-                toggle: options.keys && options.keys.toggle || 'c',
-                fullscreen: options.keys && options.keys.fullscreen || 'C'
-            },
-            fullscreen: {
-                enabled: (options.fullscreen && options.fullscreen.enabled) !== false,
-                opacity: options.fullscreen && options.fullscreen.opacity || '1.0',
-                shrinkOnOverview: (options.fullscreen && options.fullscreen.shrinkOnOverview) !== false,
-                horizontalPadding: (options.fullscreen && options.fullscreen.horizontalPadding) !== undefined ? options.fullscreen.horizontalPadding: 20,
-                verticalPadding: (options.fullscreen && options.fullscreen.verticalPadding) !== undefined ? options.fullscreen.verticalPadding: 20
-            },
-            sidecam: {
-                enabled: (options.sidecam && options.sidecam.enabled) !== false,
-                style: {
-                    left: '20px',
-                    top: '20px',
-                    height: '100px',
-                    position: 'absolute',
-                    transition: '0.5s ease',
-                    opacity: '0.7',
-                    'z-index': '100'
-                }
-            }
-        };
+		let options = reveal.getConfig().webcam || {};
+		options = {
+			initializeOnLoad: options.initializeOnLoad !== false,
+			keys: {
+				toggle: (options.keys && options.keys.toggle) || "c",
+				fullscreen: (options.keys && options.keys.fullscreen) || "C",
+			},
+			fullscreen: {
+				enabled: (options.fullscreen && options.fullscreen.enabled) !== false,
+				opacity: (options.fullscreen && options.fullscreen.opacity) || "1.0",
+				shrinkOnOverview: (options.fullscreen && options.fullscreen.shrinkOnOverview) !== false,
+				horizontalPadding:
+					(options.fullscreen && options.fullscreen.horizontalPadding) !== undefined
+						? options.fullscreen.horizontalPadding
+						: 20,
+				verticalPadding:
+					(options.fullscreen && options.fullscreen.verticalPadding) !== undefined
+						? options.fullscreen.verticalPadding
+						: 20,
+			},
+			sidecam: {
+				enabled: (options.sidecam && options.sidecam.enabled) !== false,
+				style: {
+					left: "20px",
+					top: "20px",
+					height: "100px",
+					position: "absolute",
+					transition: "0.5s ease",
+					opacity: "0.7",
+					"z-index": "100",
+				},
+			},
+		};
 
-        let isInitialized = false;
-        let currentlyFullscreen = false;
-        let currentlyHidden = false;
+		let isInitialized = false;
+		let currentlyFullscreen = false;
+		let currentlyHidden = false;
 
-        let permanentCam = reveal.getViewportElement().querySelector('video.webcam.permanent');
-        if(!permanentCam && options.sidecam.enabled) {
-            permanentCam = document.createElement('video');
-            permanentCam.classList.add('webcam');
-            permanentCam.classList.add('permanent');
-            for(let attr in options.sidecam.style)
-                permanentCam.style.setProperty(attr, options.sidecam.style[attr]);
+		let permanentCam = reveal.getViewportElement().querySelector("video.webcam.permanent");
+		if (!permanentCam && options.sidecam.enabled) {
+			permanentCam = document.createElement("video");
+			permanentCam.classList.add("webcam");
+			permanentCam.classList.add("permanent");
+			for (let attr in options.sidecam.style) permanentCam.style.setProperty(attr, options.sidecam.style[attr]);
 
-            reveal.getViewportElement().appendChild(permanentCam);
-        }
+			reveal.getViewportElement().appendChild(permanentCam);
+		}
 
-        if(!options.initializeOnLoad && permanentCam) {
-            if (!permanentCam.hasAttribute('data-webcam-old-opacity'))
-                permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
-            if (!permanentCam.hasAttribute('data-webcam-old-height'))
-                permanentCam.setAttribute('data-webcam-old-height', permanentCam.style.height);
+		if (!options.initializeOnLoad && permanentCam) {
+			if (!permanentCam.hasAttribute("data-webcam-old-opacity"))
+				permanentCam.setAttribute("data-webcam-old-opacity", permanentCam.style.opacity);
+			if (!permanentCam.hasAttribute("data-webcam-old-height"))
+				permanentCam.setAttribute("data-webcam-old-height", permanentCam.style.height);
 
-            permanentCam.style.opacity = '0';
-            permanentCam.style.height = '0px';
-            currentlyHidden = true;
-        }
+			permanentCam.style.opacity = "0";
+			permanentCam.style.height = "0px";
+			currentlyHidden = true;
+		}
 
-        function shrinkWebcamVideo() {
-            if (!permanentCam)
-                return;
-            if (!currentlyHidden && permanentCam.hasAttribute('data-webcam-old-opacity'))
-                permanentCam.style.opacity = permanentCam.getAttribute('data-webcam-old-opacity');
+		function shrinkWebcamVideo() {
+			if (!permanentCam) return;
+			if (!currentlyHidden && permanentCam.hasAttribute("data-webcam-old-opacity"))
+				permanentCam.style.opacity = permanentCam.getAttribute("data-webcam-old-opacity");
 
-            for(let attr of ['left', 'right', 'top', 'bottom', 'width', 'height']){
-                if (permanentCam.hasAttribute('data-webcam-old-'+attr))
-                    permanentCam.style.setProperty(attr, permanentCam.getAttribute('data-webcam-old-'+attr));
-            }
-        }
+			for (let attr of ["left", "right", "top", "bottom", "width", "height"]) {
+				if (permanentCam.hasAttribute("data-webcam-old-" + attr))
+					permanentCam.style.setProperty(attr, permanentCam.getAttribute("data-webcam-old-" + attr));
+			}
+		}
 
-        function expandWebcamVideo() {
-            if (!permanentCam)
-                return;
-            let viewportWidth = revealViewport.clientWidth;
-            let viewportHeight = revealViewport.clientHeight;
+		function expandWebcamVideo() {
+			if (!permanentCam) return;
+			let viewportWidth = revealViewport.clientWidth;
+			let viewportHeight = revealViewport.clientHeight;
 
-            let videoHeight = permanentCam.videoHeight;
-            let videoWidth = permanentCam.videoWidth;
-            // If video size is completely specified by user take this as canonical video dimensions
-            if (permanentCam.style.width && permanentCam.style.height) {
-                videoHeight = parseInt(permanentCam.style.height);
-                videoWidth = parseInt(permanentCam.style.width);
-            }
+			let videoHeight = permanentCam.videoHeight;
+			let videoWidth = permanentCam.videoWidth;
+			// If video size is completely specified by user take this as canonical video dimensions
+			if (permanentCam.style.width && permanentCam.style.height) {
+				videoHeight = parseInt(permanentCam.style.height);
+				videoWidth = parseInt(permanentCam.style.width);
+			}
 
-            let wRatio = (videoWidth + 2 * options.fullscreen.horizontalPadding) / viewportWidth;
-            let hRatio = (videoHeight + 2 * options.fullscreen.verticalPadding) / viewportHeight;
+			let wRatio = (videoWidth + 2 * options.fullscreen.horizontalPadding) / viewportWidth;
+			let hRatio = (videoHeight + 2 * options.fullscreen.verticalPadding) / viewportHeight;
 
-            if (!currentlyHidden) {
-                if (!permanentCam.hasAttribute('data-webcam-old-opacity')) {
-                    permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
-                }
-                permanentCam.style.opacity = options.fullscreen.opacity;
-            }
+			if (!currentlyHidden) {
+				if (!permanentCam.hasAttribute("data-webcam-old-opacity")) {
+					permanentCam.setAttribute("data-webcam-old-opacity", permanentCam.style.opacity);
+				}
+				permanentCam.style.opacity = options.fullscreen.opacity;
+			}
 
-            let newVideoWidth, newVideoHeight, horizontalPadding, verticalPadding;
-            if (wRatio > hRatio) {
-                newVideoWidth = Math.round(viewportWidth - 2 * options.fullscreen.horizontalPadding);
-                newVideoHeight = Math.round(newVideoWidth * videoHeight / videoWidth);
-                horizontalPadding = options.fullscreen.horizontalPadding;
-                verticalPadding = Math.round(0.5 * (viewportHeight - newVideoHeight));
-            } else {
-                newVideoHeight = Math.round(viewportHeight - 2 * options.fullscreen.verticalPadding);
-                newVideoWidth = Math.round(newVideoHeight * videoWidth / videoHeight);
-                horizontalPadding = Math.round(0.5 * (viewportWidth - newVideoWidth));
-                verticalPadding = options.fullscreen.verticalPadding;
-            }
+			let newVideoWidth, newVideoHeight, horizontalPadding, verticalPadding;
+			if (wRatio > hRatio) {
+				newVideoWidth = Math.round(viewportWidth - 2 * options.fullscreen.horizontalPadding);
+				newVideoHeight = Math.round((newVideoWidth * videoHeight) / videoWidth);
+				horizontalPadding = options.fullscreen.horizontalPadding;
+				verticalPadding = Math.round(0.5 * (viewportHeight - newVideoHeight));
+			} else {
+				newVideoHeight = Math.round(viewportHeight - 2 * options.fullscreen.verticalPadding);
+				newVideoWidth = Math.round((newVideoHeight * videoWidth) / videoHeight);
+				horizontalPadding = Math.round(0.5 * (viewportWidth - newVideoWidth));
+				verticalPadding = options.fullscreen.verticalPadding;
+			}
 
-            let newVideoElementStyle = {
-                left: horizontalPadding,
-                right: horizontalPadding,
-                top: verticalPadding,
-                bottom: verticalPadding,
-                height: newVideoHeight,
-                width: newVideoWidth
-            };
+			let newVideoElementStyle = {
+				left: horizontalPadding,
+				right: horizontalPadding,
+				top: verticalPadding,
+				bottom: verticalPadding,
+				height: newVideoHeight,
+				width: newVideoWidth,
+			};
 
-            for(let attr of ['left', 'right', 'top', 'bottom', 'width', 'height']){
-                if (permanentCam.style[attr]) {
-                    permanentCam.setAttribute('data-webcam-old-' + attr, permanentCam.style[attr]);
-                    permanentCam.style.setProperty(attr, newVideoElementStyle[attr].toString() + 'px');
-                }
-            }
-        }
+			for (let attr of ["left", "right", "top", "bottom", "width", "height"]) {
+				if (permanentCam.style[attr]) {
+					permanentCam.setAttribute("data-webcam-old-" + attr, permanentCam.style[attr]);
+					permanentCam.style.setProperty(attr, newVideoElementStyle[attr].toString() + "px");
+				}
+			}
+		}
 
-        function initializeWebcam() {
-            if(isInitialized)
-                return;
-            isInitialized = true;
+		function initializeWebcam() {
+			if (isInitialized) return;
+			isInitialized = true;
 
-            navigator.mediaDevices.getUserMedia({video: true}).then(function (localMediaStream) {
-                for (let webcamContainer of revealViewport.querySelectorAll('video.webcam')) {
-                    webcamContainer.srcObject = localMediaStream;
-                    webcamContainer.setAttribute('autoplay', 'true');
-                    webcamContainer.setAttribute('data-autoplay', 'true');
-                }
+			navigator.mediaDevices
+				.getUserMedia({ video: true })
+				.then(function (localMediaStream) {
+					for (let webcamContainer of revealViewport.querySelectorAll("video.webcam")) {
+						webcamContainer.srcObject = localMediaStream;
+						webcamContainer.setAttribute("autoplay", "true");
+						webcamContainer.setAttribute("data-autoplay", "true");
+					}
 
-                if (!permanentCam)
-                    return;
+					if (!permanentCam) return;
 
-                permanentCam.srcObject = localMediaStream;
-                permanentCam.setAttribute('autoplay', 'true');
-            }).catch(
-                function (err) {
-                    console.warn(err);
-                }
-            );
-        }
+					permanentCam.srcObject = localMediaStream;
+					permanentCam.setAttribute("autoplay", "true");
+				})
+				.catch(function (err) {
+					console.warn(err);
+				});
+		}
 
-        reveal.addEventListener('ready', function () {
-            if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-                console.warn('Couldn\'t retrieve webcam video: feature unsupported by your browser');
-                return;
-            }
+		let webcamListenersAttached = false;
 
-            if(options.initializeOnLoad && !isInitialized) {
-                initializeWebcam();
-            }
+		if (options.fullscreen.shrinkOnOverview) {
+			reveal.addEventListener("overviewshown", function () {
+				if (currentlyFullscreen && !currentlyHidden) {
+					shrinkWebcamVideo();
+					currentlyFullscreen = false;
+				}
+			});
+		}
 
-            if (options.fullscreen.shrinkOnOverview) {
-                reveal.addEventListener('overviewshown', function () {
-                    if (currentlyFullscreen && !currentlyHidden) {
-                        shrinkWebcamVideo();
-                        currentlyFullscreen = false;
-                    }
-                });
-            }
+		reveal.addEventListener("ready", function () {
+			if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+				console.warn("Couldn't retrieve webcam video: feature unsupported by your browser");
+				return;
+			}
 
-            document.addEventListener('keydown', function (event) {
-                if (document.querySelector(':focus') !== null || event.altKey || event.ctrlKey || event.metaKey)
-                    return;
+			if (options.initializeOnLoad && !isInitialized) {
+				initializeWebcam();
+			}
 
-                let config = reveal.getConfig();
-                if(config.keyboardCondition === 'focused' && ! reveal.isFocused())
-                    return true;
-                if(config.keyboardCondition === 'function' && config.keyboardCondition(event) === false ) {
-                    return true;
-                }
+			if (webcamListenersAttached) return;
+			webcamListenersAttached = true;
 
-                if (event.key === options.keys.toggle && options.sidecam.enabled || event.key === options.keys.fullscreen && options.fullscreen.enabled) {
-                    event.preventDefault();
+			document.addEventListener(
+				"keydown",
+				function (event) {
+					if (document.querySelector(":focus") !== null || event.altKey || event.ctrlKey || event.metaKey) return;
 
-                    if (!isInitialized) {
-                        initializeWebcam();
-                    }
+					let config = reveal.getConfig();
+					if (config.keyboardCondition === "focused" && !reveal.isFocused()) return true;
+					if (config.keyboardCondition === "function" && config.keyboardCondition(event) === false) {
+						return true;
+					}
 
-                    if (event.key === options.keys.fullscreen) {
-                        currentlyFullscreen ? shrinkWebcamVideo() : expandWebcamVideo();
-                        currentlyFullscreen = !currentlyFullscreen;
-                    } else {
-                        if (currentlyHidden) {
-                            permanentCam.style.opacity = currentlyFullscreen ? options.fullscreen.opacity : permanentCam.getAttribute('data-webcam-old-opacity');
-                            if(!currentlyFullscreen)
-                                permanentCam.style.height = options.sidecam.style.height;
-                            currentlyHidden = false;
-                        }
-                        else {
-                            if (!permanentCam.hasAttribute('data-webcam-old-opacity')) {
-                                permanentCam.setAttribute('data-webcam-old-opacity', permanentCam.style.opacity);
-                            }
+					if (
+						(event.key === options.keys.toggle && options.sidecam.enabled) ||
+						(event.key === options.keys.fullscreen && options.fullscreen.enabled)
+					) {
+						event.preventDefault();
 
-                            permanentCam.style.opacity = '0';
-                            if(!currentlyFullscreen)
-                                permanentCam.style.height = '0px';
-                            currentlyHidden = true;
-                        }
-                    }
-                }
-            }, false);
+						if (!isInitialized) {
+							initializeWebcam();
+						}
 
-        });
-    }
+						if (event.key === options.keys.fullscreen) {
+							currentlyFullscreen ? shrinkWebcamVideo() : expandWebcamVideo();
+							currentlyFullscreen = !currentlyFullscreen;
+						} else {
+							if (currentlyHidden) {
+								permanentCam.style.opacity = currentlyFullscreen
+									? options.fullscreen.opacity
+									: permanentCam.getAttribute("data-webcam-old-opacity");
+								if (!currentlyFullscreen) permanentCam.style.height = options.sidecam.style.height;
+								currentlyHidden = false;
+							} else {
+								if (!permanentCam.hasAttribute("data-webcam-old-opacity")) {
+									permanentCam.setAttribute("data-webcam-old-opacity", permanentCam.style.opacity);
+								}
+
+								permanentCam.style.opacity = "0";
+								if (!currentlyFullscreen) permanentCam.style.height = "0px";
+								currentlyHidden = true;
+							}
+						}
+					}
+				},
+				false,
+			);
+		});
+	},
 };

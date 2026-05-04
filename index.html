@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Alex Dainiak's reveal.js plugin showcase</title>
+        <link rel="stylesheet" href="reveal/dist/reset.css" />
+        <link rel="stylesheet" href="reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="reveal/dist/theme/black.css" id="theme" />
+        <link rel="stylesheet" href="reveal-custom/css/extras.css" />
+        <link rel="stylesheet" href="reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal h2 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 {
+                margin-bottom: 0.4em;
+            }
+            .reveal h3 code {
+                font-size: 0.85em;
+                background: rgba(255, 255, 255, 0.07);
+                padding: 0.05em 0.3em;
+                border-radius: 4px;
+            }
+            .reveal .subtitle {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.3em;
+            }
+            .reveal .footnote {
+                font-size: 0.55em;
+                opacity: 0.7;
+                margin-top: 0.6em;
+            }
+            .reveal kbd {
+                background: #444;
+                padding: 0.1em 0.3em;
+                border-radius: 3px;
+                font-size: 0.85em;
+            }
+            .reveal .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.4em;
+                align-items: start;
+            }
+            .reveal .two-col-narrow {
+                display: grid;
+                grid-template-columns: 3fr 2fr;
+                gap: 1.4em;
+                align-items: start;
+            }
+            .reveal pre {
+                width: 100%;
+                font-size: 0.46em;
+            }
+            .reveal pre code {
+                padding: 0.4em 0.6em;
+                max-height: 600px;
+            }
+            .reveal table {
+                font-size: 0.65em;
+                margin: 0.4em auto;
+                border-collapse: collapse;
+                min-width: 60%;
+            }
+            .reveal table th,
+            .reveal table td {
+                padding: 0.3em 0.8em;
+                text-align: left;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            .reveal table th {
+                font-weight: 600;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+            }
+            .reveal a.demo-link {
+                display: inline-block;
+                margin-top: 0.6em;
+                font-size: 0.6em;
+                padding: 0.3em 0.8em;
+                border: 1px solid rgba(255, 255, 255, 0.35);
+                border-radius: 4px;
+                text-decoration: none;
+            }
+            .reveal a.demo-link:hover {
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .reveal ul.plugin-list {
+                font-size: 0.65em;
+                text-align: left;
+                max-width: 75%;
+                margin: 0 auto;
+            }
+            .reveal ul.plugin-list li {
+                margin: 0.35em 0;
+            }
+            .reveal ul.plugin-list code {
+                font-weight: 600;
+            }
+            .reveal div[data-vega] {
+                background: #fff;
+                border-radius: 4px;
+                padding: 0.4em;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- MathJax preamble (used by the math plugin) -->
+        <script type="text/latex" id="mathjaxPreamble">
+            \newcommand{\bbR}{\mathbb{R}}
+            \newcommand{\bbN}{\mathbb{N}}
+            \newcommand{\bbZ}{\mathbb{Z}}
+        </script>
+
+        <div class="reveal">
+            <div class="slides">
+                <!-- ============================================================ -->
+                <section data-menu-title="Title">
+                    <h2>reveal.js plugin showcase</h2>
+                    <p>A collection of plugins for richer reveal.js presentations.</p>
+                    <p class="subtitle">
+                        By <a href="https://www.dainiak.com">Alex Dainiak</a>. One slide per plugin &mdash; click the
+                        link in the footer to dive into a full demo deck for each one.
+                    </p>
+                    <p class="subtitle">
+                        Press <kbd>Space</kbd> / <kbd>&rarr;</kbd> to step through. <kbd>Esc</kbd> for slide overview.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="What's inside">
+                    <h3>What's in the bundle</h3>
+                    <ul class="plugin-list">
+                        <li>
+                            <code>mermaid.js</code> &mdash; Mermaid diagrams with rich fragment-driven animation
+                            (declarative DSL: <code>%%! show / highlight / dim / accent / spotlight</code>)
+                        </li>
+                        <li>
+                            <code>highlight-ace.js</code> &mdash; syntax highlighting + live editor (Ace), with
+                            stable-anchor line highlighting (<code>data-line-anchors</code>)
+                        </li>
+                        <li>
+                            <code>interactive-charts.js</code> &mdash; Vega-Lite, Plotly, Bokeh charts driven by reveal
+                            fragments (<code>data-vega</code>, <code>data-plotly</code>, <code>data-bokeh</code>)
+                        </li>
+                        <li>
+                            <code>interactive-table.js</code> &mdash; tables with scripted sort + cell/row/column
+                            highlighting tied to fragments
+                        </li>
+                        <li>
+                            <code>math.js</code> / <code>math-katex.js</code> &mdash; MathJax / KaTeX math, with built-in
+                            <code>\step</code>/<code>\next</code>/<code>\vstep</code> fragment macros
+                        </li>
+                        <li>
+                            <code>inking.js</code> &mdash; interactive whiteboard layered over slides (free drawing,
+                            math insertion, spotlight, SVG preload, JSON replay)
+                        </li>
+                        <li>
+                            <code>pyodide.js</code> &mdash; in-browser Python execution with a live editor
+                        </li>
+                        <li>
+                            <code>content-loader.js</code> &mdash; load external HTML/text/SVG/PDF into slide
+                            containers; register custom DOM actions
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    MERMAID                                    -->
+                <!-- ============================================================ -->
+                <section data-menu-title="Mermaid">
+                    <h3><code>mermaid.js</code> &mdash; staged diagram reveal</h3>
+                    <p class="subtitle">
+                        High-level directives drive fragment timing. <code>%%! show</code> introduces nodes; edges
+                        auto-propagate. <code>highlight</code>/<code>dim</code>/<code>accent</code>/<code>spotlight</code>
+                        direct attention.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                flowchart LR
+                                    U[User] --> R[Reason]
+                                    R --> T[Tool]
+                                    T --> O[Observe]
+                                    O --> R
+                                    O --> A[Answer]
+                                    %%! show U at 1
+                                    %%! show R at 2
+                                    %%! show T at 3
+                                    %%! show O at 4
+                                    %%! show A at 5
+                                    %%! highlight T at 6
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            flowchart LR
+                                U[User] --> R[Reason]
+                                R --> T[Tool]
+                                T --> O[Observe]
+                                O --> R
+                                O --> A[Answer]
+                                %%! show U at 1
+                                %%! show R at 2
+                                %%! show T at 3
+                                %%! show O at 4
+                                %%! show A at 5
+                                %%! highlight T at 6
+                        </script>
+                    </div>
+                    <a class="demo-link" href="demo-mermaid/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    HIGHLIGHT-ACE                              -->
+                <!-- ============================================================ -->
+                <section data-menu-title="highlight-ace">
+                    <h3><code>highlight-ace.js</code> &mdash; line anchors that survive edits</h3>
+                    <p class="subtitle">
+                        Tag lines with <code># @N</code> (or <code>// @N</code>, <code>-- @N</code>, etc.). Anchors
+                        survive reformatting &mdash; never count line numbers again.
+                    </p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        from sqlalchemy import String                              # @1
+                        from sqlalchemy.orm import DeclarativeBase, Mapped         # @1
+
+                        class Base(DeclarativeBase):                               # @2
+                            pass                                                   # @2
+
+                        class User(Base):                                          # @3
+                            __tablename__ = "users"                                # @3
+                            id: Mapped[int] = mapped_column(primary_key=True)      # @3
+                            name: Mapped[str] = mapped_column(String(100))         # @3
+                    </script>
+                    <a class="demo-link" href="demo-ace/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    INTERACTIVE-CHARTS (Vega)                  -->
+                <!-- ============================================================ -->
+                <section data-menu-title="Interactive charts">
+                    <h3><code>interactive-charts.js</code> &mdash; click-driven chart narration</h3>
+                    <p class="subtitle">
+                        Vega-Lite parameters change on each fragment. Same engine handles Plotly and Bokeh too &mdash; one
+                        spec, one fragment list, one declarative file.
+                    </p>
+                    <div class="two-col">
+                        <div data-vega style="height: 320px">
+                            <script type="application/json" class="vega-spec">
+                                {
+                                    "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+                                    "width": "container",
+                                    "height": "container",
+                                    "data": {
+                                        "values": [
+                                            { "stage": "Reason", "ms": 320 },
+                                            { "stage": "Tool", "ms": 880 },
+                                            { "stage": "Observe", "ms": 140 },
+                                            { "stage": "Answer", "ms": 410 }
+                                        ]
+                                    },
+                                    "params": [{ "name": "focus", "value": "" }],
+                                    "mark": "bar",
+                                    "encoding": {
+                                        "x": {
+                                            "field": "stage",
+                                            "type": "nominal",
+                                            "sort": ["Reason", "Tool", "Observe", "Answer"]
+                                        },
+                                        "y": { "field": "ms", "type": "quantitative", "title": "latency (ms)" },
+                                        "color": { "field": "stage", "type": "nominal", "legend": null },
+                                        "opacity": {
+                                            "condition": {
+                                                "test": "focus == '' || datum.stage == focus",
+                                                "value": 1
+                                            },
+                                            "value": 0.25
+                                        }
+                                    },
+                                    "usermeta": {
+                                        "revealFragments": [
+                                            { "at": 1, "signals": { "focus": "Reason" } },
+                                            { "at": 2, "signals": { "focus": "Tool" } },
+                                            { "at": 3, "signals": { "focus": "Observe" } },
+                                            { "at": 4, "signals": { "focus": "Answer" } },
+                                            { "at": 5, "signals": { "focus": "" } }
+                                        ]
+                                    }
+                                }
+                            </script>
+                        </div>
+                        <ul style="font-size: 0.68em">
+                            <li class="fragment" data-fragment-index="1">Reason &mdash; pure LLM call, fast.</li>
+                            <li class="fragment" data-fragment-index="2">Tool &mdash; HTTP, dominates the budget.</li>
+                            <li class="fragment" data-fragment-index="3">Observe &mdash; cheap parsing.</li>
+                            <li class="fragment" data-fragment-index="4">Answer &mdash; second LLM round-trip.</li>
+                            <li class="fragment" data-fragment-index="5">All four together &mdash; the full picture.</li>
+                        </ul>
+                    </div>
+                    <a class="demo-link" href="demo-charts/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    INTERACTIVE-TABLE                          -->
+                <!-- ============================================================ -->
+                <section data-menu-title="Interactive table">
+                    <h3><code>interactive-table.js</code> &mdash; scripted sort &amp; highlight</h3>
+                    <p class="subtitle">
+                        <code>data-sort</code> + <code>data-highlight</code> drive both the sort order and which
+                        cells/rows light up at each fragment.
+                    </p>
+                    <table data-interactive-table data-sort="2 asc @1 | 3 desc @2" data-highlight="1-2 @1 | 1 @2">
+                        <thead>
+                            <tr><th>Model</th><th>Latency (ms)</th><th>Quality</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Haiku 4.5</td>     <td>180</td><td>7.8</td></tr>
+                            <tr><td>Sonnet 4.6</td>    <td>420</td><td>8.9</td></tr>
+                            <tr><td>Opus 4.7</td>      <td>900</td><td>9.6</td></tr>
+                            <tr><td>GPT-4 Turbo</td>   <td>650</td><td>9.0</td></tr>
+                            <tr><td>Gemini Flash</td>  <td>240</td><td>8.2</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="footnote">
+                        Click 1: sort by latency, highlight the two fastest. Click 2: sort by quality, highlight the
+                        strongest. Click headers any time to sort manually.
+                    </p>
+                    <a class="demo-link" href="demo-tables/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    MATH                                       -->
+                <!-- ============================================================ -->
+                <section data-menu-title="Math">
+                    <h3><code>math.js</code> &mdash; LaTeX with reveal fragments</h3>
+                    <p class="subtitle">
+                        MathJax-powered (also <code>math-katex.js</code> for KaTeX). Built-in <code>\step</code> /
+                        <code>\next</code> macros wrap subexpressions in reveal fragments &mdash; clicks animate parts of
+                        a formula.
+                    </p>
+                    <div class="proposition">
+                        <div class="title">Binomial expansion</div>
+                        <div class="statement">For \(a,b\in\bbR\) and \(n\in\bbN\):</div>
+                    </div>
+                    <p>
+                        \[\begin{array}{rl}
+                        (a+b)^n &\step{= \underbrace{(a+b)\cdot\dots\cdot(a+b)}_{n\text{ times}}} \\
+                        &\next{= \sum\limits_{\next{k=0}}^\next{n}\next{\binom{n}{k}\, a^k b^{n-k}.}}
+                        \end{array}\]
+                    </p>
+                    <a class="demo-link" href="demo-math/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    INKING                                     -->
+                <!-- ============================================================ -->
+                <section data-show-inking-canvas data-menu-title="Inking">
+                    <h3><code>inking.js</code> &mdash; whiteboard on top of the slide</h3>
+                    <p class="subtitle">Try the shortcuts on this very slide:</p>
+                    <ul style="font-size: 0.7em">
+                        <li><kbd>Ctrl</kbd>+<kbd>LeftClick</kbd>+drag &mdash; draw freely</li>
+                        <li><kbd>=</kbd> &mdash; insert a LaTeX formula at the mouse</li>
+                        <li><kbd>Shift</kbd>+drag &mdash; erase</li>
+                        <li><kbd>Alt</kbd>+<kbd>Click</kbd> or <kbd>x</kbd> &mdash; spotlight</li>
+                        <li><kbd>q</kbd> &mdash; show / hide the canvas; <kbd>z</kbd> &mdash; export to SVG / JSON</li>
+                    </ul>
+                    <a class="demo-link" href="demo-inking/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    PYODIDE                                    -->
+                <!-- ============================================================ -->
+                <section data-hide-inking-canvas data-menu-title="Pyodide">
+                    <h3><code>pyodide.js</code> &mdash; Python on the slide</h3>
+                    <p class="subtitle">
+                        Edit the code (click it), then <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to re-run. Output appears
+                        directly below.
+                    </p>
+                    <pre><code
+                        data-language="python"
+                        data-run-on-edit
+                        data-run-with-deck
+                        data-output-as-fragment
+                        contenteditable="true"
+                        data-editor-in-place
+                        data-trim>
+import math
+print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
+</code></pre>
+                    <a class="demo-link" href="demo-pyodide/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    CONTENT-LOADER                             -->
+                <!-- ============================================================ -->
+                <section data-menu-title="Content loader">
+                    <h3><code>content-loader.js</code> &mdash; load external content into slides</h3>
+                    <p class="subtitle">
+                        <code>data-inner-html</code> / <code>data-outer-html</code> / <code>data-inner-text</code> /
+                        <code>data-outer-text</code> for files; <code>data-pdf</code> for PDF pages; custom DOM actions
+                        for selector-based init logic.
+                    </p>
+                    <div class="two-col">
+                        <ul class="auto-fragmentize" style="font-size: 0.75em">
+                            <li>The <code>auto-fragmentize</code> action below makes every child a reveal fragment.</li>
+                            <li>It's just a custom action registered in <code>Reveal.initialize()</code>.</li>
+                            <li>You can register any matcher + DOM-init pair you need.</li>
+                            <li>PDFs render via <a href="https://github.com/mozilla/pdf.js">PDF.js</a>.</li>
+                        </ul>
+                        <script data-highlight type="text/javascript" data-dedent>
+                            Reveal.initialize({
+                                plugins: [RevealContentLoader],
+                                contentLoader: {
+                                    pdf: { enabled: true, preload: true },
+                                    actions: [{
+                                        selector: '.auto-fragmentize',
+                                        init: e => e.childNodes.forEach(
+                                            c => c.classList && c.classList.add('fragment')
+                                        )
+                                    }]
+                                }
+                            });
+                        </script>
+                    </div>
+                    <a class="demo-link" href="demo-content-loader/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="More">
+                    <h3>Also in the bundle</h3>
+                    <ul class="plugin-list">
+                        <li>
+                            <code>menu/menu.js</code> &mdash; navigable slide-title menu (modified fork of
+                            <a href="https://github.com/denehyg/reveal.js-menu">denehyg/reveal.js-menu</a>)
+                        </li>
+                        <li>
+                            <code>verticator/verticator.js</code> &mdash; vertical-stack indicator (modified fork of
+                            <a href="https://github.com/Martinomagnifico/reveal.js-verticator">Martinomagnifico's</a>)
+                        </li>
+                        <li><code>zoom.js</code> &mdash; modified stock zoom plugin</li>
+                        <li><code>cssanimation.js</code> &mdash; declarative CSS-property animation tied to fragments</li>
+                        <li><code>fragment-index.js</code> &mdash; <code>fragidx-N</code> shorthand for nodes that aren't math</li>
+                        <li><code>fragkey.js</code> &mdash; bind keys to advance / rewind fragments</li>
+                        <li><code>cross-out.js</code> &mdash; reveal-fragment-driven strikethrough</li>
+                        <li><code>webcam.js</code> &mdash; live webcam overlay</li>
+                        <li><code>notes/notes.js</code> &mdash; speaker notes view (modified stock)</li>
+                        <li><code>appearance/appearance.js</code> &mdash; light/dark / theme switcher</li>
+                    </ul>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="Contact">
+                    <h3>Contact</h3>
+                    <p><a href="https://www.dainiak.com">www.dainiak.com</a></p>
+                    <p>
+                        <a href="https://github.com/dainiak/revealjs-plugins">github.com/dainiak/revealjs-plugins</a>
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <!-- reveal.js + plugins (the gateway deck loads them all) -->
+        <script src="reveal/dist/reveal.js"></script>
+        <script src="reveal-custom/plugins/content-loader.js"></script>
+        <script src="reveal-custom/plugins/fragment-index.js"></script>
+        <script src="reveal-custom/plugins/math.js"></script>
+        <script src="reveal-custom/plugins/inking.js"></script>
+        <script src="reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="reveal-custom/plugins/pyodide.js"></script>
+        <script src="reveal-custom/plugins/mermaid.js"></script>
+        <script src="reveal-custom/plugins/interactive-charts.js"></script>
+        <script src="reveal-custom/plugins/interactive-table.js"></script>
+        <script src="reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                margin: 0.05,
+                transition: "fade",
+                hash: true,
+                slideNumber: true,
+                plugins: [
+                    RevealContentLoader,
+                    RevealFragmentIndex,
+                    RevealMath,
+                    RevealInking,
+                    RevealHighlightAce,
+                    RevealPyodide,
+                    RevealMermaid,
+                    RevealInteractiveCharts,
+                    RevealInteractiveTable,
+                    RevealMenu,
+                ],
+                highlighting: {
+                    theme: "monokai",
+                    showGutter: false,
+                    editorInPlace: true,
+                },
+                math: {
+                    renderer: "svg",
+                    fragments: true,
+                    preamble: "#mathjaxPreamble",
+                    macros: {
+                        le: "\\leqslant",
+                        ge: "\\geqslant",
+                    },
+                },
+                inking: {
+                    controls: { opacity: 1, colorChoosersAlwaysVisible: false },
+                    math: { shadow: true, color: "ink", displayStyle: true },
+                    ink: { color: ["green", "red", "blue", "lightgrey"] },
+                },
+                contentLoader: {
+                    pdf: { enabled: true, preload: true },
+                    actions: [
+                        {
+                            selector: ".auto-fragmentize",
+                            init: (e) =>
+                                e.childNodes.forEach((c) => c.classList && c.classList.add("fragment")),
+                        },
+                    ],
+                },
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

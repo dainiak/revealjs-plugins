@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>highlight-ace anchors demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal pre {
+                width: 95%;
+            }
+            .reveal .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5em;
+                align-items: start;
+            }
+            .reveal .two-col ul {
+                font-size: 0.8em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section data-menu-title="Title">
+                    <h2>highlight-ace anchors demo</h2>
+                    <p>Each slide exercises one feature of <code>data-line-anchors</code>.</p>
+                    <p style="font-size: 0.7em; opacity: 0.7">
+                        Press <kbd>Space</kbd> / <kbd>→</kbd> to step through fragments.
+                    </p>
+                </section>
+
+                <section data-menu-title="1. Basic step-through">
+                    <h3>1. Basic step-through: <code>@1 @2 @3</code></h3>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        import json                          # @1
+
+                        with open("data.json") as f:         # @2
+                            data = json.load(f)              # @2
+
+                        for user in data["users"]:           # @3
+                            print(user["name"])              # @3
+                    </script>
+                </section>
+
+                <section data-menu-title="2. Multi-index anchor">
+                    <h3>2. Multi-index anchor: header stays lit</h3>
+                    <p style="font-size: 0.7em"><code>@1,2,3</code> on the signature; one body line per step.</p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        def total(items, tax_rate):          # @1,2,3
+                            subtotal = sum(items)            # @1
+                            tax = subtotal * tax_rate        # @2
+                            return subtotal + tax            # @3
+                    </script>
+                </section>
+
+                <section data-menu-title="3. Range anchors (@1..3)">
+                    <h3>3. Ranges in anchors: <code>@1..3</code></h3>
+                    <p style="font-size: 0.7em">
+                        Setup lines stay lit through three steps; teardown line lights up at step 4.
+                    </p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        conn = sqlite3.connect("app.db")     # @1..3
+                        cur = conn.cursor()                  # @1..3
+
+                        cur.execute("SELECT id FROM users")  # @1
+                        ids = [row[0] for row in cur]        # @2
+                        print(f"{len(ids)} users")           # @3
+
+                        conn.close()                         # @4
+                    </script>
+                </section>
+
+                <section data-menu-title="4. Interleave with bullets">
+                    <h3>4. Code highlights interleaved with bullets</h3>
+                    <p style="font-size: 0.7em">
+                        Bullets and code anchors share <code>data-fragment-index</code> values.
+                    </p>
+                    <div class="two-col">
+                        <ul>
+                            <li class="fragment" data-fragment-index="1">Open the file</li>
+                            <li class="fragment" data-fragment-index="2">Filter active users</li>
+                            <li class="fragment" data-fragment-index="3">Print their names</li>
+                        </ul>
+                        <script data-highlight type="text/python" data-line-anchors>
+                            with open("users.json") as f:    # @1
+                                data = json.load(f)          # @1
+
+                            active = [u for u in data        # @2
+                                      if u["active"]]        # @2
+
+                            for u in active:                 # @3
+                                print(u["name"])             # @3
+                        </script>
+                    </div>
+                </section>
+
+                <section data-menu-title="5. Mixed range + commas + singles">
+                    <h3>5. Mixed: range header + commas + singles</h3>
+                    <p style="font-size: 0.7em"><code>@1..2,4</code> means fragments 1, 2, and 4 (skipping 3).</p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        def pipeline(rows):                  # @1..2,4
+                            cleaned = drop_nulls(rows)       # @1
+                            normalized = normalize(cleaned)  # @2
+                            enriched = add_geo(normalized)   # @3
+                            return persist(enriched)         # @4
+                    </script>
+                </section>
+
+                <section data-menu-title="6. @! slide-load context">
+                    <h3>6. <code>@!</code> — context lit at slide load</h3>
+                    <p style="font-size: 0.7em">
+                        The goal is highlighted as soon as the slide opens. The first click clears it and starts
+                        stepping through the implementation.
+                    </p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        GOAL = "convert prices to USD"            # @!
+
+                        EUR_TO_USD = 1.10                         # @1
+
+                        def to_usd(eur):                          # @2
+                            return eur * EUR_TO_USD               # @2
+
+                        prices = [10.0, 25.0, 30.0]               # @3
+                        usd_prices = [to_usd(p) for p in prices]  # @4
+                    </script>
+                </section>
+
+                <section data-menu-title="7. @K+ sticky-from">
+                    <h3>7. <code>@K+</code> — sticky from step <em>K</em></h3>
+                    <p style="font-size: 0.7em">
+                        <code>DEBUG</code> appears at step 1 and stays lit through every later step, co-highlighted with
+                        each new function as it's introduced. Without the <code>+</code> it would go off at step 2.
+                    </p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        DEBUG = True                              # @1+
+
+                        def fetch(url):                           # @2
+                            if DEBUG: print(f"GET {url}")         # @2
+                            return http.get(url)                  # @2
+
+                        def save(record):                         # @3
+                            if DEBUG: print(f"SAVE {record}")     # @3
+                            db.write(record)                      # @3
+                    </script>
+                </section>
+
+                <section data-menu-title="8. @K- sticky-to">
+                    <h3>8. <code>@K-</code> — on at load, off after step <em>K</em></h3>
+                    <p style="font-size: 0.7em">
+                        <code>records</code> is lit at slide load and stays through each transformation; step 4
+                        explicitly drops it and the highlight clears. The off-fade lands on the existing
+                        <code>@4</code> anchor — no extra click.
+                    </p>
+                    <script data-highlight type="text/python" data-line-anchors>
+                        records = fetch_users()                   # @3-
+
+                        active = [u for u in records              # @1
+                                  if u["active"]]                 # @1
+
+                        names = [u["name"] for u in active]       # @2
+
+                        emails = [u["email"] for u in active]     # @3
+
+                        del records                               # @4
+                    </script>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/highlight-ace.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                highlighting: {
+                    theme: "monokai",
+                    language: "python",
+                    showGutter: true,
+                },
+                plugins: [RevealHighlightAce, RevealMenu],
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

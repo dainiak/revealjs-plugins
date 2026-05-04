@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>interactive-table demo</title>
+        <link rel="stylesheet" href="../reveal/dist/reveal.css" />
+        <link rel="stylesheet" href="../reveal/dist/theme/black.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/font-awesome/css/all.css" />
+        <link rel="stylesheet" href="../reveal-custom/plugins/menu/menu.css" />
+        <style>
+            .reveal table {
+                font-size: 0.7em;
+                margin: 0.4em auto;
+                border-collapse: collapse;
+                min-width: 60%;
+            }
+            .reveal table th,
+            .reveal table td {
+                padding: 0.35em 0.9em;
+                text-align: left;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            .reveal table th {
+                font-weight: 600;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+            }
+            .reveal table td:not(:first-child),
+            .reveal table th:not(:first-child) {
+                text-align: right;
+            }
+            .reveal h3 + p,
+            .reveal h2 + p {
+                font-size: 0.65em;
+                opacity: 0.75;
+                margin-top: -0.2em;
+            }
+            .reveal pre {
+                font-size: 0.55em;
+                width: 90%;
+            }
+            .reveal code {
+                font-family: monospace;
+            }
+            .reveal .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5em;
+                align-items: center;
+            }
+            .reveal .two-col ul {
+                font-size: 0.7em;
+            }
+            .reveal kbd {
+                font-family: monospace;
+                padding: 0.05em 0.4em;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 0.2em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section data-menu-title="Title">
+                    <h2>interactive-table demo</h2>
+                    <p>
+                        Fragment-orchestrated tables for reveal.js: scripted sorting + cell highlighting tied to slide
+                        clicks.
+                    </p>
+                    <p style="font-size: 0.6em; opacity: 0.7">
+                        Press <kbd>Space</kbd> / <kbd>&rarr;</kbd> to step through fragments.
+                    </p>
+                </section>
+
+                <section data-menu-title="1. Click-to-sort">
+                    <h3>1. Click-to-sort (no scripted timeline)</h3>
+                    <p>
+                        Plain <code>&lt;table data-interactive-table&gt;</code>. Click a column header to sort
+                        ascending; click again for descending; third click clears.
+                    </p>
+                    <table data-interactive-table>
+                        <thead>
+                            <tr><th>City</th><th>Population (M)</th><th>Area (km&sup2;)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Tokyo</td> <td>13.96</td><td>2194</td></tr>
+                            <tr><td>Delhi</td> <td>32.94</td><td>1484</td></tr>
+                            <tr><td>Shanghai</td> <td>24.87</td><td>6340</td></tr>
+                            <tr><td>Sao Paulo</td><td>22.43</td><td>1521</td></tr>
+                            <tr><td>Cairo</td> <td>21.75</td><td>3085</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="2. Scripted sort">
+                    <h3>2. Scripted sort across fragments</h3>
+                    <p>
+                        <code>data-sort="2 asc @1 | 2 desc @2 | @3"</code> &mdash; sort col 2 ascending, then
+                        descending, then revert.
+                    </p>
+                    <table data-interactive-table data-sort="2 asc @1 | 2 desc @2 | @3">
+                        <thead>
+                            <tr><th>Element</th><th>Atomic mass</th><th>Year discovered</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Hydrogen</td><td>1.008</td><td>1766</td></tr>
+                            <tr><td>Carbon</td> <td>12.011</td><td>3750</td></tr>
+                            <tr><td>Oxygen</td> <td>15.999</td><td>1774</td></tr>
+                            <tr><td>Iron</td> <td>55.845</td><td>5000</td></tr>
+                            <tr><td>Gold</td> <td>196.967</td><td>6000</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="3. Multi-column sort">
+                    <h3>3. Multi-column sort</h3>
+                    <p>
+                        <code>data-sort="3 desc, 1 asc @1"</code> &mdash; sort by country desc, then by name asc within
+                        each country.
+                    </p>
+                    <table data-interactive-table data-sort="3 desc, 1 asc @1">
+                        <thead>
+                            <tr><th>Author</th><th>Books</th><th>Country</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Murakami</td> <td>14</td><td>Japan</td></tr>
+                            <tr><td>Borges</td> <td>21</td><td>Argentina</td></tr>
+                            <tr><td>Calvino</td> <td>17</td><td>Italy</td></tr>
+                            <tr><td>Eco</td> <td>9</td><td>Italy</td></tr>
+                            <tr><td>Mishima</td> <td>34</td><td>Japan</td></tr>
+                            <tr><td>Cortazar</td> <td>12</td><td>Argentina</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="4. Highlight rows">
+                    <h3>4. Highlight rows</h3>
+                    <p><code>data-highlight="1 @1 | 1-2 @2 | 1-3 @3"</code> &mdash; rows light up cumulatively.</p>
+                    <table data-interactive-table data-highlight="1 @1 | 1-2 @2 | 1-3 @3">
+                        <thead>
+                            <tr><th>Rank</th><th>Mountain</th><th>Height (m)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Everest</td> <td>8849</td></tr>
+                            <tr><td>2</td><td>K2</td> <td>8611</td></tr>
+                            <tr><td>3</td><td>Kangchenjunga</td><td>8586</td></tr>
+                            <tr><td>4</td><td>Lhotse</td> <td>8516</td></tr>
+                            <tr><td>5</td><td>Makalu</td> <td>8485</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="5. Highlight cells, cols, rects">
+                    <h3>5. Highlight cells, columns, rectangles</h3>
+                    <p>
+                        <code>data-highlight="2:3 @1 | :2 @2 | 2-4:2-3 @3"</code> &mdash; one cell, one column, then a
+                        rectangle.
+                    </p>
+                    <table data-interactive-table data-highlight="2:3 @1 | :2 @2 | 2-4:2-3 @3">
+                        <thead>
+                            <tr><th>Quarter</th><th>Revenue</th><th>Profit</th><th>Headcount</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Q1 2024</td><td>4.2M</td><td>0.8M</td><td>120</td></tr>
+                            <tr><td>Q2 2024</td><td>4.7M</td><td>1.1M</td><td>128</td></tr>
+                            <tr><td>Q3 2024</td><td>5.1M</td><td>1.4M</td><td>134</td></tr>
+                            <tr><td>Q4 2024</td><td>6.0M</td><td>1.9M</td><td>141</td></tr>
+                            <tr><td>Q1 2025</td><td>5.8M</td><td>1.6M</td><td>147</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="6. Independent timelines">
+                    <h3>6. Two independent timelines</h3>
+                    <p>
+                        Sort changes only at <code>@1</code>. Highlights change at every step &mdash; the sort persists.
+                    </p>
+                    <table data-interactive-table data-sort="2 desc @1" data-highlight="1 @1 | 1-2 @2 | 3 @3">
+                        <thead>
+                            <tr><th>Player</th><th>Goals</th><th>Assists</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Alex</td> <td>18</td><td>9</td></tr>
+                            <tr><td>Bren</td> <td>27</td><td>4</td></tr>
+                            <tr><td>Casey</td> <td>22</td><td>11</td></tr>
+                            <tr><td>Drew</td> <td>14</td><td>15</td></tr>
+                            <tr><td>Eli</td> <td>30</td><td>7</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="7. Shared fragment indices">
+                    <h3>7. Sharing fragment indices with bullets</h3>
+                    <p>
+                        Bullets at <code>@1 @2 @3</code> appear alongside the table's scripted state at the same
+                        indices.
+                    </p>
+                    <div class="two-col">
+                        <ul>
+                            <li class="fragment" data-fragment-index="1">Sort by latency: lightest first</li>
+                            <li class="fragment" data-fragment-index="2">Sort by quality: strongest first</li>
+                            <li class="fragment" data-fragment-index="3">Combined: quality desc, latency asc</li>
+                        </ul>
+                        <table
+                            data-interactive-table
+                            data-sort="2 asc @1 | 3 desc @2 | 3 desc, 2 asc @3"
+                            data-highlight="1-2 @1 | 1 @2 | 1 @3"
+                        >
+                            <thead>
+                                <tr><th>Model</th><th>Latency (ms)</th><th>Quality</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Haiku 4.5</td> <td>180</td><td>7.8</td></tr>
+                                <tr><td>Sonnet 4.6</td> <td>420</td><td>8.9</td></tr>
+                                <tr><td>Opus 4.7</td> <td>900</td><td>9.6</td></tr>
+                                <tr><td>GPT-4 Turbo</td><td>650</td><td>9.0</td></tr>
+                                <tr><td>Gemini Flash</td><td>240</td><td>8.2</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section data-menu-title="8. fragidx-N on cells (legacy)">
+                    <h3>8. <code>fragidx-N</code> on cells (legacy compatibility)</h3>
+                    <p>
+                        Cells with <code>class="fragidx-N"</code> become reveal fragments. Useful for staged data reveal
+                        independent of sort.
+                    </p>
+                    <table data-interactive-table>
+                        <thead>
+                            <tr><th>Step</th><th>Result</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Initial</td> <td class="fragidx-1">42</td> <td class="fragidx-1">baseline</td></tr>
+                            <tr><td>After tuning</td><td class="fragidx-2">61</td> <td class="fragidx-2">+45%</td></tr>
+                            <tr>
+                                <td>After caching</td><td class="fragidx-3">78 
+                                </td><td class="fragidx-3">+86% total</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-menu-title="9. LLM latency vs quality">
+                    <h3>9. Combined: LLM latency vs quality</h3>
+                    <p>
+                        Step 1: sort by latency, highlight the two fastest. Step 2: sort by quality, highlight the
+                        strongest.
+                    </p>
+                    <table data-interactive-table data-sort="2 asc @1 | 3 desc @2" data-highlight="1-2 @1 | 1 @2">
+                        <thead>
+                            <tr><th>Model</th><th>Latency (ms)</th><th>Quality</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Haiku 4.5</td> <td>180</td><td>7.8</td></tr>
+                            <tr><td>Sonnet 4.6</td> <td>420</td><td>8.9</td></tr>
+                            <tr><td>Opus 4.7</td> <td>900</td><td>9.6</td></tr>
+                            <tr><td>GPT-4 Turbo</td><td>650</td><td>9.0</td></tr>
+                            <tr><td>Gemini Flash</td><td>240</td><td>8.2</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section
+                    data-menu-title="10. CSS variable theming"
+                    style="
+                        --it-row-lit-bg: rgba(80, 160, 255, 0.18);
+                        --it-cell-lit-bg: rgba(80, 160, 255, 0.32);
+                        --it-cell-lit-border: rgba(60, 140, 240, 0.85);
+                        --it-dim-opacity: 0.18;
+                        --it-anim-ms: 700ms;
+                    "
+                >
+                    <h3>10. Theming via CSS variables</h3>
+                    <p>
+                        Same plugin, blue accent and slower sort &mdash; set on this
+                        <code>&lt;section&gt;</code> only.
+                    </p>
+                    <table data-interactive-table data-sort="2 asc @1 | 3 desc @2" data-highlight="1-2 @1 | 1 @2">
+                        <thead>
+                            <tr><th>Model</th><th>Latency (ms)</th><th>Quality</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Haiku 4.5</td> <td>180</td><td>7.8</td></tr>
+                            <tr><td>Sonnet 4.6</td> <td>420</td><td>8.9</td></tr>
+                            <tr><td>Opus 4.7</td> <td>900</td><td>9.6</td></tr>
+                            <tr><td>GPT-4 Turbo</td><td>650</td><td>9.0</td></tr>
+                            <tr><td>Gemini Flash</td><td>240</td><td>8.2</td></tr>
+                        </tbody>
+                    </table>
+                    <pre style="font-size: 0.5em; margin-top: 0.6em"><code>&lt;section style="
+    --it-row-lit-bg: rgba(80, 160, 255, 0.18);
+    --it-cell-lit-bg: rgba(80, 160, 255, 0.32);
+    --it-cell-lit-border: rgba(60, 140, 240, 0.85);
+    --it-dim-opacity: 0.18;
+    --it-anim-ms: 700ms;
+"&gt;</code></pre>
+                </section>
+
+                <section data-menu-title="11. Per-table theming">
+                    <h3>11. Per-table theming</h3>
+                    <p>Two tables, two looks &mdash; CSS variables set inline on each <code>&lt;table&gt;</code>.</p>
+                    <div class="two-col">
+                        <table
+                            data-interactive-table
+                            style="--it-cell-lit-bg: rgba(255, 80, 80, 0.45); --it-cell-lit-border-width: 0"
+                            data-highlight="2:2, 4:2 @1 | 1:3-4 @2"
+                        >
+                            <thead>
+                                <tr><th>Region</th><th>Q1</th><th>Q2</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>EMEA</td><td>4.2</td><td>4.7</td></tr>
+                                <tr><td>NA</td> <td>5.1</td><td>5.8</td></tr>
+                                <tr><td>APAC</td><td>3.8</td><td>4.1</td></tr>
+                                <tr><td>LATAM</td><td>2.4</td><td>2.9</td></tr>
+                            </tbody>
+                        </table>
+                        <table
+                            data-interactive-table
+                            style="
+                                --it-row-lit-bg: rgba(120, 230, 140, 0.22);
+                                --it-cell-lit-bg: rgba(120, 230, 140, 0.4);
+                                --it-cell-lit-border: rgba(80, 200, 100, 0.9);
+                            "
+                            data-highlight="1 @1 | 1-2 @2"
+                        >
+                            <thead>
+                                <tr><th>Team</th><th>Wins</th><th>Losses</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Alpha</td> <td>14</td><td>3</td></tr>
+                                <tr><td>Bravo</td> <td>11</td><td>6</td></tr>
+                                <tr><td>Charlie</td><td>9</td> <td>8</td></tr>
+                                <tr><td>Delta</td> <td>5</td> <td>12</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section data-menu-title="12. JSON source (split)">
+                    <h3>12. Build from JSON (pandas <code>split</code> orientation)</h3>
+                    <p>
+                        Drop a <code>&lt;script type="application/json"&gt;</code> inside the table. The plugin builds
+                        <code>&lt;thead&gt;</code> / <code>&lt;tbody&gt;</code> on the fly.
+                    </p>
+                    <table data-interactive-table data-sort="2 desc @1 | 3 desc @2">
+                        <script type="application/json">
+                            {
+                                "columns": ["Country", "Population (M)", "GDP (T USD)"],
+                                "data": [
+                                    ["USA", 331.9, 25.46],
+                                    ["China", 1412.0, 17.96],
+                                    ["Japan", 125.7, 4.23],
+                                    ["Germany", 83.2, 4.07],
+                                    ["India", 1408.0, 3.39]
+                                ]
+                            }
+                        </script>
+                    </table>
+                    <p style="font-size: 0.55em; opacity: 0.7">
+                        Click 1: sort by population. Click 2: sort by GDP. <code>data-sort</code>,
+                        <code>data-highlight</code>, click-to-sort all still work on top of the generated DOM.
+                    </p>
+                </section>
+
+                <section data-menu-title="13. JSON source (records)">
+                    <h3>13. Build from JSON (pandas <code>records</code> orientation)</h3>
+                    <p>
+                        Array of objects &mdash; what <code>df.to_json(orient="records")</code> produces. Column order
+                        is taken from the first object's keys.
+                    </p>
+                    <table data-interactive-table data-highlight="1 @1 | 1-2 @2 | 1-3 @3">
+                        <script type="application/json">
+                            [
+                                { "Mountain": "Everest", "Range": "Himalayas", "Height (m)": 8849 },
+                                { "Mountain": "K2", "Range": "Karakoram", "Height (m)": 8611 },
+                                { "Mountain": "Kangchenjunga", "Range": "Himalayas", "Height (m)": 8586 },
+                                { "Mountain": "Lhotse", "Range": "Himalayas", "Height (m)": 8516 },
+                                { "Mountain": "Makalu", "Range": "Mahalangur", "Height (m)": 8485 }
+                            ]
+                        </script>
+                    </table>
+                </section>
+
+                <section data-menu-title="14. CSV source">
+                    <h3>14. Build from CSV</h3>
+                    <p>
+                        <code>&lt;script type="text/csv"&gt;</code>. First row is the header. Quoted fields and escaped
+                        quotes (<code>""</code>) are supported.
+                    </p>
+                    <table data-interactive-table data-sort="3 desc @1">
+                        <script type="text/csv">
+                            Author,Country,Books,Notable work
+                            Murakami,Japan,14,"Norwegian Wood"
+                            Borges,Argentina,21,"Ficciones"
+                            Calvino,Italy,17,"If on a winter's night a traveler"
+                            Eco,Italy,9,"The Name of the Rose"
+                            Mishima,Japan,34,"The Sea of Fertility"
+                            Cortazar,Argentina,12,"Hopscotch"
+                        </script>
+                    </table>
+                    <p style="font-size: 0.55em; opacity: 0.7">
+                        Indentation is auto-stripped &mdash; you can keep the CSV pretty-printed in your HTML source.
+                    </p>
+                </section>
+
+                <section data-menu-title="15. TSV source + timelines">
+                    <h3>15. Build from TSV with combined timelines</h3>
+                    <p>
+                        <code>type="text/tsv"</code> for tab-separated. Sort + highlight orchestration works exactly as
+                        with hand-authored HTML.
+                    </p>
+                    <table data-interactive-table data-sort="2 asc @1 | 3 desc @2" data-highlight="1-2 @1 | 1 @2">
+                        <script type="text/tsv">
+                            Model	Latency (ms)	Quality
+                            Haiku 4.5	180	7.8
+                            Sonnet 4.6	420	8.9
+                            Opus 4.7	900	9.6
+                            GPT-4 Turbo	650	9.0
+                            Gemini Flash	240	8.2
+                        </script>
+                    </table>
+                    <p style="font-size: 0.55em; opacity: 0.7">
+                        Step 1: sort by latency, highlight the two fastest. Step 2: sort by quality, highlight the
+                        strongest.
+                    </p>
+                </section>
+
+                <section data-menu-title="Cheatsheet 1: orchestration">
+                    <h3>Cheatsheet 1: orchestration syntax</h3>
+                    <div style="font-size: 0.7em; text-align: left; max-width: 85%; margin: 0 auto">
+                        <p>
+                            <strong>Sort:</strong>
+                            <code>data-sort="&lt;col&gt;[ asc|desc][, ...] @&lt;idx&gt; | ..."</code>
+                        </p>
+                        <ul>
+                            <li><code>2 desc @1</code> &mdash; sort col 2 descending at fragment 1</li>
+                            <li><code>2, 3 desc @1</code> &mdash; multi-key: col 2 asc, col 3 desc</li>
+                            <li><code>@3</code> &mdash; empty step: revert to authored order</li>
+                        </ul>
+                        <p>
+                            <strong>Highlight:</strong>
+                            <code>data-highlight="&lt;target&gt;[, ...] @&lt;idx&gt; | ..."</code>
+                        </p>
+                        <ul>
+                            <li><code>1</code> row, <code>1-3</code> rows 1&ndash;3</li>
+                            <li><code>2:4</code> cell at row 2 col 4</li>
+                            <li><code>:2</code> entire column 2; <code>1-3:2-4</code> rectangle</li>
+                            <li><code>@3</code> &mdash; empty step: clear all highlights</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section data-menu-title="Cheatsheet 2: data &amp; theming">
+                    <h3>Cheatsheet 2: data sources, attributes &amp; theming</h3>
+                    <div style="font-size: 0.65em; text-align: left; max-width: 90%; margin: 0 auto">
+                        <p>
+                            <strong>Embedded data sources</strong> (alternative to authored
+                            <code>&lt;thead&gt;</code>/<code>&lt;tbody&gt;</code>):
+                        </p>
+                        <ul>
+                            <li>
+                                <code>&lt;script type="application/json"&gt;</code> &mdash; pandas <code>split</code>,
+                                <code>records</code>, <code>columns</code>, <code>index</code>, or values matrix
+                            </li>
+                            <li>
+                                <code>&lt;script type="text/csv"&gt;</code> /
+                                <code>&lt;script type="text/tsv"&gt;</code> &mdash; first row is header, RFC-4180
+                                quoting
+                            </li>
+                        </ul>
+                        <p><strong>Other table attributes:</strong></p>
+                        <ul>
+                            <li><code>data-sortable-headers="false"</code> disables click-to-sort</li>
+                            <li><code>class="fragidx-N"</code> on a cell promotes it to a reveal fragment</li>
+                        </ul>
+                        <p><strong>Theming (CSS variables):</strong></p>
+                        <ul>
+                            <li>
+                                <code>--it-row-lit-bg</code>, <code>--it-cell-lit-bg</code>,
+                                <code>--it-cell-lit-border</code>, <code>--it-cell-lit-border-width</code>
+                            </li>
+                            <li>
+                                <code>--it-dim-opacity</code>, <code>--it-anim-ms</code>, <code>--it-anim-ease</code>,
+                                <code>--it-fade-ms</code>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <script src="../reveal/dist/reveal.js"></script>
+        <script src="../reveal-custom/plugins/interactive-table.js"></script>
+        <script src="../reveal-custom/plugins/menu/menu.js"></script>
+        <script>
+            Reveal.initialize({
+                width: 1280,
+                height: 720,
+                transition: "fade",
+                hash: true,
+                plugins: [RevealInteractiveTable, RevealMenu],
+                menu: {
+                    openSlideNumber: true,
+                    openButton: true,
+                    themes: false,
+                    transitions: false,
+                    titleSelector: "h1, h2, h3",
+                },
+            });
+        </script>
+    </body>
+</html>

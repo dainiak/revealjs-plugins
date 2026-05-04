@@ -1,8 +1,6 @@
 /*
     A mod of compiled https://github.com/Martinomagnifico/reveal.js-verticator
-    @author: Martijn De Jongh (Martino), martijn.de.jongh@gmail.com
-    https://github.com/martinomagnifico
-    Version 1.3.1.mod by Alex Dainiak
+    Version 1.3.1.mod
  */
 
 (function (global, factory) {
