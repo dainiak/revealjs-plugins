@@ -99,10 +99,20 @@
             .reveal ul.plugin-list code {
                 font-weight: 600;
             }
+            /* No padding: vega-lite's height:"container" measures the full element
+               height and renders the SVG at that height — any padding makes the SVG
+               overflow at the bottom by exactly padding-bottom, leaving the white
+               frame "displaced" relative to the chart. Keep the chart flush. */
             .reveal div[data-vega] {
                 background: #fff;
                 border-radius: 4px;
-                padding: 0.4em;
+                display: block;
+                line-height: 0;
+                overflow: hidden;
+            }
+            .reveal div[data-vega] > svg,
+            .reveal div[data-vega] canvas {
+                display: block;
             }
         </style>
     </head>
@@ -170,7 +180,7 @@
                 <!-- ============================================================ -->
                 <!--                    MERMAID                                    -->
                 <!-- ============================================================ -->
-                <section data-menu-title="Mermaid">
+                <section data-hide-inking-canvas data-menu-title="Mermaid">
                     <h3><code>mermaid.js</code> &mdash; staged diagram reveal</h3>
                     <p class="subtitle">
                         High-level directives drive fragment timing. <code>%%! show</code> introduces nodes; edges
@@ -215,7 +225,7 @@
                 <!-- ============================================================ -->
                 <!--                    HIGHLIGHT-ACE                              -->
                 <!-- ============================================================ -->
-                <section data-menu-title="highlight-ace">
+                <section data-hide-inking-canvas data-menu-title="highlight-ace">
                     <h3><code>highlight-ace.js</code> &mdash; line anchors that survive edits</h3>
                     <p class="subtitle">
                         Tag lines with <code># @N</code> (or <code>// @N</code>, <code>-- @N</code>, etc.). Anchors
@@ -239,7 +249,7 @@
                 <!-- ============================================================ -->
                 <!--                    INTERACTIVE-CHARTS (Vega)                  -->
                 <!-- ============================================================ -->
-                <section data-menu-title="Interactive charts">
+                <section data-hide-inking-canvas data-menu-title="Interactive charts">
                     <h3><code>interactive-charts.js</code> &mdash; click-driven chart narration</h3>
                     <p class="subtitle">
                         Vega-Lite parameters change on each fragment. Same engine handles Plotly and Bokeh too &mdash; one
@@ -304,7 +314,7 @@
                 <!-- ============================================================ -->
                 <!--                    INTERACTIVE-TABLE                          -->
                 <!-- ============================================================ -->
-                <section data-menu-title="Interactive table">
+                <section data-hide-inking-canvas data-menu-title="Interactive table">
                     <h3><code>interactive-table.js</code> &mdash; scripted sort &amp; highlight</h3>
                     <p class="subtitle">
                         <code>data-sort</code> + <code>data-highlight</code> drive both the sort order and which
@@ -332,7 +342,7 @@
                 <!-- ============================================================ -->
                 <!--                    MATH                                       -->
                 <!-- ============================================================ -->
-                <section data-menu-title="Math">
+                <section data-hide-inking-canvas data-menu-title="Math">
                     <h3><code>math.js</code> &mdash; LaTeX with reveal fragments</h3>
                     <p class="subtitle">
                         MathJax-powered (also <code>math-katex.js</code> for KaTeX). Built-in <code>\step</code> /
@@ -365,6 +375,9 @@
                         <li><kbd>Alt</kbd>+<kbd>Click</kbd> or <kbd>x</kbd> &mdash; spotlight</li>
                         <li><kbd>q</kbd> &mdash; show / hide the canvas; <kbd>z</kbd> &mdash; export to SVG / JSON</li>
                     </ul>
+                    <p class="footnote">
+                        Press <kbd>q</kbd> to hide the canvas before clicking the link below.
+                    </p>
                     <a class="demo-link" href="demo-inking/index.html">Full demo &rarr;</a>
                 </section>
 
@@ -394,7 +407,7 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
                 <!-- ============================================================ -->
                 <!--                    CONTENT-LOADER                             -->
                 <!-- ============================================================ -->
-                <section data-menu-title="Content loader">
+                <section data-hide-inking-canvas data-menu-title="Content loader">
                     <h3><code>content-loader.js</code> &mdash; load external content into slides</h3>
                     <p class="subtitle">
                         <code>data-inner-html</code> / <code>data-outer-html</code> / <code>data-inner-text</code> /
@@ -427,26 +440,78 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
                 </section>
 
                 <!-- ============================================================ -->
-                <section data-menu-title="More">
-                    <h3>Also in the bundle</h3>
-                    <ul class="plugin-list">
-                        <li>
-                            <code>menu/menu.js</code> &mdash; navigable slide-title menu (modified fork of
-                            <a href="https://github.com/denehyg/reveal.js-menu">denehyg/reveal.js-menu</a>)
-                        </li>
-                        <li>
-                            <code>verticator/verticator.js</code> &mdash; vertical-stack indicator (modified fork of
-                            <a href="https://github.com/Martinomagnifico/reveal.js-verticator">Martinomagnifico's</a>)
-                        </li>
-                        <li><code>zoom.js</code> &mdash; modified stock zoom plugin</li>
-                        <li><code>cssanimation.js</code> &mdash; declarative CSS-property animation tied to fragments</li>
-                        <li><code>fragment-index.js</code> &mdash; <code>fragidx-N</code> shorthand for nodes that aren't math</li>
-                        <li><code>fragkey.js</code> &mdash; bind keys to advance / rewind fragments</li>
-                        <li><code>cross-out.js</code> &mdash; reveal-fragment-driven strikethrough</li>
-                        <li><code>webcam.js</code> &mdash; live webcam overlay</li>
-                        <li><code>notes/notes.js</code> &mdash; speaker notes view (modified stock)</li>
-                        <li><code>appearance/appearance.js</code> &mdash; light/dark / theme switcher</li>
+                <!--                    CSS ANIMATION                              -->
+                <!-- ============================================================ -->
+                <section data-hide-inking-canvas data-menu-title="CSS animation">
+                    <h3><code>cssanimation.js</code> &mdash; declarative CSS animation</h3>
+                    <p class="subtitle">
+                        A small DSL inside a <code>&lt;script type="text/animation"&gt;</code> tag. Each
+                        <code>next</code> consumes one fragment beat &mdash; <code>apply</code>,
+                        <code>show</code>, <code>hide</code>, <code>execute</code>, <code>reset</code>, with
+                        <code>during</code> / <code>delay</code> for timing.
+                    </p>
+                    <div class="two-col">
+                        <pre><code data-language="text" data-trim>
+initially
+    apply color='red' to li[0,1]
+    apply color='teal' to li.special
+next
+    hide li[2] during 500ms
+    then
+    show li[2] during 500ms delay 1000ms
+    then
+    apply 'font-size'='16pt' to li[2] during 1000ms
+next
+    apply 'font-size'='16pt' to li[0]
+next
+    reset
+                        </code></pre>
+                        <div>
+                            <script type="text/animation">
+                                initially
+                                    apply color='red' to li[0,1]
+                                    apply color='teal' to li.special
+                                next
+                                    hide li[2] during 500ms
+                                    then
+                                    show li[2] during 500ms delay 1000ms
+                                    then
+                                    apply 'font-size'='16pt' to li[2] during 1000ms
+                                next
+                                    apply 'font-size'='16pt' to li[0]
+                                next
+                                    reset
+                            </script>
+                            <ul style="font-size: 0.85em">
+                                <li>One</li>
+                                <li>Two</li>
+                                <li>Three</li>
+                                <li class="special">Four</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a class="demo-link" href="demo-cssanimation/index.html">Full demo &rarr;</a>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    WEBCAM                                     -->
+                <!-- ============================================================ -->
+                <section data-hide-inking-canvas data-menu-title="Webcam">
+                    <h3><code>webcam.js</code> &mdash; picture-in-picture for live talks</h3>
+                    <p class="subtitle">
+                        Two keys. The browser's <code>getUserMedia</code> stream stays local &mdash; no streaming
+                        elsewhere.
+                    </p>
+                    <ul style="font-size: 0.7em">
+                        <li><kbd>C</kbd> &mdash; toggle the webcam on / off (small, in the corner).</li>
+                        <li><kbd>Shift</kbd>+<kbd>C</kbd> &mdash; toggle full-size, filling the slide area.</li>
                     </ul>
+                    <p class="footnote">
+                        Useful when recording talks (persistent corner-cam) or for "open with a hello, then back
+                        to the deck" beats. Pairs nicely with <code>inking.js</code> &mdash; the whiteboard draws
+                        over the video too.
+                    </p>
+                    <a class="demo-link" href="demo-webcam/index.html">Full demo &rarr;</a>
                 </section>
 
                 <!-- ============================================================ -->
@@ -471,6 +536,8 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
         <script src="reveal-custom/plugins/mermaid.js"></script>
         <script src="reveal-custom/plugins/interactive-charts.js"></script>
         <script src="reveal-custom/plugins/interactive-table.js"></script>
+        <script src="reveal-custom/plugins/cssanimation.js"></script>
+        <script src="reveal-custom/plugins/webcam.js"></script>
         <script src="reveal-custom/plugins/menu/menu.js"></script>
         <script>
             Reveal.initialize({
@@ -490,6 +557,8 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
                     RevealMermaid,
                     RevealInteractiveCharts,
                     RevealInteractiveTable,
+                    RevealCSSAnimation,
+                    RevealWebcam,
                     RevealMenu,
                 ],
                 highlighting: {
@@ -510,6 +579,9 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
                     controls: { opacity: 1, colorChoosersAlwaysVisible: false },
                     math: { shadow: true, color: "ink", displayStyle: true },
                     ink: { color: ["green", "red", "blue", "lightgrey"] },
+                },
+                webcam: {
+                    initializeOnLoad: false,
                 },
                 contentLoader: {
                     pdf: { enabled: true, preload: true },

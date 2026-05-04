@@ -124,6 +124,23 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
 </code></pre>
                 </section>
 
+                <section data-menu-title="5. Reserved lines for in-class">
+                    <h3>5. Reserved blank lines &mdash; for in-class coding</h3>
+                    <p class="subtitle">
+                        <code>data-reserve-lines="N"</code> pads the editor with <em>N</em> empty lines so you can
+                        type live during the lecture without the surrounding layout reflowing each time you press
+                        <kbd>Enter</kbd>.
+                    </p>
+                    <pre><code
+                        data-language="python"
+                        contenteditable="true"
+                        data-editor-in-place
+                        data-reserve-lines="7">'We need some space reserved for in-class coding here.'</code></pre>
+                    <p class="footnote">
+                        Click the snippet, hit <kbd>Enter</kbd> a few times &mdash; the editor stays the same size.
+                    </p>
+                </section>
+
                 <section data-menu-title="Cheatsheet">
                     <h3>Cheatsheet</h3>
                     <div style="font-size: 0.7em; text-align: left; max-width: 90%; margin: 0 auto">
@@ -142,6 +159,7 @@ print(", ".join(f"{n}! = {math.factorial(n)}" for n in range(1, 8)))
                             <li><code>data-stdout="#sel"</code> &mdash; route output into a specific element</li>
                             <li><code>contenteditable="true"</code> &mdash; let the user edit</li>
                             <li><code>data-editor-in-place</code> &mdash; overlay the editor instead of full-screen</li>
+                            <li><code>data-reserve-lines="N"</code> &mdash; pad editor with N blank lines</li>
                         </ul>
                         <p><strong>Configuration:</strong></p>
                         <pre><code data-language="javascript" data-trim>

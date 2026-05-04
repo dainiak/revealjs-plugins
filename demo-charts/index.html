@@ -877,6 +877,55 @@
                         <code>plotly-data</code> + a <code>data-path</code> writing into the spec.
                     </p>
                 </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="11. Intrinsic interactivity (intro)">
+                    <h3>11. The orthogonal story — chart-native interactivity</h3>
+                    <p class="subtitle">
+                        Slides 1&ndash;10 use fragment-driven <em>scripted</em> narration. But Vega-Lite already ships
+                        rich <em>intrinsic</em> interactivity — pan, zoom, hover, brush, legend filters. Drop a chart
+                        in via <code>data-vega="path/to.json"</code> and it works during the talk with the audience
+                        clicking the chart itself. The two styles compose: a chart can be both fragment-narrated and
+                        free-form interactive.
+                    </p>
+                    <p class="footnote">
+                        The next three slides load Altair-exported JSON files unchanged — no plugin-specific markup.
+                        The plugin just embeds them and gets out of the way.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="12. NetworkX + nx_altair — pan/zoom">
+                    <h3>12. NetworkX graph &mdash; pan / zoom</h3>
+                    <p class="subtitle">
+                        A <a href="https://networkx.org/">NetworkX</a> graph rendered with
+                        <a href="https://pypi.org/project/nx-altair/">nx_altair</a>. Mouse-wheel to zoom, drag to pan
+                        — the projection signal is built into the spec.
+                    </p>
+                    <div class="r-stretch" data-vega="data/altair-graph.json"></div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="13. Multiline tooltip">
+                    <h3>13. Multiline series &mdash; hover tooltip</h3>
+                    <p class="subtitle">
+                        From the
+                        <a href="https://altair-viz.github.io/gallery/multiline_tooltip.html">Altair gallery</a>:
+                        hover the chart and a vertical rule snaps to the nearest <code>x</code>, with one labelled
+                        point per series. Pure Vega-Lite param logic; no plugin involvement.
+                    </p>
+                    <div class="r-stretch" data-vega="data/altair-timeline.json"></div>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="14. Brush + legend filter">
+                    <h3>14. Brush + legend filter &mdash; cross-chart linking</h3>
+                    <p class="subtitle">
+                        Drag a brush rectangle on the left chart and/or click a legend entry on the right — the two
+                        views stay linked through Vega-Lite selections. Ideal for "let the audience explore" beats.
+                    </p>
+                    <div class="r-stretch" data-vega="data/altair-dashboard.json"></div>
+                </section>
             </div>
         </div>
 

@@ -480,6 +480,64 @@ Stable contract for CSS targeting and debugging:
 - **Iframe mode + fragments.** Iframes are sandboxed via `srcdoc`; the plugin has no view-handle into them and doesn't wire fragment listeners.
 
 
+## CSS gotcha: don't put `padding` on the chart container
+
+When a Vega-Lite spec uses both `"width": "container"` and `"height": "container"`, the rendered SVG ends up sized asymmetrically against any padding on the `<div data-vega>`:
+
+- **Width** lines up with the *content box* — the SVG fits inside left/right padding cleanly.
+- **Height** lines up with the *full element* — the SVG is rendered as tall as the entire div, including the area where padding-top/bottom should sit.
+
+Net effect: with a styled container like
+
+```css
+.reveal div[data-vega] {
+    background: #fff;
+    border-radius: 4px;
+    padding: 0.4em;       /* ← causes the issue */
+}
+```
+
+you get padding-top of breathing room above the chart, but the SVG covers the area where padding-bottom should be — the white frame appears displaced downwards relative to the chart.
+
+This is a vega-embed / vega-lite measurement quirk, not something the plugin re-implements; the plugin just calls `vegaEmbed(element, spec, opts)`. Two fixes:
+
+1. **Drop the padding** on `div[data-vega]` (and add `overflow: hidden` if you want `border-radius` to clip the SVG):
+
+   ```css
+   .reveal div[data-vega] {
+       background: #fff;
+       border-radius: 4px;
+       overflow: hidden;
+       display: block;     /* override vega-embed's injected inline-block */
+       line-height: 0;     /* avoid baseline gap below an inline SVG */
+   }
+   .reveal div[data-vega] > svg,
+   .reveal div[data-vega] canvas {
+       display: block;
+   }
+   ```
+
+2. **Wrap the chart**, putting the cosmetic frame on the wrapper and leaving the chart container itself unpadded:
+
+   ```html
+   <div class="vega-frame">
+       <div data-vega style="height: 320px">…</div>
+   </div>
+   ```
+
+   ```css
+   .vega-frame {
+       background: #fff;
+       border-radius: 4px;
+       padding: 0.4em;     /* now safe — vega never measures this element */
+   }
+   ```
+
+The same advice applies to Plotly charts driven by the plugin: use a wrapper if you want a padded frame around the chart.
+
+A related, smaller pitfall: vega-embed's injected stylesheet sets `.vega-embed { display: inline-block; }` on the chart element itself (it adds the class in-place, not on a wrapper). With a default-`display:inline` SVG inside, that produces a baseline gap a few pixels below the chart. Force `display: block` on both the chart container and the inner `svg` / `canvas` to suppress it.
+
+
 ## Demo
 
 A standalone demo deck exercising every feature lives at `demo-charts/index.html`:
