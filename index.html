@@ -99,16 +99,11 @@
             .reveal ul.plugin-list code {
                 font-weight: 600;
             }
-            /* No padding: vega-lite's height:"container" measures the full element
-               height and renders the SVG at that height — any padding makes the SVG
-               overflow at the bottom by exactly padding-bottom, leaving the white
-               frame "displaced" relative to the chart. Keep the chart flush. */
+            /* The plugin auto-applies vega's dark theme on dark reveal themes,
+               so we let the chart sit transparently on the slide background. */
             .reveal div[data-vega] {
-                background: #fff;
-                border-radius: 4px;
                 display: block;
                 line-height: 0;
-                overflow: hidden;
             }
             .reveal div[data-vega] > svg,
             .reveal div[data-vega] canvas {

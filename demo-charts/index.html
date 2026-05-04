@@ -54,10 +54,19 @@
                 border-radius: 3px;
                 font-size: 0.85em;
             }
+            /* The plugin auto-applies vega's dark theme on dark reveal themes,
+               so we let the chart sit transparently on the slide background. */
             .reveal div[data-vega] {
-                background: #fff;
-                border-radius: 4px;
-                padding: 0.4em;
+                display: block;
+                line-height: 0;
+            }
+            .reveal div[data-vega] > svg,
+            .reveal div[data-vega] canvas {
+                display: block;
+            }
+            .reveal iframe[data-vega] {
+                border: none;
+                background: transparent;
             }
         </style>
     </head>
@@ -902,7 +911,7 @@
                         <a href="https://pypi.org/project/nx-altair/">nx_altair</a>. Mouse-wheel to zoom, drag to pan
                         — the projection signal is built into the spec.
                     </p>
-                    <div class="r-stretch" data-vega="data/altair-graph.json"></div>
+                    <iframe class="r-stretch" data-vega="data/altair-graph.json"></iframe>
                 </section>
 
                 <!-- ============================================================ -->
@@ -914,7 +923,7 @@
                         hover the chart and a vertical rule snaps to the nearest <code>x</code>, with one labelled
                         point per series. Pure Vega-Lite param logic; no plugin involvement.
                     </p>
-                    <div class="r-stretch" data-vega="data/altair-timeline.json"></div>
+                    <iframe class="r-stretch" data-vega="data/altair-timeline.json"></iframe>
                 </section>
 
                 <!-- ============================================================ -->
@@ -924,7 +933,7 @@
                         Drag a brush rectangle on the left chart and/or click a legend entry on the right — the two
                         views stay linked through Vega-Lite selections. Ideal for "let the audience explore" beats.
                     </p>
-                    <div class="r-stretch" data-vega="data/altair-dashboard.json"></div>
+                    <iframe class="r-stretch" data-vega="data/altair-dashboard.json"></iframe>
                 </section>
             </div>
         </div>
