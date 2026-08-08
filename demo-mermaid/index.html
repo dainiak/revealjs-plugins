@@ -403,31 +403,31 @@
                         </div>
                         <table style="font-size: 0.55em; border-collapse: collapse; width: 100%; text-align: center">
                             <thead>
-                                <tr style="border-bottom: 1px solid #555">
-                                    <th style="text-align: left">step</th>
-                                    <th><code>A: at 2</code></th>
-                                    <th><code>B: at 2+</code></th>
-                                    <th><code>C: at 1..3</code></th>
-                                    <th><code>D: at 3-</code></th>
-                                </tr>
+                            <tr style="border-bottom: 1px solid #555">
+                                <th style="text-align: left">step</th>
+                                <th><code>A: at 2</code></th>
+                                <th><code>B: at 2+</code></th>
+                                <th><code>C: at 1..3</code></th>
+                                <th><code>D: at 3-</code></th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr><td style="text-align: left">load</td><td></td><td></td><td></td><td>●</td></tr>
-                                <tr class="fragment" data-fragment-index="1">
-                                    <td style="text-align: left">1</td><td></td><td></td><td>●</td><td>●</td>
-                                </tr>
-                                <tr class="fragment" data-fragment-index="2">
-                                    <td style="text-align: left">2</td><td>●</td><td>●</td><td>●</td><td>●</td>
-                                </tr>
-                                <tr class="fragment" data-fragment-index="3">
-                                    <td style="text-align: left">3</td><td></td><td>●</td><td>●</td><td>●</td>
-                                </tr>
-                                <tr class="fragment" data-fragment-index="4">
-                                    <td style="text-align: left">4</td><td></td><td>●</td><td></td><td> 
-                                </td></tr>
-                                <tr class="fragment" data-fragment-index="5">
-                                    <td style="text-align: left">5</td><td></td><td>●</td><td></td><td> 
-                                </td></tr>
+                            <tr><td style="text-align: left">load</td><td></td><td></td><td></td><td>●</td></tr>
+                            <tr class="fragment" data-fragment-index="1">
+                                <td style="text-align: left">1</td><td></td><td></td><td>●</td><td>●</td>
+                            </tr>
+                            <tr class="fragment" data-fragment-index="2">
+                                <td style="text-align: left">2</td><td>●</td><td>●</td><td>●</td><td>●</td>
+                            </tr>
+                            <tr class="fragment" data-fragment-index="3">
+                                <td style="text-align: left">3</td><td></td><td>●</td><td>●</td><td>●</td>
+                            </tr>
+                            <tr class="fragment" data-fragment-index="4">
+                                <td style="text-align: left">4</td><td></td><td>●</td><td></td><td>
+                            </td></tr>
+                            <tr class="fragment" data-fragment-index="5">
+                                <td style="text-align: left">5</td><td></td><td>●</td><td></td><td>
+                            </td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -889,8 +889,67 @@
                 </section>
 
                 <!-- ============================================================ -->
-                <section data-menu-title="20. spotlight (inverted dim)">
-                    <h3>20. <code>%%! spotlight X at K</code> — inverted-dim model</h3>
+                <section data-menu-title="20. SequenceDiagram directives">
+                    <h3>20. SequenceDiagram — messages, actors, blocks</h3>
+                    <p class="subtitle">
+                        Synthetic keys: <code>msg:N</code>, <code>actor:N</code>, <code>note:N</code>,
+                        <code>loop:N</code>, plus <code>A-&gt;B</code> edge atoms. <code>show loop:K</code> bundles the
+                        whole block region (label + inner messages + inner notes) into a single click.
+                    </p>
+                    <div class="two-col">
+                        <div data-mermaid>
+                            <script type="text/mermaid">
+                                %%{init: {'sequence': {'mirrorActors': false}}}%%
+                                sequenceDiagram
+                                    participant U as User
+                                    participant App
+                                    participant LLM
+                                    U->>App: ask
+                                    App->>LLM: prompt
+                                    Note left of LLM: tokens billed
+                                    loop refine
+                                        App->>LLM: critique
+                                        LLM-->>App: revised
+                                    end
+                                    App-->>U: answer
+                                    %%! show msg:1 at 1
+                                    %%! show msg:2 at 2
+                                    %%! show note:1 at 3
+                                    %%! show loop:1 at 4
+                                    %%! show msg:5 at 5
+                                    %%! highlight actor:LLM at 6
+                            </script>
+                        </div>
+                        <script data-highlight type="text/text" data-dedent>
+                            sequenceDiagram
+                                participant U as User
+                                participant App
+                                participant LLM
+                                U->>App: ask
+                                App->>LLM: prompt
+                                Note left of LLM: tokens billed
+                                loop refine
+                                    App->>LLM: critique
+                                    LLM-->>App: revised
+                                end
+                                App-->>U: answer
+                                %%! show msg:1 at 1
+                                %%! show msg:2 at 2
+                                %%! show note:1 at 3
+                                %%! show loop:1 at 4    %% whole region, one click
+                                %%! show msg:5 at 5     %% answer outside loop
+                                %%! highlight actor:LLM at 6
+                        </script>
+                    </div>
+                    <p class="footnote">
+                        <code>show loop:K</code> cascades to inner messages + notes; the fx verbs
+                        (<code>highlight</code>/<code>dim</code>/<code>accent</code>) do not.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <section data-menu-title="21. spotlight (inverted dim)">
+                    <h3>21. <code>%%! spotlight X at K</code> — inverted-dim model</h3>
                     <p class="subtitle">
                         <code>spotlight</code> is the strongest emphasis verb. The target gets an amber halo;
                         <em>every other</em> first-class graphic in the same SVG fades to ~18% opacity via a
@@ -932,8 +991,8 @@
                 </section>
 
                 <!-- ============================================================ -->
-                <section class="spotlight-demo" data-menu-title="21. spotlight (recolored)">
-                    <h3>21. Recoloured spotlight via CSS variables</h3>
+                <section class="spotlight-demo" data-menu-title="22. spotlight (recolored)">
+                    <h3>22. Recoloured spotlight via CSS variables</h3>
                     <p class="subtitle">
                         Same as the previous slide, but this <code>&lt;section&gt;</code> overrides
                         <code>--fx-spotlight-glow</code> (cyan halo) and <code>--fx-spotlight-other-opacity</code> (dim
@@ -972,8 +1031,9 @@
                     <ul>
                         <li>
                             <code>%%%</code> rules — the lower-level escape hatch for SVG-selector-based class
-                            assignment, attribute setting, and wrapper injection. Useful when mermaid syntax can't reach
-                            (e.g., sequence diagrams, attribute manipulation).
+                            assignment, attribute setting, and wrapper injection. Useful for diagram types whose
+                            directive resolver isn't yet implemented (<code>pie</code>, <code>journey</code>) or for
+                            selector-level overrides the DSL can't express.
                         </li>
                         <li>
                             Math in node labels — write <code>\(...\)</code> or <code>\[...\]</code> inside any label

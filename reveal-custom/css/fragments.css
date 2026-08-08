@@ -1,0 +1,172 @@
+/*
+	Fragment styles for reveal.js.
+
+	Two families:
+
+	  * timing / emphasis   — `step`, `display-then-remove`, `sliding-underline`,
+	                          `drop-underline`
+	  * concealing          — `blur-smoke`, `blur-focus`, `pixelate`: the fragment
+	                          stays laid out and visible from the first beat but
+	                          is unreadable until revealed, so the audience can see
+	                          how many points are coming without reading ahead
+
+	The concealing styles only set filter / colour and never hide the element, so
+	they compose with reveal's own fragment classes (`fade-up`, `grow`,
+	`highlight-red`, …). The exception is the opacity-hiding ones
+	(`fade-in-then-out`, `current-visible`): a fragment cannot be both invisible
+	and blurred.
+
+	`pixelate` additionally needs the SVG filter definitions it references
+	(`#dz-pixelate-4` … `#dz-pixelate-10`) present in the document — see the
+	`<svg><defs>` block in index.html.
+*/
+
+.reveal .slides section .fragment.step,
+.reveal .slides section ul.steps li.fragment {
+	transition-duration: 0.5s;
+	opacity: 0;
+}
+.reveal .slides section .fragment.step.visible,
+.reveal .slides section ul.steps li.fragment.visible {
+	opacity: 0.5;
+}
+.reveal .slides section .fragment.step.visible.current-fragment,
+.reveal .slides section ul.steps li.fragment.visible.current-fragment {
+	opacity: 1;
+}
+
+.reveal .slides section .fragment.display-then-remove {
+	display: none;
+}
+.reveal .slides section .fragment.display-then-remove.visible {
+	display: none;
+}
+.reveal .slides section .fragment.display-then-remove.visible.current-fragment {
+	display: inline;
+}
+.reveal .slides section li.fragment.display-then-remove.visible.current-fragment {
+	display: list-item;
+}
+
+/* Sliding underline animation by Josh Broton, see http://bradsknutson.com/blog/css-sliding-underline/ */
+.reveal .slides section .fragment.sliding-underline {
+	display: inline-block;
+	visibility: visible;
+	opacity: 1;
+}
+.reveal .slides section .fragment.sliding-underline:after {
+	content: "";
+	display: block;
+	margin-top: -5px;
+	height: 3px;
+	width: 0;
+	background: transparent;
+	transition:
+		width 0.5s cubic-bezier(1, 0.25, 0, 0.75),
+		background-color 0.5s cubic-bezier(1, 0.25, 0, 0.75),
+		opacity 0s;
+	visibility: visible;
+	opacity: 1;
+}
+.reveal .slides section .fragment.sliding-underline.visible:after {
+	width: 100%;
+	background-color: #068ee9;
+}
+
+/* This one is from https://speckyboy.com/underline-text-effects-css/ */
+.reveal .slides section .fragment.drop-underline {
+	display: inline-block;
+	visibility: visible;
+	opacity: 1;
+}
+.reveal .slides section .fragment.drop-underline:after {
+	content: "";
+	opacity: 0;
+	visibility: visible;
+	display: block;
+	bottom: 2px;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background-color: #068ee9;
+	transform: translateY(-0.2em);
+	transition:
+		transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+		opacity 0.2s;
+}
+.reveal .slides section .fragment.drop-underline.visible:after {
+	opacity: 1;
+	transform: translateY(0);
+	transition:
+		transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+		opacity 0.2s;
+}
+
+.reveal .fragment.blur-smoke,
+.reveal .fragment.blur-smoke * {
+	transition:
+		color var(--blur-duration, 0.4s) ease,
+		text-shadow var(--blur-duration, 0.4s) ease;
+}
+.reveal .fragment.blur-smoke {
+	opacity: 1;
+	visibility: inherit;
+}
+/* the :not(.visible) form restores the original colours for free,
+   including descendants that set a colour of their own */
+.reveal .fragment.blur-smoke:not(.visible),
+.reveal .fragment.blur-smoke:not(.visible) * {
+	color: transparent;
+}
+.reveal .fragment.blur-smoke:not(.visible) {
+	text-shadow: 0 0 var(--blur-radius, 0.4em) var(--blur-color, var(--r-main-color, #999));
+}
+
+.reveal .fragment.blur-focus {
+	opacity: 1;
+	visibility: inherit;
+	filter: blur(var(--blur-radius, 0.28em));
+	transition:
+		filter var(--blur-duration, 0.4s) ease,
+		opacity var(--blur-duration, 0.4s) ease;
+}
+.reveal .fragment.blur-focus.visible {
+	opacity: var(--blur-past-opacity, 0.75);
+	filter: blur(var(--blur-past-radius, 0.04em));
+}
+.reveal .fragment.blur-focus.current-fragment {
+	opacity: 1;
+	filter: blur(0);
+}
+
+/* The blur() before url() is not decoration: the SVG filter samples one pixel
+   per cell, and unblurred glyphs are thin enough that most cells sample
+   transparent. Blurring first spreads the ink so every cell has something to
+   sample. */
+.reveal .fragment.pixelate {
+	opacity: 1;
+	visibility: inherit;
+	filter: blur(0.1em) url(#dz-pixelate-10);
+}
+.reveal .fragment.pixelate.visible {
+	animation: dz-depixelate var(--blur-duration, 0.33s) linear forwards;
+}
+/* filter values containing url() are not interpolatable, so these keyframes
+   step discretely — which reads as resolution ramping up */
+@keyframes dz-depixelate {
+	0% {
+		filter: blur(0.1em) url(#dz-pixelate-10);
+	}
+	25% {
+		filter: blur(0.08em) url(#dz-pixelate-8);
+	}
+	50% {
+		filter: blur(0.06em) url(#dz-pixelate-6);
+	}
+	75% {
+		filter: blur(0.04em) url(#dz-pixelate-4);
+	}
+	100% {
+		filter: none;
+	}
+}

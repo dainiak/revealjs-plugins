@@ -135,35 +135,9 @@
 	margin-top: 0.4em;
 }
 
-.reveal .slides section {
-	/* Sliding underline animation by Josh Broton, see http://bradsknutson.com/blog/css-sliding-underline/   */
-	/* This one is from https://speckyboy.com/underline-text-effects-css/ */
-}
-.reveal .slides section .fragment.step,
-.reveal .slides section ul.steps li.fragment {
-	transition-duration: 0.5s;
-	opacity: 0;
-}
-.reveal .slides section .fragment.step.visible,
-.reveal .slides section ul.steps li.fragment.visible {
-	opacity: 0.5;
-}
-.reveal .slides section .fragment.step.visible.current-fragment,
-.reveal .slides section ul.steps li.fragment.visible.current-fragment {
-	opacity: 1;
-}
-.reveal .slides section .fragment.display-then-remove {
-	display: none;
-}
-.reveal .slides section .fragment.display-then-remove.visible {
-	display: none;
-}
-.reveal .slides section .fragment.display-then-remove.visible.current-fragment {
-	display: inline;
-}
-.reveal .slides section li.fragment.display-then-remove.visible.current-fragment {
-	display: list-item;
-}
+/* Fragment styles (step, display-then-remove, the underlines, and the
+   concealing blur / pixelate family) live in fragments.css. */
+
 .reveal .slides section .neon {
 	animation: neon-blink-animation 1s infinite;
 }
@@ -192,57 +166,6 @@
 		text-shadow: none;
 	}
 }
-.reveal .slides section .fragment.sliding-underline {
-	display: inline-block;
-	visibility: visible;
-	opacity: 1;
-}
-.reveal .slides section .fragment.sliding-underline:after {
-	content: "";
-	display: block;
-	margin-top: -5px;
-	height: 3px;
-	width: 0;
-	background: transparent;
-	transition:
-		width 0.5s cubic-bezier(1, 0.25, 0, 0.75),
-		background-color 0.5s cubic-bezier(1, 0.25, 0, 0.75),
-		opacity 0s;
-	visibility: visible;
-	opacity: 1;
-}
-.reveal .slides section .fragment.sliding-underline.visible:after {
-	width: 100%;
-	background-color: #068ee9;
-}
-.reveal .slides section .fragment.drop-underline {
-	display: inline-block;
-	visibility: visible;
-	opacity: 1;
-}
-.reveal .slides section .fragment.drop-underline:after {
-	content: "";
-	opacity: 0;
-	visibility: visible;
-	display: block;
-	bottom: 2px;
-	left: 0;
-	right: 0;
-	height: 2px;
-	background-color: #068ee9;
-	transform: translateY(-0.2em);
-	transition:
-		transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-		opacity 0.2s;
-}
-.reveal .slides section .fragment.drop-underline.visible:after {
-	opacity: 1;
-	transform: translateY(0);
-	transition:
-		transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-		opacity 0.2s;
-}
-
 @font-face {
 	font-family: "FontAwesome";
 	src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/FontAwesome.otf") format("otf");

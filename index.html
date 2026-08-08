@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="reveal/dist/reveal.css" />
         <link rel="stylesheet" href="reveal/dist/theme/black.css" id="theme" />
         <link rel="stylesheet" href="reveal-custom/css/extras.css" />
+        <link rel="stylesheet" href="reveal-custom/css/fragments.css" />
         <link rel="stylesheet" href="reveal-custom/plugins/menu/font-awesome/css/all.css" />
         <link rel="stylesheet" href="reveal-custom/plugins/menu/menu.css" />
         <style>
@@ -99,80 +100,8 @@
             .reveal ul.plugin-list code {
                 font-weight: 600;
             }
-            /* ---- concealing fragment styles (see the "Fragment styles" slide) ----
-               These keep the fragment laid out and visible from the start, but
-               unreadable until revealed, so the audience can see how many points
-               are coming without reading ahead. They only touch filter / colour,
-               so they compose with reveal's own fragment classes. */
-            .reveal .fragment.blur-smoke,
-            .reveal .fragment.blur-smoke * {
-                transition:
-                    color var(--blur-duration, 0.4s) ease,
-                    text-shadow var(--blur-duration, 0.4s) ease;
-            }
-            .reveal .fragment.blur-smoke {
-                opacity: 1;
-                visibility: inherit;
-            }
-            /* the :not(.visible) form restores the original colours for free,
-               including descendants that set a colour of their own */
-            .reveal .fragment.blur-smoke:not(.visible),
-            .reveal .fragment.blur-smoke:not(.visible) * {
-                color: transparent;
-            }
-            .reveal .fragment.blur-smoke:not(.visible) {
-                text-shadow: 0 0 var(--blur-radius, 0.4em) var(--blur-color, var(--r-main-color, #999));
-            }
-
-            .reveal .fragment.blur-focus {
-                opacity: 1;
-                visibility: inherit;
-                filter: blur(var(--blur-radius, 0.28em));
-                transition:
-                    filter var(--blur-duration, 0.4s) ease,
-                    opacity var(--blur-duration, 0.4s) ease;
-            }
-            .reveal .fragment.blur-focus.visible {
-                opacity: var(--blur-past-opacity, 0.75);
-                filter: blur(var(--blur-past-radius, 0.04em));
-            }
-            .reveal .fragment.blur-focus.current-fragment {
-                opacity: 1;
-                filter: blur(0);
-            }
-
-            /* The blur() before url() is not decoration: the SVG filter samples one
-               pixel per cell, and unblurred glyphs are thin enough that most cells
-               sample transparent. Blurring first spreads the ink so every cell has
-               something to sample. */
-            .reveal .fragment.pixelate {
-                opacity: 1;
-                visibility: inherit;
-                filter: blur(0.1em) url(#dz-pixelate-10);
-            }
-            .reveal .fragment.pixelate.visible {
-                animation: dz-depixelate var(--blur-duration, 0.33s) linear forwards;
-            }
-            /* filter values containing url() are not interpolatable, so these
-               keyframes step discretely — which reads as resolution ramping up */
-            @keyframes dz-depixelate {
-                0% {
-                    filter: blur(0.1em) url(#dz-pixelate-10);
-                }
-                25% {
-                    filter: blur(0.08em) url(#dz-pixelate-8);
-                }
-                50% {
-                    filter: blur(0.06em) url(#dz-pixelate-6);
-                }
-                75% {
-                    filter: blur(0.04em) url(#dz-pixelate-4);
-                }
-                100% {
-                    filter: none;
-                }
-            }
-
+            /* the .blur-smoke / .blur-focus / .pixelate styles shown on this slide
+               live in reveal-custom/css/fragments.css */
             .reveal .fragment-demo {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
