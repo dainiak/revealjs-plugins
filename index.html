@@ -99,6 +99,100 @@
             .reveal ul.plugin-list code {
                 font-weight: 600;
             }
+            /* ---- concealing fragment styles (see the "Fragment styles" slide) ----
+               These keep the fragment laid out and visible from the start, but
+               unreadable until revealed, so the audience can see how many points
+               are coming without reading ahead. They only touch filter / colour,
+               so they compose with reveal's own fragment classes. */
+            .reveal .fragment.blur-smoke,
+            .reveal .fragment.blur-smoke * {
+                transition:
+                    color var(--blur-duration, 0.4s) ease,
+                    text-shadow var(--blur-duration, 0.4s) ease;
+            }
+            .reveal .fragment.blur-smoke {
+                opacity: 1;
+                visibility: inherit;
+            }
+            /* the :not(.visible) form restores the original colours for free,
+               including descendants that set a colour of their own */
+            .reveal .fragment.blur-smoke:not(.visible),
+            .reveal .fragment.blur-smoke:not(.visible) * {
+                color: transparent;
+            }
+            .reveal .fragment.blur-smoke:not(.visible) {
+                text-shadow: 0 0 var(--blur-radius, 0.4em) var(--blur-color, var(--r-main-color, #999));
+            }
+
+            .reveal .fragment.blur-focus {
+                opacity: 1;
+                visibility: inherit;
+                filter: blur(var(--blur-radius, 0.28em));
+                transition:
+                    filter var(--blur-duration, 0.4s) ease,
+                    opacity var(--blur-duration, 0.4s) ease;
+            }
+            .reveal .fragment.blur-focus.visible {
+                opacity: var(--blur-past-opacity, 0.75);
+                filter: blur(var(--blur-past-radius, 0.04em));
+            }
+            .reveal .fragment.blur-focus.current-fragment {
+                opacity: 1;
+                filter: blur(0);
+            }
+
+            /* The blur() before url() is not decoration: the SVG filter samples one
+               pixel per cell, and unblurred glyphs are thin enough that most cells
+               sample transparent. Blurring first spreads the ink so every cell has
+               something to sample. */
+            .reveal .fragment.pixelate {
+                opacity: 1;
+                visibility: inherit;
+                filter: blur(0.1em) url(#dz-pixelate-10);
+            }
+            .reveal .fragment.pixelate.visible {
+                animation: dz-depixelate var(--blur-duration, 0.33s) linear forwards;
+            }
+            /* filter values containing url() are not interpolatable, so these
+               keyframes step discretely — which reads as resolution ramping up */
+            @keyframes dz-depixelate {
+                0% {
+                    filter: blur(0.1em) url(#dz-pixelate-10);
+                }
+                25% {
+                    filter: blur(0.08em) url(#dz-pixelate-8);
+                }
+                50% {
+                    filter: blur(0.06em) url(#dz-pixelate-6);
+                }
+                75% {
+                    filter: blur(0.04em) url(#dz-pixelate-4);
+                }
+                100% {
+                    filter: none;
+                }
+            }
+
+            .reveal .fragment-demo {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.2em;
+                font-size: 0.62em;
+                text-align: left;
+            }
+            .reveal .fragment-demo h4 {
+                font-size: 0.85em;
+                margin-bottom: 0.5em;
+                opacity: 0.8;
+                text-transform: none;
+            }
+            .reveal .fragment-demo ul {
+                margin: 0;
+            }
+            .reveal .fragment-demo li {
+                margin: 0.3em 0;
+            }
+
             /* The plugin auto-applies vega's dark theme on dark reveal themes,
                so we let the chart sit transparently on the slide background. */
             .reveal div[data-vega] {
@@ -118,6 +212,42 @@
             \newcommand{\bbN}{\mathbb{N}}
             \newcommand{\bbZ}{\mathbb{Z}}
         </script>
+
+        <!-- Pixelation filters for the .pixelate fragment style. One dot per NxN
+             cell (feFlood + feComposite + feTile), then feMorphology dilates each
+             sampled dot back into a full block. -->
+        <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+            <defs>
+                <filter id="dz-pixelate-4" x="0" y="0" primitiveUnits="userSpaceOnUse">
+                    <feFlood x="1" y="1" width="1" height="1" flood-color="#000" />
+                    <feComposite width="4" height="4" />
+                    <feTile result="grid" />
+                    <feComposite in="SourceGraphic" in2="grid" operator="in" />
+                    <feMorphology operator="dilate" radius="2" />
+                </filter>
+                <filter id="dz-pixelate-6" x="0" y="0" primitiveUnits="userSpaceOnUse">
+                    <feFlood x="2" y="2" width="1" height="1" flood-color="#000" />
+                    <feComposite width="6" height="6" />
+                    <feTile result="grid" />
+                    <feComposite in="SourceGraphic" in2="grid" operator="in" />
+                    <feMorphology operator="dilate" radius="3" />
+                </filter>
+                <filter id="dz-pixelate-8" x="0" y="0" primitiveUnits="userSpaceOnUse">
+                    <feFlood x="3" y="3" width="1" height="1" flood-color="#000" />
+                    <feComposite width="8" height="8" />
+                    <feTile result="grid" />
+                    <feComposite in="SourceGraphic" in2="grid" operator="in" />
+                    <feMorphology operator="dilate" radius="4" />
+                </filter>
+                <filter id="dz-pixelate-10" x="0" y="0" primitiveUnits="userSpaceOnUse">
+                    <feFlood x="4" y="4" width="1" height="1" flood-color="#000" />
+                    <feComposite width="10" height="10" />
+                    <feTile result="grid" />
+                    <feComposite in="SourceGraphic" in2="grid" operator="in" />
+                    <feMorphology operator="dilate" radius="5" />
+                </filter>
+            </defs>
+        </svg>
 
         <div class="reveal">
             <div class="slides">
@@ -168,6 +298,14 @@
                         <li>
                             <code>content-loader.js</code> &mdash; load external HTML/text/SVG/PDF into slide
                             containers; register custom DOM actions
+                        </li>
+                        <li>
+                            <code>cross-out.js</code> &mdash; drop an SVG cross over any element
+                            (<code>data-cross-out</code>) on a chosen fragment beat
+                        </li>
+                        <li>
+                            concealing fragment styles &mdash; <code>.blur-smoke</code>, <code>.blur-focus</code>,
+                            <code>.pixelate</code>: the point is laid out from the start but unreadable until revealed
                         </li>
                     </ul>
                 </section>
@@ -489,6 +627,95 @@ next
                 </section>
 
                 <!-- ============================================================ -->
+                <!--                    FRAGMENT STYLES                            -->
+                <!-- ============================================================ -->
+                <section data-hide-inking-canvas data-menu-title="Fragment styles">
+                    <h3>Concealing fragment styles &mdash; CSS only</h3>
+                    <p class="subtitle">
+                        The point stays laid out from the first beat, so the audience sees how many are coming
+                        and how long each one is &mdash; but cannot read it until you get there. All three
+                        reveal on the same beat below.
+                    </p>
+                    <div class="fragment-demo">
+                        <div>
+                            <h4><code>.blur-smoke</code></h4>
+                            <ul>
+                                <li class="fragment blur-smoke" data-fragment-index="1">Glyphs dissolve into smoke</li>
+                                <li class="fragment blur-smoke" data-fragment-index="2">
+                                    <code>text-shadow</code>, not <code>filter</code>
+                                </li>
+                                <li class="fragment blur-smoke" data-fragment-index="3">Borders and images stay sharp</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4><code>.blur-focus</code></h4>
+                            <ul>
+                                <li class="fragment blur-focus" data-fragment-index="1">Pending: fully blurred</li>
+                                <li class="fragment blur-focus" data-fragment-index="2">Current: sharp</li>
+                                <li class="fragment blur-focus" data-fragment-index="3">Covered: slightly soft</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4><code>.pixelate</code></h4>
+                            <ul>
+                                <li class="fragment pixelate" data-fragment-index="1">A real mosaic on live text</li>
+                                <li class="fragment pixelate" data-fragment-index="2">SVG filter, no JS</li>
+                                <li class="fragment pixelate" data-fragment-index="3">Resolves 10&rarr;8&rarr;6&rarr;4&rarr;sharp</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="footnote">
+                        Each style only sets <code>filter</code> / <code>colour</code>, never hiding the element, so
+                        they compose with reveal's own classes &mdash; <code>class="fragment pixelate fade-up"</code>,
+                        <code>grow</code>, <code>highlight-red</code>. Tunable per element with
+                        <code>--blur-radius</code> / <code>--blur-duration</code>.
+                        <code>.pixelate</code> needs the <code>&lt;svg&gt;&lt;defs&gt;</code> filter block once per deck.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
+                <!--                    CROSS OUT                                  -->
+                <!-- ============================================================ -->
+                <section data-hide-inking-canvas data-menu-title="Cross out">
+                    <h3><code>cross-out.js</code> &mdash; strike a claim on cue</h3>
+                    <p class="subtitle">
+                        Put <code>data-cross-out</code> on anything. The plugin wraps it and drops an SVG cross over
+                        it on the given fragment beat &mdash; useful for ruling out options as you argue.
+                    </p>
+                    <div class="two-col">
+                        <pre><code data-language="html" data-trim>
+&lt;li&gt;&lt;span data-cross-out="1"&gt;
+    Re-export every chart by hand
+&lt;/span&gt;&lt;/li&gt;
+
+Reveal.initialize({
+    plugins: [RevealCrossOut],
+    crossout: {
+        color: "rgba(220, 20, 60, 1)",
+        thickness: 8,
+        duration: "0.3s"
+    }
+});
+                        </code></pre>
+                        <div style="font-size: 0.75em; text-align: left">
+                            <p>Keeping a deck honest with data:</p>
+                            <!-- the cross stretches a 100x100 viewBox over the element, so
+                                 wide short spans get thick strokes: leave vertical room -->
+                            <ul style="line-height: 2.1">
+                                <li><span data-cross-out="1">Re-export every chart by hand</span></li>
+                                <li><span data-cross-out="2">Paste screenshots and hope</span></li>
+                                <li><span data-cross-out="3">Rebuild the deck per dataset</span></li>
+                                <li>Render from the data at slide time</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="footnote">
+                        The value is the fragment index, so a cross can land on the same beat as any other fragment.
+                        Leave it empty (<code>data-cross-out=""</code>) to take the next beat in document order.
+                    </p>
+                </section>
+
+                <!-- ============================================================ -->
                 <!--                    WEBCAM                                     -->
                 <!-- ============================================================ -->
                 <section data-hide-inking-canvas data-menu-title="Webcam">
@@ -532,6 +759,7 @@ next
         <script src="reveal-custom/plugins/interactive-charts.js"></script>
         <script src="reveal-custom/plugins/interactive-table.js"></script>
         <script src="reveal-custom/plugins/cssanimation.js"></script>
+        <script src="reveal-custom/plugins/cross-out.js"></script>
         <script src="reveal-custom/plugins/webcam.js"></script>
         <script src="reveal-custom/plugins/menu/menu.js"></script>
         <script>
@@ -553,6 +781,7 @@ next
                     RevealInteractiveCharts,
                     RevealInteractiveTable,
                     RevealCSSAnimation,
+                    RevealCrossOut,
                     RevealWebcam,
                     RevealMenu,
                 ],
