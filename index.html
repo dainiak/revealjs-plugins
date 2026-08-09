@@ -100,7 +100,7 @@
             .reveal ul.plugin-list code {
                 font-weight: 600;
             }
-            /* the .blur-smoke / .blur-focus / .pixelate styles shown on this slide
+            /* the .blur-veil / .blur-focus / .pixelate styles shown on this slide
                live in reveal-custom/css/fragments.css */
             .reveal .fragment-demo {
                 display: grid;
@@ -144,32 +144,40 @@
 
         <!-- Pixelation filters for the .pixelate fragment style. One dot per NxN
              cell (feFlood + feComposite + feTile), then feMorphology dilates each
-             sampled dot back into a full block. -->
+             sampled dot back into a full block.
+
+             The feFlood deliberately carries no x/y: its subregion then defaults
+             to the filter region, which is anchored to the element's bounding
+             box. Positioning the dot absolutely instead (x="N/2-1") only works
+             when that box sits at the user-space origin — true for HTML, false
+             for anything inside an <svg>, where the dot lands outside the tile,
+             the grid comes back empty and the element disappears. A 2x2 dot
+             rather than 1x1 also survives being scaled down by reveal. -->
         <svg width="0" height="0" style="position: absolute" aria-hidden="true">
             <defs>
                 <filter id="dz-pixelate-4" x="0" y="0" primitiveUnits="userSpaceOnUse">
-                    <feFlood x="1" y="1" width="1" height="1" flood-color="#000" />
+                    <feFlood width="2" height="2" flood-color="#000" />
                     <feComposite width="4" height="4" />
                     <feTile result="grid" />
                     <feComposite in="SourceGraphic" in2="grid" operator="in" />
                     <feMorphology operator="dilate" radius="2" />
                 </filter>
                 <filter id="dz-pixelate-6" x="0" y="0" primitiveUnits="userSpaceOnUse">
-                    <feFlood x="2" y="2" width="1" height="1" flood-color="#000" />
+                    <feFlood width="2" height="2" flood-color="#000" />
                     <feComposite width="6" height="6" />
                     <feTile result="grid" />
                     <feComposite in="SourceGraphic" in2="grid" operator="in" />
                     <feMorphology operator="dilate" radius="3" />
                 </filter>
                 <filter id="dz-pixelate-8" x="0" y="0" primitiveUnits="userSpaceOnUse">
-                    <feFlood x="3" y="3" width="1" height="1" flood-color="#000" />
+                    <feFlood width="2" height="2" flood-color="#000" />
                     <feComposite width="8" height="8" />
                     <feTile result="grid" />
                     <feComposite in="SourceGraphic" in2="grid" operator="in" />
                     <feMorphology operator="dilate" radius="4" />
                 </filter>
                 <filter id="dz-pixelate-10" x="0" y="0" primitiveUnits="userSpaceOnUse">
-                    <feFlood x="4" y="4" width="1" height="1" flood-color="#000" />
+                    <feFlood width="2" height="2" flood-color="#000" />
                     <feComposite width="10" height="10" />
                     <feTile result="grid" />
                     <feComposite in="SourceGraphic" in2="grid" operator="in" />
@@ -233,7 +241,7 @@
                             (<code>data-cross-out</code>) on a chosen fragment beat
                         </li>
                         <li>
-                            concealing fragment styles &mdash; <code>.blur-smoke</code>, <code>.blur-focus</code>,
+                            concealing fragment styles &mdash; <code>.blur-veil</code>, <code>.blur-focus</code>,
                             <code>.pixelate</code>: the point is laid out from the start but unreadable until revealed
                         </li>
                     </ul>
@@ -567,13 +575,13 @@ next
                     </p>
                     <div class="fragment-demo">
                         <div>
-                            <h4><code>.blur-smoke</code></h4>
+                            <h4><code>.blur-veil</code></h4>
                             <ul>
-                                <li class="fragment blur-smoke" data-fragment-index="1">Glyphs dissolve into smoke</li>
-                                <li class="fragment blur-smoke" data-fragment-index="2">
-                                    <code>text-shadow</code>, not <code>filter</code>
+                                <li class="fragment blur-veil" data-fragment-index="1">Conceals any content</li>
+                                <li class="fragment blur-veil" data-fragment-index="2">
+                                    Text, boxes, images, <code>&lt;svg&gt;</code>
                                 </li>
-                                <li class="fragment blur-smoke" data-fragment-index="3">Borders and images stay sharp</li>
+                                <li class="fragment blur-veil" data-fragment-index="3">One interpolatable filter</li>
                             </ul>
                         </div>
                         <div>
@@ -597,8 +605,11 @@ next
                         Each style only sets <code>filter</code> / <code>colour</code>, never hiding the element, so
                         they compose with reveal's own classes &mdash; <code>class="fragment pixelate fade-up"</code>,
                         <code>grow</code>, <code>highlight-red</code>. Tunable per element with
-                        <code>--blur-radius</code> / <code>--blur-duration</code>.
-                        <code>.pixelate</code> needs the <code>&lt;svg&gt;&lt;defs&gt;</code> filter block once per deck.
+                        <code>--blur-radius</code> / <code>--blur-duration</code>. <code>.blur-veil</code> is the
+                        general one &mdash; it filters the element itself, so it also covers a <code>&lt;g&gt;</code>
+                        inside an inline svg, where you want <code>--blur-radius</code> in <code>px</code> (one px is
+                        one user unit). <code>.pixelate</code> needs the <code>&lt;svg&gt;&lt;defs&gt;</code> filter
+                        block once per deck.
                     </p>
                 </section>
 

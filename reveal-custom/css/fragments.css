@@ -5,10 +5,15 @@
 
 	  * timing / emphasis   — `step`, `display-then-remove`, `sliding-underline`,
 	                          `drop-underline`
-	  * concealing          — `blur-smoke`, `blur-focus`, `pixelate`: the fragment
+	  * concealing          — `blur-veil`, `blur-focus`, `pixelate`: the fragment
 	                          stays laid out and visible from the first beat but
-	                          is unreadable until revealed, so the audience can see
-	                          how many points are coming without reading ahead
+	                          is unreadable until revealed, so the audience can
+	                          see how many points are coming without reading ahead
+
+	`blur-veil` is the general one: it filters the element itself, so it covers
+	text, boxes, images, inline SVG and anything inside an SVG without knowing
+	what it is looking at. `blur-focus` adds a third state (pending / current /
+	already passed), and `pixelate` is the visually distinct mosaic alternative.
 
 	The concealing styles only set filter / colour and never hide the element, so
 	they compose with reveal's own fragment classes (`fade-up`, `grow`,
@@ -102,24 +107,21 @@
 		opacity 0.2s;
 }
 
-.reveal .fragment.blur-smoke,
-.reveal .fragment.blur-smoke * {
-	transition:
-		color var(--blur-duration, 0.4s) ease,
-		text-shadow var(--blur-duration, 0.4s) ease;
-}
-.reveal .fragment.blur-smoke {
+/* One interpolatable filter on the element itself, so it reaches every kind of
+   content — including a <g> inside an inline svg, where it is applied in the
+   group's own user space and therefore rotates and scales with the group's
+   transform. Inside an svg set --blur-radius in px: there one px is one user
+   unit, so the radius tracks the viewBox rather than an inherited font-size
+   that has nothing to do with the artwork. */
+.reveal .fragment.blur-veil {
 	opacity: 1;
 	visibility: inherit;
+	filter: blur(var(--blur-radius, 0.25em)) grayscale(var(--blur-gray, 1))
+		contrast(var(--blur-contrast, 0.75));
+	transition: filter var(--blur-duration, 0.4s) ease;
 }
-/* the :not(.visible) form restores the original colours for free,
-   including descendants that set a colour of their own */
-.reveal .fragment.blur-smoke:not(.visible),
-.reveal .fragment.blur-smoke:not(.visible) * {
-	color: transparent;
-}
-.reveal .fragment.blur-smoke:not(.visible) {
-	text-shadow: 0 0 var(--blur-radius, 0.4em) var(--blur-color, var(--r-main-color, #999));
+.reveal .fragment.blur-veil.visible {
+	filter: blur(0) grayscale(0) contrast(1);
 }
 
 .reveal .fragment.blur-focus {
